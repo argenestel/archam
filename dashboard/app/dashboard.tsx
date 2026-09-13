@@ -1,19 +1,23 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { Search, Star, Sparkles } from "lucide-react";
+import { ArrowUpRight, Search, Sparkles, Star } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { isAddress } from "viem";
 import { Launchpad } from "./launchpad";
 import { OrderBook } from "./orderbook";
 import { Portfolio } from "./portfolio";
 import { Trade } from "./trade";
 import { CurveSwap } from "./curve-swap";
 import { PrivacyHub } from "./privacy";
-import { Button, SegmentedControl, Dialog, Flex } from "@radix-ui/themes";
+import { Button, Dialog, Flex } from "@radix-ui/themes";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import type { MarketToken } from "./market-data";
 import { TokenImage, tokenImagePath } from "./token-image";
 import { V2Launchpad } from "./v2-launchpad";
-import { useV2Factory } from "./v2-market";
+import { readV2Market, useV2Factory } from "./v2-market";
+import { ArcMainnetSwap } from "./arc-mainnet-swap";
+import { ThemeToggle } from "./theme";
 
 /* ───── types ───── */
 type Tab = "Explore" | "Trade" | "Launch" | "Portfolio" | "Swap" | "Bridge" | "Privacy";
@@ -32,32 +36,32 @@ type Market = {
 /* ───── example markets ───── */
 const markets: Market[] = [
   {
-    name: "Mofu", symbol: "MOFU", kind: "Community", color: "#f5f5f5",
+    name: "Mofu", symbol: "MOFU", kind: "Community", color: "var(--detail-accent)",
     mark: tokenImagePath("mofu"), description: "A community token for Arc. The first coin on the testnet launchpad.",
     points: [10, 18, 14, 22, 30, 27, 35, 42, 38, 50], initialPrice: "0.000001", curveReserve: "14,200",
   },
   {
-    name: "Moon Cat", symbol: "MCAT", kind: "Culture", color: "#d4d4d4",
+    name: "Moon Cat", symbol: "MCAT", kind: "Culture", color: "var(--stone)",
     mark: tokenImagePath("cat"), description: "For night owls and internet cats with big ideas.",
     points: [5, 8, 12, 9, 15, 20, 18, 25, 22, 28], initialPrice: "0.000001", curveReserve: "8,450",
   },
   {
-    name: "Little Frog", symbol: "FROG", kind: "Community", color: "#a3a3a3",
+    name: "Little Frog", symbol: "FROG", kind: "Community", color: "var(--detail-accent)",
     mark: tokenImagePath("frog"), description: "Small frog, deep pond. A fresh community on Arc.",
     points: [3, 7, 5, 10, 8, 14, 12, 18, 16, 20], initialPrice: "0.000001", curveReserve: "5,670",
   },
   {
-    name: "Orbit", symbol: "ORBIT", kind: "Social", color: "#737373",
+    name: "Orbit", symbol: "ORBIT", kind: "Social", color: "var(--stone)",
     mark: tokenImagePath("orbit"), description: "Find your people, build your orbit.",
     points: [8, 6, 10, 14, 12, 18, 22, 20, 26, 30], initialPrice: "0.000001", curveReserve: "3,210",
   },
   {
-    name: "Matcha Club", symbol: "MTCH", kind: "Culture", color: "#bdbdbd",
+    name: "Matcha Club", symbol: "MTCH", kind: "Culture", color: "var(--detail-accent)",
     mark: tokenImagePath("matcha"), description: "Slow mornings, strong communities.",
     points: [12, 15, 13, 18, 16, 20, 24, 22, 28, 32], initialPrice: "0.000001", curveReserve: "7,890",
   },
   {
-    name: "Arcade", symbol: "ARCD", kind: "Gaming", color: "#8f8f8f",
+    name: "Arcade", symbol: "ARCD", kind: "Gaming", color: "var(--stone)",
     mark: tokenImagePath("arcade"), description: "Building should feel like playing.",
     points: [4, 9, 6, 12, 8, 16, 14, 20, 18, 24], initialPrice: "0.000001", curveReserve: "2,100",
   },
@@ -111,6 +115,111 @@ const tabs: { id: Tab; label: string }[] = [
   { id: "Privacy", label: "Privacy" },
 ];
 
+function RouteTabs({ label, value, options, onChange, disabled = false }: {
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="route-tabs" role="radiogroup" aria-label={label}>
+      {options.map(option => (
+        <button
+          type="button"
+          key={option.value}
+          role="radio"
+          aria-checked={value === option.value}
+          className={value === option.value ? "active" : ""}
+          disabled={disabled}
+          onClick={() => onChange(option.value)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function SwapRouteSelect({ value, onChange, disabled = false }: { value: string; onChange: (value: string) => void; disabled?: boolean }) {
+  return (
+    <label className="swap-route-select">
+      <span>Route</span>
+      <select aria-label="Swap route" value={value} disabled={disabled} onChange={event => onChange(event.target.value)}>
+        <option value="v2">V2 pools</option>
+        <option value="mainnet">Arc Mainnet</option>
+        <option value="coins">Legacy curve</option>
+        <option value="stablecoins">Circle stablecoins</option>
+      </select>
+    </label>
+  );
+}
+
+function HeroTokenShowcase({ factory, onSwap, onLaunch }: { factory: string; onSwap: () => void; onLaunch: () => void }) {
+  const market = useQuery({
+    queryKey: ["hero-v2-market", factory],
+    enabled: isAddress(factory),
+    queryFn: () => readV2Market(factory, 0),
+    refetchInterval: 15_000,
+    retry: false,
+  });
+  const token = market.data?.tokens[0];
+  const progress = token ? Math.min(100, Number(token.sold) * 100 / Number(token.cap)) : 0;
+  const graduated = token?.graduated === true;
+
+  return (
+    <aside className="hero-token-showcase" aria-label="Featured graduating token">
+      <div className="hero-token-glow" aria-hidden="true" />
+      <div className="hero-token-topline">
+        <span className="eyebrow">Latest launch</span>
+        <span className={`hero-token-status ${graduated ? "is-graduated" : ""}`}>
+          <span className="hero-token-status-dot" />
+          {graduated ? "Graduated" : token ? "On curve" : "V2 launchpad"}
+        </span>
+      </div>
+
+      {token ? (
+        <>
+          <div className="hero-token-identity">
+            <TokenImage src={token.image} name={token.name} size={72} />
+            <div>
+              <h2>{token.name}</h2>
+              <p>${token.symbol} <span>·</span> {token.quoteSymbol}</p>
+            </div>
+          </div>
+          <p className="hero-token-description">
+            {graduated
+              ? "The curve filled and liquidity is now live in a permanently locked pool."
+              : "A live community launch moving toward its locked liquidity pool."}
+          </p>
+          <div className="hero-token-progress" aria-label={`${progress.toFixed(1)} percent toward graduation`}>
+            <div className="hero-token-progress-label">
+              <span>{graduated ? "Pool live" : "Progress to graduation"}</span>
+              <strong>{graduated ? "100%" : `${progress.toFixed(1)}%`}</strong>
+            </div>
+            <div className="hero-token-progress-track"><span style={{ width: `${graduated ? 100 : progress}%` }} /></div>
+          </div>
+          <div className="hero-token-meta">
+            <span>{graduated ? "Liquidity locked" : `${(token.cap - token.sold).toLocaleString()} tokens left`}</span>
+            <a href={`https://testnet.arcscan.app/token/${token.address}`} target="_blank" rel="noreferrer">View contract ↗</a>
+          </div>
+          <div className="hero-token-actions">
+            <button className="btn-primary" onClick={onSwap}>Trade ${token.symbol} <ArrowUpRight size={14} /></button>
+            {graduated && token.pool ? <a className="btn-secondary" href={`https://testnet.arcscan.app/address/${token.pool}`} target="_blank" rel="noreferrer">View pool</a> : <button className="btn-secondary" onClick={onLaunch}>Launch yours</button>}
+          </div>
+        </>
+      ) : (
+        <div className="hero-token-empty">
+          <TokenImage src={tokenImagePath("mofu")} name="Mofu" size={56} />
+          <strong>{market.isPending ? "Reading the live market…" : "Launch the first graduating token."}</strong>
+          <p>Fill a fair curve, then let the protocol open a locked pool.</p>
+          <button className="btn-secondary" onClick={onLaunch}>Launch a token</button>
+        </div>
+      )}
+    </aside>
+  );
+}
+
 /* ───── Dashboard ───── */
 export default function Dashboard() {
   const [tab, setTabRaw] = useState<Tab>("Explore");
@@ -139,10 +248,14 @@ export default function Dashboard() {
   const v2Factory = useV2Factory();
   const [swapRoute, setSwapRoute] = useState("coins");
   const [swapRouteChanged, setSwapRouteChanged] = useState(false);
-  const [launchRoute, setLaunchRoute] = useState("v2");
-  const [exploreRoute, setExploreRoute] = useState("v2");
+  const [launchRoute, setLaunchRoute] = useState("legacy");
+  const [launchRouteChanged, setLaunchRouteChanged] = useState(false);
+  const [exploreRoute, setExploreRoute] = useState("legacy");
+  const [exploreRouteChanged, setExploreRouteChanged] = useState(false);
   const [activeToken, setActiveToken] = useState<MarketToken>();
   const effectiveSwapRoute = v2Factory && !swapRouteChanged ? "v2" : swapRoute;
+  const effectiveLaunchRoute = v2Factory && !launchRouteChanged ? "v2" : launchRoute;
+  const effectiveExploreRoute = v2Factory && !exploreRouteChanged ? "v2" : exploreRoute;
   const openCoin = (destination: Tab, token: MarketToken) => {
     if (busy) return;
     setActiveToken(token);
@@ -206,6 +319,7 @@ export default function Dashboard() {
         </nav>
 
         <div className="header-actions">
+          <ThemeToggle />
           <ConnectButton accountStatus="avatar" chainStatus="none" showBalance={false} />
           <div className="network-pill">
             <span className="network-indicator" />
@@ -213,7 +327,7 @@ export default function Dashboard() {
           </div>
           <a
             className="faucet-btn"
-            href="https://faucet.arc.dev"
+            href="https://faucet.circle.com/"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -228,31 +342,23 @@ export default function Dashboard() {
         {tab === "Explore" && (
           <>
             {/* hero */}
-            <section className="hero">
-              <div className="hero-friends" aria-hidden="true">
-                <TokenImage src={tokenImagePath("mofu")} size={48} />{" "}
-                <TokenImage src={tokenImagePath("frog")} size={48} />{" "}
-                <TokenImage src={tokenImagePath("orbit")} size={48} />
+            <section className="hero hero-marketplace">
+              <div className="hero-copy">
+                <span className="eyebrow">Arc testnet · fair launches</span>
+                <h1 className="heading-hero">From first buy to <em>pool live.</em></h1>
+                <p className="hero-subtitle">Launch a token, fill its transparent bonding curve, and graduate into a permanently locked pool when the community gets there.</p>
+                <div className="hero-actions">
+                  <Button size="3" onClick={() => navigate("Launch")}>Launch a token <ArrowUpRight size={15} /></Button>
+                  <button className="btn-secondary" onClick={() => navigate("Swap")}>Explore live pools</button>
+                </div>
               </div>
-              <h1 className="heading-hero">
-                Launch and trade on Arc.
-              </h1>
-              <p className="hero-subtitle">
-                Explore tokens, launch a coin, or swap with USDC.
-              </p>
-              <div className="hero-actions">
-                <Button size="3" onClick={() => navigate("Swap")}>Swap a coin</Button>
-                <button className="btn-secondary" onClick={() => navigate("Launch")}>Launch a coin</button>
-              </div>
-              <p className="hero-fine-print">
-                Your wallet signs every transaction. Test assets have no monetary value.
-              </p>
+              <HeroTokenShowcase factory={v2Factory} onSwap={() => navigate("Swap")} onLaunch={() => navigate("Launch")} />
             </section>
 
             {/* market explorer */}
             <section>
               <div className="explore-header">
-                <h2>Markets</h2>
+                <div><span className="eyebrow">Explore the market</span><h2>Find something early.</h2><p>Real token contracts first. Concepts stay clearly marked.</p></div>
                 <div className="explore-mode-toggle">
                   <button
                     className={`explore-mode-btn ${!liveMode ? "active" : ""}`}
@@ -273,11 +379,8 @@ export default function Dashboard() {
 
               {liveMode ? (
                 <>
-                  <SegmentedControl.Root aria-label="Live market version" value={exploreRoute} onValueChange={setExploreRoute} disabled={busy}>
-                    <SegmentedControl.Item value="v2">V2 graduating</SegmentedControl.Item>
-                    <SegmentedControl.Item value="legacy">Legacy</SegmentedControl.Item>
-                  </SegmentedControl.Root>
-                  {exploreRoute === "v2" ? <V2Launchpad onBusy={setBusy} /> : <Launchpad onBusy={setBusy} onSwap={token => openCoin("Swap", token)} />}
+                  <RouteTabs label="Live market version" value={effectiveExploreRoute} onChange={value => { setExploreRouteChanged(true); setExploreRoute(value); }} disabled={busy} options={[{ value: "v2", label: "V2 graduating" }, { value: "legacy", label: "Legacy" }]} />
+                  {effectiveExploreRoute === "v2" ? <V2Launchpad onBusy={setBusy} hideFeatured /> : <><div className="market-mode-note"><span>Legacy market</span><strong>Curve only · never graduates</strong></div><Launchpad onBusy={setBusy} onSwap={token => openCoin("Swap", token)} /></>}
                 </>
               ) : (
                 <>
@@ -451,15 +554,12 @@ export default function Dashboard() {
         {/* === Launch === */}
         {tab === "Launch" && (
           <>
-          <SegmentedControl.Root aria-label="Launch version" value={launchRoute} onValueChange={setLaunchRoute} disabled={busy}>
-            <SegmentedControl.Item value="v2">V2 graduating</SegmentedControl.Item>
-            <SegmentedControl.Item value="legacy">Legacy</SegmentedControl.Item>
-          </SegmentedControl.Root>
-          {launchRoute === "v2" ? <V2Launchpad onBusy={setBusy} mode="launch" /> : <Launchpad
+          <RouteTabs label="Launch version" value={effectiveLaunchRoute} onChange={value => { setLaunchRouteChanged(true); setLaunchRoute(value); }} disabled={busy} options={[{ value: "v2", label: "V2 graduating" }, { value: "legacy", label: "Legacy" }]} />
+          {effectiveLaunchRoute === "v2" ? <V2Launchpad onBusy={setBusy} mode="launch" /> : <><div className="market-mode-note"><span>Legacy market</span><strong>Curve only · never graduates</strong><small>Legacy coins can be bought and sold, but they never move into a liquidity pool.</small></div><Launchpad
             onBusy={setBusy}
             onSwap={token => openCoin("Swap", token)}
             onTradePair={token => openCoin("Trade", token)}
-          />}
+          /></>}
           </>
         )}
 
@@ -473,13 +573,10 @@ export default function Dashboard() {
         {tab === "Swap" && <section className="swap-workspace">
           <h1>Swap coins</h1>
           <p>Trade tokens on Arc.</p>
-          <SegmentedControl.Root className="swap-routes" value={effectiveSwapRoute} onValueChange={value => { setSwapRouteChanged(true); setSwapRoute(value); }} disabled={busy}>
-            <SegmentedControl.Item value="v2">V2 pools</SegmentedControl.Item>
-            <SegmentedControl.Item value="coins">Legacy</SegmentedControl.Item>
-            <SegmentedControl.Item value="stablecoins">Stablecoins</SegmentedControl.Item>
-          </SegmentedControl.Root>
-          {swapRoute === "v2" && <V2Launchpad onBusy={setBusy} mode="swap" />}
-          {swapRoute === "coins" && <CurveSwap key={activeToken?.address} initialToken={activeToken} onBusy={setBusy} onLaunch={() => navigate("Launch")} onTrade={token => openCoin("Trade", token)} />}
+          <SwapRouteSelect value={effectiveSwapRoute} onChange={value => { setSwapRouteChanged(true); setSwapRoute(value); }} disabled={busy} />
+          {effectiveSwapRoute === "v2" && <V2Launchpad onBusy={setBusy} mode="swap" />}
+          {effectiveSwapRoute === "mainnet" && <ArcMainnetSwap onBusy={setBusy} />}
+          {effectiveSwapRoute === "coins" && <CurveSwap key={activeToken?.address} initialToken={activeToken} onBusy={setBusy} onLaunch={() => navigate("Launch")} onTrade={token => openCoin("Trade", token)} />}
         </section>}
         {/* Keep Circle mounted so an incomplete bridge retains its recovery state. */}
         <div style={{ display: tab === "Bridge" || (tab === "Swap" && swapRoute === "stablecoins") ? "block" : "none" }}>
@@ -494,8 +591,8 @@ export default function Dashboard() {
           <div className="footer-links">
             <a href="#" onClick={e => { e.preventDefault(); navigate("Trade"); }}>Trade</a>
             <a href="#" onClick={e => { e.preventDefault(); navigate("Launch"); }}>Launch</a>
-            <a href="https://faucet.arc.dev" target="_blank" rel="noopener noreferrer">Faucet</a>
-            <a href="https://testnet.arcscan.io" target="_blank" rel="noopener noreferrer">ArcScan</a>
+            <a href="https://faucet.circle.com/" target="_blank" rel="noopener noreferrer">Faucet</a>
+            <a href="https://testnet.arcscan.app" target="_blank" rel="noopener noreferrer">ArcScan</a>
           </div>
         </div>
         <div className="footer-inner">

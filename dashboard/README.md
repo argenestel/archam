@@ -1,6 +1,6 @@
 # Mofu dashboard
 
-Next.js frontend for the Mofu all-in-one Arc Testnet DeFi MVP. Landing and Explore examples are clearly labeled previews. Launch, Trade, Portfolio, Swap, Bridge, and graduating-token V2 flows use wallet and chain integrations; no public deployment is assumed.
+Next.js frontend for the Mofu all-in-one Arc Testnet DeFi MVP. Landing and Explore examples are clearly labeled previews. Launch, Trade, Portfolio, Swap, Bridge, and graduating-token V2 flows use wallet and chain integrations. The checked-in local environment joins the deployed legacy launchpad/orderbook; the V2 factory is configured when its public deployment is available.
 
 ## Run
 
@@ -20,8 +20,22 @@ Injected wallets work without credentials. Optional public environment variables
 | `NEXT_PUBLIC_LAUNCHPAD_ADDRESS` | Shared Arc Testnet `CurveLaunchpad` deployment |
 | `NEXT_PUBLIC_ORDERBOOK_ADDRESS` | Shared `MofuOrderBook` bound to that same launchpad |
 | `NEXT_PUBLIC_MOFU_V2_FACTORY` | Shared V2 factory for graduating tokens and locked pools |
+| `NEXT_PUBLIC_ARC_MAINNET_RPC` | Explicit Arc Mainnet RPC used for router readiness checks |
+| `NEXT_PUBLIC_ARC_MAINNET_EXPLORER` | Optional Arc Mainnet explorer URL |
+| `NEXT_PUBLIC_ARC_MAINNET_ROUTER` | Explicit router address; code is verified before it is marked ready |
+| `NEXT_PUBLIC_ARC_MAINNET_FACTORY` | Router factory used to resolve direct and one-hop pairs |
+| `NEXT_PUBLIC_ARC_MAINNET_USDC` | Arc Mainnet USDC ERC-20 address |
+| `NEXT_PUBLIC_ARC_MAINNET_EURC` | Arc Mainnet EURC ERC-20 address |
 
 Leave addresses empty to deploy or join through the browser. Local selections are saved in that browser. Restart/rebuild after changing environment values. Never expose private keys, Circle entity secrets, or Circle API keys in this app.
+
+Arc Mainnet stablecoin routing is explicitly configured in the local environment
+through the ArcSwap DEX router. The header and `pnpm verify:mainnet-router` check
+chain ID `5042`, router bytecode, router/factory binding, the USDC/EURC pair, and
+a positive quote before enabling the route. The route starts with ERC-20 USDC/EURC
+and supports imported ERC-20s plus one-hop paths through those stablecoins. It
+requires mainnet funds; Mofu launchpad/orderbook contracts and Circle App Kit
+flows remain on Arc Testnet.
 
 ## First market and trade
 
@@ -80,7 +94,7 @@ pnpm test:v2-ui-local                                    # needs anvil and pnpm 
 
 ## Swap and bridge
 
-The dark interface uses neutral shadcn-style tokens, Radix controls and dialogs, grayscale artwork, and a persistent RainbowKit wallet button. Swap coin selection uses searchable modal pickers. The picker discovers the configured Mofu markets and the public Arcscan ERC-20 index; tokens without a Mofu curve or pool are shown as detected but unavailable for this route.
+The dark interface uses neutral shadcn-style tokens, Radix controls and dialogs, grayscale artwork, and a persistent RainbowKit wallet button. Swap coin selection uses a shared searchable Jupiter-style modal. The picker discovers configured Mofu markets and the public ArcScan ERC-20 index, and can validate a pasted address directly against Arc RPC. Tokens without a verified Mofu curve or pool are selectable for inspection but clearly marked as having no route; detection never invents liquidity.
 
 - **Swap → Graduating tokens:** V2 tokens trade against their curve until the final buy creates a permanently locked pool; the same widget then routes buy/sell through that pool. Select a token from the modal, review the quote, approve the exact asset, and confirm.
 - **Swap → Launched coins:** native USDC ↔ any coin in the selected legacy launch market through its bonding curve. Choose a coin through the searchable modal, direction, and whole-token quantity. Buying specifies the number of coins to receive; selling specifies coins to send. Fresh onchain quotes, a 1% maximum payment/minimum receipt, simulation, and a two-minute onchain deadline protect execution. Confirmed swaps refresh portfolio and market data. Launch and Portfolio shortcuts carry the selected coin into Swap or Trade. Coin-to-coin atomic routing is not provided.
@@ -91,15 +105,23 @@ The dark interface uses neutral shadcn-style tokens, Radix controls and dialogs,
 
 Native Arc USDC uses **18 decimals**; its ERC-20 interface uses **6**. They represent the same asset. Curves and orderbook use native USDC; App Kit receives human-readable amounts. Deployment/trading fee estimation enforces a 20 Gwei max-fee floor.
 
-### Deploy the V2 factory
+### Deploy all first-class contracts
 
-Use a local environment only; never commit the signer. The script requires the known deployer address, `MOFU_DEPLOY_CONFIRM=ARC_TESTNET`, and `MOFU_DEPLOYER_PRIVATE_KEY` in the shell:
+`pnpm deploy:testnet` verifies Arc Testnet, reuses configured deployments, and deploys any missing `CurveLaunchpad`, `MofuOrderBook`, and `MofuFactoryV2` contracts. It requires a funded explicit signer in the shell; it never accepts a mnemonic and refuses another chain:
 
 ```sh
-pnpm deploy:v2-testnet
+MOFU_DEPLOY_CONFIRM=ARC_TESTNET \
+MOFU_DEPLOYER_ADDRESS=0xYourSigner \
+MOFU_DEPLOYER_PRIVATE_KEY=0xYourPrivateKey \
+pnpm deploy:testnet
 ```
 
-Copy the printed `NEXT_PUBLIC_MOFU_V2_FACTORY` value into `.env.local` and restart the dashboard. The factory deploys each V2 token on launch; the finishing curve buy creates and seeds its locked pool.
+To create a fresh deployment address, run `cast wallet new` locally, keep the
+private key in a password manager, and fund the address manually at
+`https://faucet.circle.com/` with Arc Testnet selected. The public faucet uses
+reCAPTCHA and is intentionally not automated by this repository.
+
+The script checks that the orderbook is bound to the launchpad and that the V2 treasury is the signer. Copy the printed `env` values into `.env.local` and restart the dashboard. `MofuTokenV2` and `MofuPool` are created by the V2 factory during launches/graduation; they are not standalone deployments.
 
 ## Build and validation
 
@@ -128,7 +150,7 @@ node scripts/export-curves.mjs
 node scripts/export-orderbook.mjs
 ```
 
-The old fixed-supply `LaunchToken.sol` and artifact remain for reference and are not used by the current launch UI.
+The current launch UI uses only `CurveLaunchpad` for legacy curves and `MofuFactoryV2` for graduating launches.
 
 Local integration checks never sign against a public RPC. Build contracts first, then:
 

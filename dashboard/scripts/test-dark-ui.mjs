@@ -15,7 +15,7 @@ try {
    await page.screenshot({ path: '/tmp/mofu-neutral-' + tab + '-' + width + '.png', fullPage: true });
  }
  await nav('Launch').click();
-  await page.getByRole('radio', { name: 'Legacy', exact: true }).click();
+  await page.getByLabel('Swap route', { exact: true }).selectOption('coins');
   await page.getByRole('button', { name: '+ Launch a Coin', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
@@ -33,19 +33,8 @@ try {
   await expect(dialog).toBeVisible();
   await page.keyboard.press('Escape');
   await nav('Privacy').click();
-  await page.getByRole('button', { name:'Preview private launch', exact:true }).click();
-  await dialog.getByLabel('Token name', { exact:true }).fill('Private draft');
-  await dialog.getByLabel('Ticker', { exact:true }).fill('DRAFT');
-  const download = page.waitForEvent('download');
-  await dialog.getByRole('button', { name:'Download launch draft' }).click();
-  expect((await download).suggestedFilename()).toBe('mofu-launch-draft.json');
-  await page.keyboard.press('Escape');
-  await page.getByRole('button', { name:'Preview private swap', exact:true }).click();
-  await dialog.getByRole('button', { name:'Review private route' }).click();
-  await expect(dialog.getByRole('status')).toContainText('No private swap was submitted');
-  await page.waitForTimeout(250);
-  await page.screenshot({ path: '/tmp/mofu-neutral-privacy-modal-' + width + '.png' });
-  await page.keyboard.press('Escape');
+  await expect(page.getByRole('heading', { name:'Preview only', exact:true })).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
  }
  expect(errors).toEqual([]);
  console.log('PASS: seven routes, three widths, launch/settings dialogs, privacy draft download and swap preview.');

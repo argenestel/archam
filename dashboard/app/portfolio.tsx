@@ -140,7 +140,7 @@ export function Portfolio({
             <div className="pf-stat-card">
               <div className="pf-stat-top">
                 <span className="pf-stat-label">Native USDC Balance</span>
-                <span className="p-2 rounded-lg bg-emerald-500/10 text-spring">
+                <span className="p-2 rounded-lg bg-spring/10 text-spring">
                   <Wallet size={18} />
                 </span>
               </div>

@@ -47,9 +47,10 @@ $ anvil
 
 ### Deploy
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+The dashboard owns the Arc Testnet deployment flow. From `dashboard/`, run
+`pnpm deploy:testnet` with an explicit funded private key and
+`MOFU_DEPLOY_CONFIRM=ARC_TESTNET`. It deploys or reuses the legacy launchpad,
+its bound orderbook, and the Mofu V2 factory, then verifies their relationships.
 
 ### Cast
 

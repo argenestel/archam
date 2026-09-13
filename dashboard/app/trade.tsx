@@ -1,5 +1,7 @@
 "use client";
 import { TokenImage, tokenImagePath } from "./token-image";
+import { TokenPicker, type PickerToken } from "./token-picker";
+import { ARC_EURC, ARC_USDC } from "./arc-token-discovery";
 
 import { useRef, useState } from "react";
 import { Button, IconButton } from "@radix-ui/themes";
@@ -15,6 +17,10 @@ import {
 } from "lucide-react";
 
 const networks = ["Arc_Testnet", "Ethereum_Sepolia", "Base_Sepolia"] as const;
+const stablecoinTokens: PickerToken[] = [
+  { address: ARC_USDC, name: "USD Coin", symbol: "USDC", decimals: 6, image: "/token-images/usdc.svg", status: "route", statusLabel: "Circle swap" },
+  { address: ARC_EURC, name: "Euro Coin", symbol: "EURC", decimals: 6, image: "/token-images/eurc.svg", status: "route", statusLabel: "Circle swap" },
+];
 const json = (value: unknown) =>
   JSON.stringify(
     value,
@@ -33,6 +39,7 @@ export function Trade({
   const { openConnectModal } = useConnectModal();
   const [amount, setAmount] = useState("10");
   const [reverse, setReverse] = useState(false);
+  const [assetPicker, setAssetPicker] = useState<"input" | "output" | null>(null);
   const [source, setSource] = useState(1);
   const [destination, setDestination] = useState(0);
   const [slippage, setSlippage] = useState("50");
@@ -57,6 +64,14 @@ export function Trade({
 
   const input = reverse ? "EURC" : "USDC";
   const output = reverse ? "USDC" : "EURC";
+
+  function selectStablecoin(token: PickerToken) {
+    if (mode !== "Swap" || !assetPicker) return;
+    const nextInput = assetPicker === "input" ? token.symbol : token.symbol === "USDC" ? "EURC" : "USDC";
+    setReverse(nextInput === "EURC");
+    setQuote(undefined);
+    setAssetPicker(null);
+  }
 
   async function context() {
     if (!connector) throw new Error("Connect your wallet first.");
@@ -212,7 +227,7 @@ export function Trade({
       </div>
 
       {/* Main Card */}
-      <div className="glass-panel p-6 sm:p-8 shadow-2xl relative">
+      <div className="glass-panel p-6 sm:p-8 relative">
         <fieldset disabled={busy} className="space-y-4">
           {/* Bridge Network Route */}
           {mode === "Bridge" && (
@@ -274,10 +289,15 @@ export function Trade({
                 className="w-full bg-transparent border-0 p-0 text-3xl font-bold text-chalk focus:ring-0 focus:border-0 font-mono"
                 placeholder="0.00"
               />
-              <span className="px-3 py-1.5 rounded-xl bg-surface border border-line text-chalk font-bold text-sm flex items-center gap-1.5 shadow-sm">
-                <TokenImage src={tokenImagePath((mode === "Swap" ? input : "USDC").toLowerCase())} size={22} />
-                <span>{mode === "Swap" ? input : "USDC"}</span>
-              </span>
+              {mode === "Swap" ? (
+                <button type="button" className="trade-token-button" aria-label="Pay token" onClick={() => setAssetPicker("input")}>
+                  <TokenImage src={tokenImagePath(input.toLowerCase())} size={22} />
+                  <span>{input}</span>
+                  <span aria-hidden>⌄</span>
+                </button>
+              ) : (
+                <span className="trade-token-button"><TokenImage src={tokenImagePath("usdc")} size={22} /><span>USDC</span></span>
+              )}
             </div>
           </div>
 
@@ -318,10 +338,15 @@ export function Trade({
               <span className="text-3xl font-extrabold font-mono text-chalk">
                 {current?.output ?? "—"}
               </span>
-              <span className="px-3 py-1.5 rounded-xl bg-surface border border-line text-chalk font-bold text-sm flex items-center gap-1.5 shadow-sm">
-                <TokenImage src={tokenImagePath((mode === "Swap" ? output : "USDC").toLowerCase())} size={22} />
-                <span>{mode === "Swap" ? output : "USDC"}</span>
-              </span>
+              {mode === "Swap" ? (
+                <button type="button" className="trade-token-button" aria-label="Receive token" onClick={() => setAssetPicker("output")}>
+                  <TokenImage src={tokenImagePath(output.toLowerCase())} size={22} />
+                  <span>{output}</span>
+                  <span aria-hidden>⌄</span>
+                </button>
+              ) : (
+                <span className="trade-token-button"><TokenImage src={tokenImagePath("usdc")} size={22} /><span>USDC</span></span>
+              )}
             </div>
           </div>
 
@@ -386,6 +411,19 @@ export function Trade({
             </button>
           )}
         </fieldset>
+
+        {mode === "Swap" && (
+          <TokenPicker
+            open={assetPicker !== null}
+            onOpenChange={open => { if (!open) setAssetPicker(null); }}
+            busy={busy}
+            title="Choose a stablecoin"
+            description="Circle supports USDC and EURC swaps on Arc Testnet."
+            tokens={stablecoinTokens}
+            selected={assetPicker === "input" ? (input === "USDC" ? ARC_USDC : ARC_EURC) : (output === "USDC" ? ARC_USDC : ARC_EURC)}
+            onSelect={selectStablecoin}
+          />
+        )}
 
         <p className="text-[11px] text-stone text-center mt-5 leading-relaxed">
           {mode === "Swap"

@@ -5,7 +5,7 @@
 .pf-section {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 32px;
 }
 
 /* ─── Page heading ─── */
@@ -101,33 +101,38 @@
 .ob-terminal {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
 }
 
 .ob-grid {
   display: grid;
   grid-template-columns: 1fr 340px;
-  gap: 16px;
+  gap: 32px;
 }
 
 .ob-book {
   display: flex;
   flex-direction: column;
   gap: 0;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 20px;
+  background: transparent;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  padding: 0 32px 0 0;
 }
 
 .ob-ticket {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 20px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
   align-self: start;
 }
 
@@ -195,7 +200,7 @@
   transition: background 0.1s;
 }
 
-.ob-row:hover { background: rgba(255, 255, 255, 0.03); }
+.ob-row:hover { background: var(--accent); }
 
 /* depth bar overlay */
 .ob-depth-bar {
@@ -208,12 +213,12 @@
 
 .ob-bid .ob-depth-bar {
   left: 0;
-  background: rgba(52, 211, 153, 0.08);
+  background: var(--accent);
 }
 
 .ob-ask .ob-depth-bar {
   right: 0;
-  background: rgba(248, 113, 113, 0.08);
+  background: var(--accent);
 }
 
 .ob-bid { color: var(--spring); }
@@ -257,8 +262,6 @@
   transition: color 0.15s, background 0.15s;
 }
 
-.ob-toggle button:hover { color: var(--chalk); }
-
 .ob-toggle .active-buy {
   background: var(--spring);
   color: var(--night);
@@ -266,7 +269,7 @@
 
 .ob-toggle .active-sell {
   background: var(--ember);
-  color: #fff;
+  color: var(--chalk);
 }
 
 /* ─── Order total card ─── */
@@ -365,14 +368,12 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--ember);
-  border: 1px solid rgba(248, 113, 113, 0.25);
+  border: 1px solid var(--line);
   transition: background 0.15s;
   font-family: var(--font-sans), sans-serif;
 }
 
-.ob-cancel-btn:hover {
-  background: rgba(248, 113, 113, 0.1);
-}
+.ob-cancel-btn:hover { background: var(--accent); }
 
 /* ─── Feedback / settings ─── */
 .ob-feedback-box {
@@ -409,6 +410,36 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  margin-bottom: 16px;
+}
+
+.ob-fill-summary {
+  border-radius: 12px;
+  background: var(--accent);
+  border-color: var(--line);
+}
+
+/* Keep the account area as one flat row beneath the primary terminal surface. */
+.ob-section > .grid:last-of-type {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.8fr);
+  gap: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.ob-section > .grid:last-of-type > .ob-card {
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.ob-section > .grid:last-of-type > .ob-card + .ob-card {
+  padding-left: 32px;
+  border-left: 1px solid var(--line);
 }
 
 .ob-refresh-btn {
@@ -478,7 +509,7 @@
   width: 56px;
   height: 56px;
   border-radius: 16px;
-  background: rgba(52, 211, 153, 0.12);
+  background: var(--accent);
   color: var(--spring);
   display: grid;
   place-items: center;
@@ -518,7 +549,7 @@
   place-items: center;
   font-size: 14px;
   font-weight: 700;
-  color: #fff;
+  color: var(--chalk);
   flex-shrink: 0;
 }
 
@@ -531,6 +562,10 @@
   .ob-terminal {
     grid-template-columns: 1fr;
   }
+
+  .ob-book { border-right: 0; border-bottom: 1px solid var(--line); padding: 0 0 24px; }
+  .ob-section > .grid:last-of-type { grid-template-columns: 1fr; }
+  .ob-section > .grid:last-of-type > .ob-card + .ob-card { padding: 24px 0 0; border-top: 1px solid var(--line); border-left: 0; }
 }
 
 @media (max-width: 640px) {
@@ -542,6 +577,7 @@
     grid-template-columns: 1fr;
   }
 
+  .ob-terminal { padding: 16px; border-radius: 16px; }
   .ob-card { padding: 14px; }
   .ob-market-bar { padding: 10px 14px; }
 }

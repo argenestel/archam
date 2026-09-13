@@ -2,6 +2,7 @@
   "name": "dashboard",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -13,7 +14,9 @@
     "typecheck": "tsc --noEmit",
     "build:webpack": "next build --webpack",
     "export:v2": "node scripts/export-mofu-v2.mjs",
-    "deploy:v2-testnet": "node scripts/deploy-v2-testnet.mjs",
+    "deploy:testnet": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.deploy.local scripts/deploy-all-testnet.mjs",
+    "verify:testnet": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.deploy.local scripts/verify-testnet.mjs",
+    "verify:mainnet-router": "node --env-file-if-exists=.env.local scripts/verify-mainnet-router.mjs",
     "test:v2-local": "node scripts/test-mofu-v2-local.mjs",
     "test:v2-ui-local": "node scripts/test-v2-ui-local.mjs"
   },

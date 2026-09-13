@@ -23,7 +23,7 @@ export function useMarketAddresses() {
 export function saveBook(address: Address) { localStorage.setItem("mofu-orderbook-v1", address); window.dispatchEvent(new Event("mofu-market")); }
 export { money } from "./market-safety";
 export const short = (value: string) => `${value.slice(0, 6)}…${value.slice(-4)}`;
-export type MarketToken = { index: bigint; address: Address; name: string; symbol: string };
+export type MarketToken = { index: bigint; address: Address; name: string; symbol: string; image?: string };
 export async function readTokens(factory: string, page = 0, size = 20) {
   if (!isAddress(factory)) throw new Error("Choose a launch market first.");
   const count = await arcClient.readContract({ address: factory, abi: curveLaunchpad.abi, functionName: "tokenCount" });
@@ -32,10 +32,12 @@ export async function readTokens(factory: string, page = 0, size = 20) {
   const tokens = await Promise.all(Array.from({ length }, async (_, i): Promise<MarketToken> => {
     const index = end - 1n - BigInt(i);
     const address = await arcClient.readContract({ address: factory, abi: curveLaunchpad.abi, functionName: "tokens", args: [index] });
-    const [name, symbol] = await arcClient.multicall({ allowFailure: false, contracts: [
-      { address, abi: curveToken.abi, functionName: "name" }, { address, abi: curveToken.abi, functionName: "symbol" },
+    const [name, symbol, image] = await arcClient.multicall({ allowFailure: false, contracts: [
+      { address, abi: curveToken.abi, functionName: "name" },
+      { address, abi: curveToken.abi, functionName: "symbol" },
+      { address, abi: curveToken.abi, functionName: "icon" },
     ] });
-    return { index, address, name, symbol };
+    return { index, address, name, symbol, image };
   }));
   return { count, tokens };
 }

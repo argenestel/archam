@@ -4,20 +4,78 @@ import { useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAccount, useSwitchChain } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { Button, Card, Flex, Text, TextField, SegmentedControl, Callout, Separator } from "@radix-ui/themes";
-import { ChevronDown, Search } from "lucide-react";
-import { createWalletClient, custom, isAddress, parseUnits, type EIP1193Provider, type Hash } from "viem";
+import { Button, Callout, Card, Separator, Text, TextField } from "@radix-ui/themes";
+import { ArrowDown, ChevronDown, ExternalLink, LoaderCircle, Search } from "lucide-react";
+import {
+  createWalletClient,
+  custom,
+  isAddress,
+  parseUnits,
+  type EIP1193Provider,
+  type Hash,
+} from "viem";
 import { arcTestnet } from "viem/chains";
-import { arcClient, readTokens, money, unit, useMarketAddresses, type MarketToken } from "./market-data";
-import { curveToken } from "./generated/curveToken";
+import { arcClient, money, readTokens, unit, useMarketAddresses, type MarketToken } from "./market-data";
 import { curveLaunchpad } from "./generated/curveLaunchpad";
+import { curveToken } from "./generated/curveToken";
 import { wholeTokens, protectedAmount, withinProtection } from "./curve-swap-safety";
-import { FormDialog } from "./form-dialog";
+import {
+  ARC_USDC,
+  curatedArcTokens,
+  discoverArcTokens,
+  readArcToken,
+  type DiscoveredArcToken,
+} from "./arc-token-discovery";
 import { OnchainTokenImage, TokenImage } from "./token-image";
-import { discoverArcTokens } from "./arc-token-discovery";
+import { TokenPicker, type PickerToken } from "./token-picker";
 import "./swap-picker.css";
 
-/** Domain flow using Radix controls; execution stays on the reserve-backed curve. */
+type SwapToken = PickerToken & { index?: bigint; source: "legacy" | "detected" | "imported" | "quote" };
+
+const usdc: SwapToken = {
+  address: ARC_USDC,
+  name: "USD Coin",
+  symbol: "USDC",
+  decimals: 6,
+  image: "/token-images/usdc.svg",
+  status: "quote",
+  statusLabel: "Quote asset",
+  source: "quote",
+};
+
+function legacyOption(token: MarketToken): SwapToken {
+  return {
+    address: token.address,
+    name: token.name,
+    symbol: token.symbol,
+    decimals: 18,
+    image: token.image,
+    status: "route",
+    statusLabel: "Legacy curve",
+    source: "legacy",
+    index: token.index,
+  };
+}
+
+function discoveredOption(token: DiscoveredArcToken): SwapToken {
+  return {
+    ...token,
+    status: "detected",
+    statusLabel: "Detected · no route",
+    source: token.source === "imported" ? "imported" : "detected",
+  };
+}
+
+function uniqueTokens(tokens: SwapToken[]) {
+  const unique = new Map<string, SwapToken>();
+  for (const token of tokens) {
+    const key = token.address.toLowerCase();
+    if (!unique.has(key)) unique.set(key, token);
+  }
+  return [...unique.values()];
+}
+
+/** Simple reserve-backed legacy swap. Legacy coins intentionally never graduate. */
 export function CurveSwap({ initialToken, onBusy, onLaunch, onTrade }: {
   initialToken?: MarketToken;
   onBusy: (value: boolean) => void;
@@ -30,52 +88,70 @@ export function CurveSwap({ initialToken, onBusy, onLaunch, onTrade }: {
   const { openConnectModal } = useConnectModal();
   const cache = useQueryClient();
   const [page, setPage] = useState(0);
-  const [selected, setSelected] = useState<MarketToken | undefined>(initialToken);
+  const [selected, setSelected] = useState<SwapToken | undefined>(initialToken ? legacyOption(initialToken) : undefined);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [tokenSearch, setTokenSearch] = useState("");
   const [side, setSide] = useState<"buy" | "sell">("buy");
   const [amount, setAmount] = useState("100");
   const [busy, setBusy] = useState(false);
+  const [importedTokens, setImportedTokens] = useState<SwapToken[]>([]);
   const lock = useRef(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [hash, setHash] = useState<Hash>();
   const quantity = wholeTokens(amount);
+  const hasLegacyMarket = isAddress(factory);
+
   const tokens = useQuery({
-    queryKey: ["curve-swap-tokens", factory, page], enabled: isAddress(factory),
-    queryFn: () => readTokens(factory, page), refetchInterval: 15000,
+    queryKey: ["curve-swap-tokens", factory, page],
+    enabled: hasLegacyMarket,
+    queryFn: () => readTokens(factory, page),
+    refetchInterval: 15000,
   });
   const discovered = useQuery({
-    queryKey: ["arc-token-discovery"], enabled: pickerOpen, staleTime: 60000, retry: false,
-    queryFn: () => discoverArcTokens(50),
+    queryKey: ["arc-token-discovery"],
+    enabled: pickerOpen,
+    staleTime: 60000,
+    retry: false,
+    queryFn: () => discoverArcTokens(80),
   });
+
+  const pickerTokens = useMemo(() => {
+    const registered = (tokens.data?.tokens ?? []).map(legacyOption);
+    const detected = (discovered.data ?? curatedArcTokens).map(discoveredOption);
+    return uniqueTokens([usdc, ...registered, ...detected, ...importedTokens]);
+  }, [discovered.data, importedTokens, tokens.data?.tokens]);
   const token = selected;
-  const visibleTokens = useMemo(() => {
-    const query = tokenSearch.trim().toLowerCase();
-    return (tokens.data?.tokens ?? []).filter(item =>
-      !query || `${item.name} ${item.symbol} ${item.address}`.toLowerCase().includes(query)
-    );
-  }, [tokenSearch, tokens.data?.tokens]);
-  const discoveredTokens = useMemo(() => {
-    const supported = new Set((tokens.data?.tokens ?? []).map(item => item.address.toLowerCase()));
-    const query = tokenSearch.trim().toLowerCase();
-    return (discovered.data ?? []).filter(item => !supported.has(item.address.toLowerCase()) && (!query || `${item.name} ${item.symbol} ${item.address}`.toLowerCase().includes(query)));
-  }, [discovered.data, tokenSearch, tokens.data?.tokens]);
+  const routeAvailable = token?.source === "legacy" && token.index !== undefined;
   const quote = useQuery({
-    queryKey: ["curve-swap-quote", factory, token?.address, token?.index.toString(), side, amount, address],
-    enabled: isAddress(factory) && !!token && !!quantity,
-    retry: false, refetchInterval: 10000,
+    queryKey: ["curve-swap-quote", factory, token?.address, token?.index?.toString(), side, amount, address],
+    enabled: hasLegacyMarket && routeAvailable && !!quantity,
+    retry: false,
+    refetchInterval: 10000,
     queryFn: async () => {
-      if (!isAddress(factory) || !token || !quantity) throw new Error("Select a coin and enter a whole-token amount.");
-      // An incoming selection must still belong to the active market.
-      const registered = await arcClient.readContract({ address: factory, abi: curveLaunchpad.abi, functionName: "tokens", args: [token.index] });
-      if (registered.toLowerCase() !== token.address.toLowerCase()) throw new Error("This coin belongs to another market. Select a coin from the current market.");
-      const value = await arcClient.readContract({ address: token.address, abi: curveToken.abi, functionName: side === "buy" ? "quoteBuy" : "quoteSell", args: [quantity] });
+      if (!hasLegacyMarket || !token || token.index === undefined || !quantity) {
+        throw new Error("Select a legacy coin and enter a whole-token amount.");
+      }
+      const registered = await arcClient.readContract({
+        address: factory,
+        abi: curveLaunchpad.abi,
+        functionName: "tokens",
+        args: [token.index],
+      });
+      if (registered.toLowerCase() !== token.address.toLowerCase()) {
+        throw new Error("This coin belongs to another market. Select a coin from the current market.");
+      }
+      const value = await arcClient.readContract({
+        address: token.address,
+        abi: curveToken.abi,
+        functionName: side === "buy" ? "quoteBuy" : "quoteSell",
+        args: [quantity],
+      });
       return { value };
     },
   });
   const balance = useQuery({
-    queryKey: ["curve-swap-balance", token?.address, address], enabled: !!token && !!address,
+    queryKey: ["curve-swap-balance", token?.address, address],
+    enabled: routeAvailable && !!address,
     refetchInterval: 10000,
     queryFn: async () => ({
       usdc: await arcClient.getBalance({ address: address! }),
@@ -84,97 +160,193 @@ export function CurveSwap({ initialToken, onBusy, onLaunch, onTrade }: {
   });
   const limit = quote.data ? protectedAmount(quote.data.value, side) : undefined;
 
+  function selectToken(option: PickerToken) {
+    if (option.address.toLowerCase() === ARC_USDC.toLowerCase()) {
+      setError("USDC is the quote asset here. Choose a coin to trade against it.");
+      return;
+    }
+    const next = option as SwapToken;
+    setSelected(next);
+    setError("");
+    setMessage("");
+    setPickerOpen(false);
+  }
+
+  async function importToken(addressInput: string) {
+    const imported = discoveredOption(await readArcToken(addressInput));
+    setImportedTokens(previous => uniqueTokens([...previous, imported]));
+    return imported;
+  }
+
   async function swap() {
-    if (!address || !connector) { openConnectModal?.(); return; }
-    if (lock.current || !token || !quantity || limit === undefined || quote.isError) return;
-    lock.current = true; setBusy(true); onBusy(true); setError(""); setHash(undefined);
+    if (!address || !connector) {
+      openConnectModal?.();
+      return;
+    }
+    if (lock.current || !token || !routeAvailable || !quantity || limit === undefined || quote.isError) return;
+    lock.current = true;
+    setBusy(true);
+    onBusy(true);
+    setError("");
+    setHash(undefined);
     try {
       setMessage("Confirm the Arc Testnet connection in your wallet.");
       await switchChainAsync({ chainId: arcTestnet.id });
-      const wallet = createWalletClient({ account: address, chain: arcTestnet, transport: custom(await connector.getProvider() as EIP1193Provider) });
-      if ((await wallet.getAddresses())[0]?.toLowerCase() !== address.toLowerCase() || await wallet.getChainId() !== arcTestnet.id) throw new Error("Wallet changed. Reconnect on Arc Testnet.");
+      const wallet = createWalletClient({
+        account: address,
+        chain: arcTestnet,
+        transport: custom(await connector.getProvider() as EIP1193Provider),
+      });
+      if ((await wallet.getAddresses())[0]?.toLowerCase() !== address.toLowerCase() || await wallet.getChainId() !== arcTestnet.id) {
+        throw new Error("Wallet changed. Reconnect on Arc Testnet.");
+      }
       const fresh = await quote.refetch();
       if (fresh.isError || !fresh.data) throw new Error("Could not refresh the quote. Check the market and try again.");
       if (!withinProtection(fresh.data.value, limit, side)) throw new Error("Price moved beyond 1%. Review the new quote before swapping.");
       const fees = await arcClient.estimateFeesPerGas();
       const block = await arcClient.getBlock();
-      const base = { address: token.address, abi: curveToken.abi, account: address, maxFeePerGas: fees.maxFeePerGas > parseUnits("20", 9) ? fees.maxFeePerGas : parseUnits("20", 9), maxPriorityFeePerGas: fees.maxPriorityFeePerGas } as const;
+      const base = {
+        address: token.address,
+        abi: curveToken.abi,
+        account: address,
+        maxFeePerGas: fees.maxFeePerGas > parseUnits("20", 9) ? fees.maxFeePerGas : parseUnits("20", 9),
+        maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
+      } as const;
       const args = [quantity, limit, block.timestamp + 120n] as const;
       setMessage("Review the swap in your wallet.");
-      let tx: Hash;
+      let transaction: Hash;
       if (side === "buy") {
         const { request } = await arcClient.simulateContract({ ...base, functionName: "buy", args, value: limit });
-        tx = await wallet.writeContract(request);
+        transaction = await wallet.writeContract(request);
       } else {
         const { request } = await arcClient.simulateContract({ ...base, functionName: "sell", args });
-        tx = await wallet.writeContract(request);
+        transaction = await wallet.writeContract(request);
       }
-      setHash(tx); setMessage("Swap submitted. Waiting for confirmation…");
+      setHash(transaction);
+      setMessage("Swap submitted. Waiting for confirmation…");
       let replaced = false;
-      const receipt = await arcClient.waitForTransactionReceipt({ hash: tx, onReplaced: event => { setHash(event.transactionReceipt.transactionHash); if (event.reason !== "repriced") replaced = true; } });
+      const receipt = await arcClient.waitForTransactionReceipt({
+        hash: transaction,
+        onReplaced: event => {
+          setHash(event.transactionReceipt.transactionHash);
+          if (event.reason !== "repriced") replaced = true;
+        },
+      });
       setHash(receipt.transactionHash);
       if (replaced || receipt.status !== "success") throw new Error("Swap was cancelled, replaced, or reverted. Check the transaction before trying again.");
       setMessage(`Swapped ${side === "buy" ? "USDC for" : "to USDC from"} ${quantity.toLocaleString()} ${token.symbol}.`);
-      await cache.invalidateQueries({ predicate: query => /^(curve-|portfolio-|orderbook)/.test(String(query.queryKey[0])) });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Swap could not complete. Check your wallet and transaction history.");
+      await cache.invalidateQueries({ predicate: queryItem => /^(curve-|portfolio-|orderbook)/.test(String(queryItem.queryKey[0])) });
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Swap could not complete. Check your wallet and transaction history.");
       setMessage("");
-    } finally { lock.current = false; setBusy(false); onBusy(false); }
+    } finally {
+      lock.current = false;
+      setBusy(false);
+      onBusy(false);
+    }
   }
 
+  const outputValue = quote.data && !quote.isError ? `${money(quote.data.value)} USDC` : "—";
+  const amountLabel = side === "buy" ? "You receive" : "You send";
+  const disabled = busy || !token || !routeAvailable || !quantity || limit === undefined || quote.isError || quote.isFetching;
+
   return (
-    <div className="curve-swap">
-      <Card>
-        <Flex direction="column" gap="4">
-          <Text size="4" weight="bold">Curve swap</Text>
-          <Text size="2" color="gray">USDC ↔ coin. Exact quote, no orderbook.</Text>
-          {!isAddress(factory) ? <Callout.Root><Callout.Text>Choose a launch market before swapping coins.</Callout.Text></Callout.Root> : <>
-            <div className="swap-token-field">
-              <span className="swap-field-label">Coin</span>
-              <button type="button" role="combobox" aria-label="Coin" aria-expanded={pickerOpen} aria-controls="legacy-token-options" className="token-picker-trigger" disabled={busy} onClick={() => setPickerOpen(true)}>
-                {token ? <><OnchainTokenImage address={token.address} name={token.name} size={28} /><span>{token.name} ({token.symbol})</span></> : <span>{tokens.isPending ? "Loading coins…" : "Choose a launched coin"}</span>}
-                <ChevronDown size={16} />
-              </button>
+    <section className="swap-page" aria-label="Legacy curve swap">
+      <div className="swap-page-heading">
+        <div>
+          <span className="eyebrow">Arc Testnet · reserve-backed market</span>
+          <h2>Swap a coin</h2>
+          <p>Pick a coin, enter an amount, and review the exact curve quote before signing.</p>
+        </div>
+        <span className="swap-network-chip"><span /> Arc Testnet</span>
+      </div>
+
+      <Card className="swap-card">
+        <div className="swap-card-topline">
+          <div>
+            <span className="swap-card-kicker">Legacy curve</span>
+            <strong>{token ? token.symbol : "Choose a coin"}</strong>
+          </div>
+          <span className="swap-route-note">Legacy coins never graduate</span>
+        </div>
+
+        {!hasLegacyMarket ? (
+          <Callout.Root color="gray">
+            <Callout.Text>Choose or deploy a legacy launch market before swapping coins.</Callout.Text>
+          </Callout.Root>
+        ) : (
+          <>
+            <div className="swap-direction-toggle" aria-label="Swap direction">
+              <button type="button" role="radio" aria-label="USDC to coin" aria-checked={side === "buy"} className={side === "buy" ? "active" : ""} disabled={busy} onClick={() => setSide("buy")}>Buy coin</button>
+              <button type="button" role="radio" aria-label="Coin to USDC" aria-checked={side === "sell"} className={side === "sell" ? "active" : ""} disabled={busy} onClick={() => setSide("sell")}>Sell coin</button>
             </div>
-            <FormDialog open={pickerOpen} onOpenChange={setPickerOpen} busy={busy} title="Select a coin" description="Choose a listed token from this Arc launch market.">
-              <div className="token-picker-search"><Search size={15} /><input aria-label="Search coins" value={tokenSearch} onChange={event => setTokenSearch(event.target.value)} placeholder="Search by name, ticker, or address" /></div>
-              <div id="legacy-token-options" className="token-picker-list" role="listbox" aria-label="Available coins">
-                {visibleTokens.map(item => <button role="option" aria-label={`${item.name} (${item.symbol})`} aria-selected={item.address === token?.address} className="token-picker-item" key={item.address} onClick={() => { setSelected(item); setError(""); setMessage(""); setTokenSearch(""); setPickerOpen(false); }}>
-                  <OnchainTokenImage address={item.address} name={item.name} size={38} /><span><strong>{item.name}</strong><small>{item.symbol} · {item.address.slice(0, 6)}…{item.address.slice(-4)}</small></span><ChevronDown size={14} className="token-picker-arrow" />
-                </button>)}
-                {discoveredTokens.length > 0 && <p className="token-picker-section">Detected on Arc Testnet</p>}
-                {discoveredTokens.map(item => <button role="option" aria-selected="false" aria-disabled="true" className="token-picker-item token-picker-item-disabled" key={item.address} disabled title="This token is detected but has no Mofu curve route">
-                  <TokenImage src={item.image} name={item.name} size={38} /><span><strong>{item.name}</strong><small>{item.symbol} · detected · no Mofu route</small></span>
-                </button>)}
-                {discovered.isError && <p className="token-picker-empty">Arc discovery is unavailable. Listed market coins are still available.</p>}
-                {!visibleTokens.length && !discoveredTokens.length && <p className="token-picker-empty">No coins match your search.</p>}
+
+            <div className="swap-field swap-field-quote">
+              <div className="swap-field-heading"><span>{side === "buy" ? "You pay" : "You receive"}</span><span>USDC</span></div>
+              <div className="swap-field-value">
+                <strong>{outputValue}</strong>
+                <span className="swap-asset-pill"><TokenImage src={usdc.image} size={24} /> USDC</span>
               </div>
-            </FormDialog>
-            {tokens.isError && <Callout.Root color="red"><Callout.Text>Could not load coins. <Button variant="soft" onClick={() => void tokens.refetch()}>Retry</Button></Callout.Text></Callout.Root>}
-            {tokens.data?.count === 0n && <Text size="2">No coins yet. Launch one to get started.</Text>}
-            {tokens.data && tokens.data.count > 20n && <Flex justify="between"><Button variant="soft" disabled={busy || page === 0} onClick={() => setPage(page - 1)}>Newer coins</Button><Button variant="soft" disabled={busy || BigInt((page + 1) * 20) >= tokens.data.count} onClick={() => setPage(page + 1)}>Older coins</Button></Flex>}
-            <SegmentedControl.Root value={side} onValueChange={value => setSide(value as "buy" | "sell")} disabled={busy}>
-              <SegmentedControl.Item value="buy">USDC to coin</SegmentedControl.Item>
-              <SegmentedControl.Item value="sell">Coin to USDC</SegmentedControl.Item>
-            </SegmentedControl.Root>
-            <Flex direction="column" gap="2">
-              <Text as="label" size="2" htmlFor="coin-quantity">{side === "buy" ? "You receive" : "You send"} (whole {token?.symbol ?? "tokens"})</Text>
-              <TextField.Root id="coin-quantity" size="3" value={amount} inputMode="numeric" disabled={busy} onChange={e => setAmount(e.target.value)} />
-              {!quantity && <Text size="2" color="red">Enter 1–1,000,000 whole tokens.</Text>}
-              {address && token && <Text size="2" color="gray">Wallet: {balance.data ? `${(balance.data.coin / unit).toLocaleString()} ${token.symbol} / ${money(balance.data.usdc)} USDC` : balance.isError ? "Balance unavailable" : "Loading balance…"}</Text>}
-            </Flex>
+            </div>
+
+            <div className="swap-flip" aria-hidden="true"><span><ArrowDown size={16} /></span></div>
+
+            <div className="swap-field swap-field-input">
+              <div className="swap-field-heading">
+                <label htmlFor="coin-quantity">{amountLabel}</label>
+                {address && balance.data && <span>{side === "sell" ? `${(balance.data.coin / unit).toLocaleString()} ${token?.symbol ?? "coin"}` : `${money(balance.data.usdc)} USDC`}</span>}
+              </div>
+              <div className="swap-field-value">
+                <TextField.Root id="coin-quantity" aria-label={amountLabel} size="3" value={amount} inputMode="numeric" disabled={busy} onChange={event => setAmount(event.target.value)} placeholder="0" />
+                <button type="button" role="combobox" aria-label="Coin" aria-expanded={pickerOpen} aria-controls="legacy-token-options" className="swap-asset-pill swap-asset-button" disabled={busy} onClick={() => setPickerOpen(true)}>
+                  {token ? <>{token.source === "legacy" ? <OnchainTokenImage address={token.address} name={token.name} size={24} /> : <TokenImage src={token.image} name={token.name} size={24} />}<span>{token.name} ({token.symbol})</span></> : <><TokenImage src="/token-images/default.svg" size={24} /><span>Choose coin</span></>}
+                  <ChevronDown size={14} />
+                </button>
+              </div>
+              {!quantity && <Text size="1" color="red">Enter 1–1,000,000 whole tokens.</Text>}
+            </div>
+
+            <TokenPicker
+              open={pickerOpen}
+              onOpenChange={setPickerOpen}
+              busy={busy}
+              title="Choose a coin"
+              description="Available routes are listed first. Arc tokens without a Mofu route are detected and labeled honestly."
+              tokens={pickerTokens}
+              selected={token?.address}
+              onSelect={selectToken}
+              onImport={importToken}
+            />
+
+            {discovered.isError && <p className="swap-inline-note"><Search size={13} /> Arc token directory is unavailable; enter an address to detect a token directly.</p>}
+            {token && !routeAvailable && (
+              <Callout.Root color="gray" className="swap-no-route">
+                <Callout.Text><strong>{token.symbol}</strong> is detected on Arc Testnet, but this app has no verified liquidity route for it yet. Choose a legacy coin or a V2 pool.</Callout.Text>
+              </Callout.Root>
+            )}
+            {quote.isError && <Callout.Root color="red"><Callout.Text>Quote unavailable. Check the amount and coin: buys cannot exceed the supply cap, and sells cannot exceed your minted balance.</Callout.Text></Callout.Root>}
+
             <Separator size="4" />
-            <Flex justify="between"><Text>{side === "buy" ? "Estimated payment" : "Estimated receipt"}</Text><Text weight="bold">{quote.data && !quote.isError ? `${money(quote.data.value)} USDC` : "—"}</Text></Flex>
-            <Text size="2" color="gray">{limit !== undefined && !quote.isError ? `${side === "buy" ? "Maximum payment" : "Minimum receipt"}: ${money(limit)} USDC. ` : ""}1% price protection. Gas is paid separately in USDC.</Text>
-            {quote.isError && <Callout.Root color="red"><Callout.Text>Quote unavailable. Check the amount and coin: buys cannot exceed the supply cap, and sells cannot exceed minted supply.</Callout.Text></Callout.Root>}
-            <Button size="3" loading={busy} disabled={!!address && (!token || !quantity || limit === undefined || quote.isError || quote.isFetching || (side === "sell" && balance.data !== undefined && quantity * unit > balance.data.coin))} onClick={() => void swap()}>{address ? "Confirm swap" : "Connect wallet"}</Button>
-            {side === "sell" && quantity && balance.data && quantity * unit > balance.data.coin && <Text color="red" size="2">Not enough tokens in your wallet.</Text>}
-          </>}
-          <Flex gap="3" wrap="wrap"><Button variant="soft" disabled={busy} onClick={onLaunch}>Launch a coin</Button>{token && <Button variant="ghost" disabled={busy} onClick={() => onTrade(token)}>Place a limit order</Button>}</Flex>
-          {(message || error) && <Callout.Root color={error ? "red" : "green"} role="status"><Callout.Text>{error || message}</Callout.Text></Callout.Root>}
-          {hash && <a href={`https://testnet.arcscan.app/tx/${hash}`} target="_blank" rel="noreferrer">View transaction on ArcScan</a>}
-        </Flex>
+            <div className="swap-summary">
+              <span>{side === "buy" ? "Maximum payment" : "Minimum receipt"}</span>
+              <strong>{limit !== undefined && !quote.isError ? `${money(limit)} USDC` : "—"}</strong>
+            </div>
+            <p className="swap-protection">1% price protection · gas is paid separately in native USDC · no graduation path for legacy coins</p>
+            <Button size="3" className="swap-submit" loading={busy} disabled={disabled} onClick={() => void swap()}>
+              {busy ? <><LoaderCircle size={16} className="spin" /> Confirming swap…</> : !address ? "Connect wallet" : !token ? "Choose a coin" : !routeAvailable ? "No route available" : "Confirm swap"}
+            </Button>
+          </>
+        )}
+
+        <div className="swap-card-actions">
+          <Button variant="soft" disabled={busy} onClick={onLaunch}>Launch a legacy coin</Button>
+          {token?.source === "legacy" && token.index !== undefined && <Button variant="ghost" disabled={busy} onClick={() => onTrade({ index: token.index!, address: token.address, name: token.name, symbol: token.symbol })}>Place a limit order</Button>}
+        </div>
+        {(message || error) && <Callout.Root color={error ? "red" : "green"} role="status"><Callout.Text>{error || message}</Callout.Text></Callout.Root>}
+        {hash && <a className="swap-transaction-link" href={`https://testnet.arcscan.app/tx/${hash}`} target="_blank" rel="noreferrer">View transaction on ArcScan <ExternalLink size={13} /></a>}
       </Card>
-    </div>
+
+      {tokens.data && tokens.data.count > 20n && <div className="swap-pager"><button disabled={busy || page === 0} onClick={() => setPage(page - 1)}>Newer coins</button><span>{tokens.data.count.toString()} coins in this market</span><button disabled={busy || BigInt((page + 1) * 20) >= tokens.data.count} onClick={() => setPage(page + 1)}>Older coins</button></div>}
+    </section>
   );
 }

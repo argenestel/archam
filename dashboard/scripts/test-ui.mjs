@@ -8,13 +8,21 @@ try {
   await page.goto(process.env.UI_URL || 'http://localhost:3000');
   await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: 'Swap', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Swap coins' })).toBeVisible();
-  await page.getByRole('radio', { name: 'Legacy', exact: true }).click();
+  await page.getByLabel('Swap route', { exact: true }).selectOption('coins');
   await page.getByLabel(/You receive/).fill('1.5');
   await expect(page.getByText('Enter 1–1,000,000 whole tokens.')).toBeVisible();
-  await page.getByRole('radio', { name: 'Stablecoins', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Coin', exact: true }).click();
+  await expect(page.getByRole('option', { name: 'Mofu (MOFU)', exact: true })).toBeVisible();
+  await expect(page.getByRole('option', { name: 'Euro Coin (EURC)', exact: true })).toBeVisible();
+  await page.getByRole('option', { name: 'Euro Coin (EURC)', exact: true }).click();
+  await expect(page.getByText(/no verified liquidity route/i)).toBeVisible();
+  await page.getByLabel('Swap route', { exact: true }).selectOption('stablecoins');
   await expect(page.getByRole('heading', { name: 'Swap stablecoins' })).toBeVisible();
   await page.getByRole('button', { name: 'Reverse direction' }).click();
   await expect(page.locator('#trade-amount')).toBeVisible();
+  await page.getByLabel('Swap route', { exact: true }).selectOption('mainnet');
+  await expect(page.getByRole('heading', { name: 'Swap tokens' })).toBeVisible();
+  await expect(page.getByText(/ArcSwap DEX/)).toBeVisible();
   for (const width of [390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     for (const tab of ['Explore', 'Launch', 'Trade', 'Portfolio', 'Swap', 'Bridge', 'Privacy']) {
@@ -31,5 +39,5 @@ try {
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   expect(errors).toEqual([]);
-  console.log('PASS: tab navigation, legacy/V2 swap routes, Radix dialog, amount validation, and responsive layouts.');
+  console.log('PASS: tab navigation, Arc token modal/detection state, legacy/V2 routes, Radix dialog, amount validation, and responsive layouts.');
 } finally { await browser.close(); }

@@ -554,7 +554,7 @@ export function Launchpad({ onBusy, onTradePair, onSwap }: { onBusy: (busy: bool
                       aria-pressed={icon === item}
                       className={`w-11 h-11 text-xl rounded-xl transition-all border ${
                         icon === item
-                          ? "bg-spring/15 border-spring shadow-md scale-105"
+                          ? "bg-spring/15 border-spring scale-105"
                           : "bg-night border-line hover:border-stone"
                       }`}
                       onClick={() => setIcon(item)}
@@ -647,7 +647,7 @@ export function Launchpad({ onBusy, onTradePair, onSwap }: { onBusy: (busy: bool
               <div className="market-card pointer-events-none">
                 <div className="market-card-top">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-spring/15 grid place-items-center text-2xl border border-line shadow-md">
+                    <div className="w-12 h-12 rounded-xl bg-spring/15 grid place-items-center text-2xl border border-line">
                       <TokenImage src={icon} size={46} />
                     </div>
                     <div>
@@ -721,9 +721,9 @@ export function Launchpad({ onBusy, onTradePair, onSwap }: { onBusy: (busy: bool
       </div>
 
       {/* Main Grid: Tokens List + Optional Detail Sidebar */}
-      <div className={`grid grid-cols-1 ${active ? "lg:grid-cols-12" : ""} gap-6 items-start`}>
+      <div className="launch-market">
         {/* Token Cards Grid */}
-        <div className={active ? "lg:col-span-7 xl:col-span-8" : "w-full"}>
+        <div className="w-full">
           {validFactory && market.isPending ? (
             <div className="glass-panel text-center py-20">
               <RefreshCw size={28} className="animate-spin text-spring mx-auto mb-3" />
@@ -760,14 +760,14 @@ export function Launchpad({ onBusy, onTradePair, onSwap }: { onBusy: (busy: bool
               )}
             </div>
           ) : (
-            <div className={`grid grid-cols-1 sm:grid-cols-2 ${!active ? "lg:grid-cols-3" : ""} gap-4`}>
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4`}>
               {tokens.map(token => {
                 const isSelected = active?.address === token.address;
                 const percent = (Number(token.supply) / 10000).toFixed(1);
                 return (
                   <div
                     key={token.address}
-                    className={`market-card cursor-pointer ${isSelected ? "border-spring ring-2 ring-spring/30 bg-night" : ""}`}
+                    className={`market-card cursor-pointer ${isSelected ? "border-spring bg-night" : ""}`}
                     role="button"
                     tabIndex={busy ? -1 : 0}
                     aria-label={`Select ${token.name}`}
@@ -782,7 +782,7 @@ export function Launchpad({ onBusy, onTradePair, onSwap }: { onBusy: (busy: bool
                   >
                     <div className="market-card-top">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-spring/15 border border-line grid place-items-center text-2xl shadow-md">
+                        <div className="w-12 h-12 rounded-xl bg-spring/15 border border-line grid place-items-center text-2xl">
                           <TokenImage src={token.icon} size={46} />
                         </div>
                         <div>
@@ -848,12 +848,12 @@ export function Launchpad({ onBusy, onTradePair, onSwap }: { onBusy: (busy: bool
 
         {/* Selected Token Trading Sidebar */}
         {active && (
-          <aside className="lg:col-span-5 xl:col-span-4 sticky top-24">
-            <div className="glass-panel p-6 shadow-2xl">
+          <FormDialog open={!!active} onOpenChange={open => { if (!open) setSelected(undefined); }} busy={busy} title={active.name} description="Review the token and trade its curve.">
+            <div className="glass-panel p-6">
               {/* Token Header */}
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-2xl bg-spring/15 border border-line grid place-items-center text-3xl shadow-lg">
+                  <div className="w-14 h-14 rounded-2xl bg-spring/15 border border-line grid place-items-center text-3xl">
                     <TokenImage src={active.icon} size={54} />
                   </div>
                   <div>
@@ -1024,7 +1024,7 @@ export function Launchpad({ onBusy, onTradePair, onSwap }: { onBusy: (busy: bool
                 </button>
               )}
             </div>
-          </aside>
+          </FormDialog>
         )}
       </div>
 

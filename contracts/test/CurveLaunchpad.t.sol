@@ -18,6 +18,12 @@ contract CurveLaunchpadTest is Test {
         assertEq(CurveToken(created).creator(), address(this));
         assertEq(CurveToken(created).totalSupply(), 0);
     }
+    function testLegacyCoinCannotGraduate() public {
+        CurveLaunchpad pad = new CurveLaunchpad();
+        address created = pad.createToken("Legacy", "LEG", "", "m");
+        (bool ok,) = created.call(abi.encodeWithSignature("graduated()"));
+        assertFalse(ok);
+    }
     function testBuySellAndRefund() public {
         uint256 cost = token.quoteBuy(1000);
         token.buy{value: cost + 1 ether}(1000, cost + 1 ether, block.timestamp);

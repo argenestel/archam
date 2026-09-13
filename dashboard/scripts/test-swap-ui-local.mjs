@@ -66,7 +66,7 @@ try {
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify(result) });
   });
   await page.goto(`${process.env.UI_URL || 'http://localhost:3000'}/?tab=Launch`);
-  await page.getByRole('radio', { name: 'Legacy', exact: true }).click();
+  await page.getByLabel('Swap route', { exact: true }).selectOption('coins');
   await page.locator('.header-actions').getByRole('button', { name: 'Connect Wallet', exact: true }).click();
   await page.getByRole('button', { name: /Browser Wallet/i }).first().click();
   await page.getByRole('button', { name: 'Select Test Mochi', exact: true }).click();

@@ -104,6 +104,7 @@ export function OrderBook({
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [hash, setHash] = useState<Hash>();
+  const [ticketOpen, setTicketOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
   const tokens = useQuery({
@@ -464,6 +465,7 @@ export function OrderBook({
                         return;
                       }
                       if (!token) return;
+                      setTicketOpen(true);
                       setFill({
                         ...o,
                         context: {
@@ -489,7 +491,7 @@ export function OrderBook({
             <span>No {buy ? "bids" : "asks"} on this page.</span>
             <button
               className="text-xs text-spring hover:text-spring font-semibold mt-1"
-              onClick={() => setIsBuy(buy)}
+              onClick={() => { setIsBuy(buy); setTicketOpen(true); }}
             >
               Post the first {buy ? "bid" : "ask"} →
             </button>
@@ -504,13 +506,14 @@ export function OrderBook({
       {/* Page Header */}
       <div className="ob-heading">
         <div>
-          <h1>Pro Trading Terminal</h1>
+          <h1>Trade on Arc</h1>
           <p>
-            Escrowed limit orders on Arc.
+            Post or fill fully escrowed limit orders.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
+          <button className="btn-primary" disabled={busy} onClick={() => setTicketOpen(true)}>Place order</button>
           <button
             className="btn-secondary text-xs py-2 px-3 flex items-center gap-2"
             onClick={() => setShowSettings(!showSettings)}
@@ -769,7 +772,7 @@ export function OrderBook({
             )}
           </div>
 
-          {/* Trade Ticket (Right Panel) */}
+          <FormDialog open={ticketOpen} onOpenChange={open => { setTicketOpen(open); if (!open) setFill(undefined); }} busy={busy} title={fill ? "Fill order" : "Place limit order"} description="Review amounts and confirm in your wallet.">
           <form
             className="ob-ticket"
             onSubmit={e => {
@@ -806,7 +809,7 @@ export function OrderBook({
               {fill ? (
                 /* Fill Existing Order UI */
                 <div className="space-y-4">
-                  <div className="p-3.5 rounded-xl bg-night border border-line space-y-2 text-xs">
+                  <div className="ob-fill-summary p-3.5 rounded-xl bg-night border border-line space-y-2 text-xs">
                     <div className="flex justify-between">
                       <span className="text-stone">Order Action:</span>
                       <b className={fill.isBuy ? "text-spring" : "text-ember"}>
@@ -956,13 +959,14 @@ export function OrderBook({
               )}
             </fieldset>
           </form>
+          </FormDialog>
         </div>
       </div>
 
       {/* Your Open Orders & Settlement Vault */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="ob-account">
         {/* Open Orders Table (8 cols) */}
-        <div className="lg:col-span-8 ob-card">
+        <div className="ob-card">
           <div className="ob-card-title">
             <h2>
               <span>Your Active Orders</span>
@@ -1012,7 +1016,7 @@ export function OrderBook({
                             className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                               isExpired
                                 ? "bg-warn/15 text-warn"
-                                : "bg-emerald-500/20 text-emerald-300"
+                                : "bg-spring/15 text-spring"
                             }`}
                           >
                             {isExpired ? "Expired" : "Active"}
@@ -1037,7 +1041,7 @@ export function OrderBook({
         </div>
 
         {/* Settlement Vault Card (4 cols) */}
-        <div className="lg:col-span-4 ob-card flex flex-col justify-between">
+        <div className="ob-card flex flex-col justify-between">
           <div>
             <div className="ob-card-title">
               <h2>
@@ -1050,7 +1054,7 @@ export function OrderBook({
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-night border border-line mb-4">
+          <div className="ob-credit-box">
             <span className="text-[11px] font-semibold text-stone block mb-1">
               Withdrawable Balance
             </span>

@@ -1,6 +1,6 @@
 # Mofu
 
-An all-in-one DeFi MVP for **Arc Testnet**: discover coins, launch a token, trade its bonding curve or onchain limit orders, manage holdings, and swap or bridge stablecoins in one wallet-connected application.
+An all-in-one DeFi MVP for **Arc Testnet**: discover coins, launch a token, trade its bonding curve or onchain limit orders, manage holdings, and swap or bridge stablecoins in one wallet-connected application. The dashboard includes a shared Arc token picker and live legacy/V2 route states.
 
 The product idea is a USDC-first home for new Arc markets. A responsive landing page introduces the experience, Explore presents clearly labeled example markets, and Launch, Trade, Portfolio, Swap, and Bridge provide the application flows. Example prices, charts, and assets are previews, not live markets or executable quotes.
 
@@ -11,7 +11,14 @@ The product idea is a USDC-first home for new Arc markets. A responsive landing 
 - **Portfolio:** read native USDC, orderbook credits, and wallet holdings among the latest 40 coins in the selected market. External assets, older coins, and escrowed tokens are outside this holdings view; no total valuation is invented.
 - **Swap and Bridge:** Circle App Kit USDC/EURC swap and CCTP USDC bridge flows, subject to supported networks, endpoint availability, and testnet liquidity.
 
-Chain actions require the connected wallet's signatures and testnet gas. The repository does not establish a public deployment or ship signing keys. Contracts are unaudited and intended for testnet use.
+Chain actions require the connected wallet's signatures and testnet gas. The repository does not ship signing keys. The current checkout records a public legacy launchpad/orderbook deployment; V2 deployment remains an explicit signer operation. Contracts are unaudited and intended for testnet use.
+
+Arc Mainnet stablecoin routing is guarded by explicit configuration. The local
+dashboard uses the verified ArcSwap DEX USDC/EURC route and checks chain `5042`,
+router/factory binding, pair code, and a live quote before allowing a swap. The
+Mofu launchpad/orderbook and Circle bridge flows remain testnet-only until their
+mainnet deployments are separately published and funded. Use
+`pnpm verify:mainnet-router` to recheck the configured route.
 
 ## Run locally
 

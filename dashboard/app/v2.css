@@ -18,6 +18,9 @@
 .v2-note { color:var(--stone); }
 .v2-address { display:block; text-decoration:underline; }
 .v2-status { border:1px solid var(--line); padding:14px; overflow-wrap:anywhere; }
+.v2-detected-token { display:flex; flex-direction:column; align-items:flex-start; gap:10px; padding:18px; border:1px solid var(--line); border-radius:12px; background:var(--night); }
+.v2-detected-token h3 { margin:0; }
+.v2-detected-token p { margin:0; color:var(--stone); font-size:12px; line-height:1.6; }
 @media(max-width:900px) { .v2-columns { grid-template-columns:minmax(0,1fr); } }
 .v2-swap-mode .v2-columns { display:block; max-width:520px; margin:0 auto; }
 .v2-swap-mode .v2-columns > :first-child { display:none; }

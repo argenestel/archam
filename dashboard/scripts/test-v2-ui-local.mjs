@@ -138,8 +138,14 @@ try {
   const quoteAfterSell = await client.readContract({ address: quote, abi: quoteArtifact.abi, functionName: "balanceOf", args: [deployer] });
   assert(tokenAfterSell < tokenAfterBuy, "pool sell must debit tokens");
   assert(quoteAfterSell > quoteAfterBuy, "pool sell must return quote asset");
+  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("button", { name: "Swap", exact: true }).click();
+  await expect(page.getByLabel("Swap route", { exact: true })).toHaveValue("v2");
+  await page.getByRole("combobox", { name: "V2 coin", exact: true }).click();
+  await expect(page.getByRole("option", { name: "UI Graduation (UIGRAD)", exact: true })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   assert.deepEqual(errors, []);
-  console.log(JSON.stringify({ rpc, chainId: chain.id, signer: deployer, quote, factory, token, pool, reserves: { quote: quoteReserve.toString(), token: tokenReserve.toString() }, tokenAfterBuy: tokenAfterBuy.toString(), tokenAfterSell: tokenAfterSell.toString(), quoteAfterSell: quoteAfterSell.toString(), result: "PASS: UI deploy, curve buyout, graduation, locked pool, pool buy, and pool sell" }));
+  console.log(JSON.stringify({ rpc, chainId: chain.id, signer: deployer, quote, factory, token, pool, reserves: { quote: quoteReserve.toString(), token: tokenReserve.toString() }, tokenAfterBuy: tokenAfterBuy.toString(), tokenAfterSell: tokenAfterSell.toString(), quoteAfterSell: quoteAfterSell.toString(), result: "PASS: UI deploy, curve buyout, graduation, locked pool, pool buy/sell, and V2 token modal" }));
 } finally {
   await browser.close();
 }
