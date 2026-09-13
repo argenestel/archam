@@ -1,0 +1,9 @@
+dashboard/node_modules/
+dashboard/.next/
+dashboard/.env.local
+contracts/out/
+contracts/cache/
+.omx/
+.agents/
+.codex/
+*.log

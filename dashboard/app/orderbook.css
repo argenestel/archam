@@ -1,0 +1,547 @@
+/* ─── Orderbook & Portfolio styles ─── */
+
+/* ─── Sections ─── */
+.ob-section,
+.pf-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ─── Page heading ─── */
+.ob-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ob-heading h1 { font-size: 28px; }
+
+.ob-network {
+  font-size: 11px;
+  color: var(--stone);
+  font-family: var(--font-mono), monospace;
+}
+
+/* ─── Card wrappers ─── */
+.ob-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.ob-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ob-card-title h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ob-card-title > span:last-child {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--stone);
+}
+
+.ob-card-title svg { color: var(--stone); }
+
+.ob-setup { display: flex; flex-direction: column; gap: 14px; }
+
+/* ─── Market bar ─── */
+.ob-market-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.ob-market-bar strong { font-size: 15px; }
+
+.ob-market-note {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--stone);
+  max-width: 320px;
+}
+
+.ob-market-note b { color: var(--chalk); font-weight: 600; }
+
+.ob-market-bar .pair-label {
+  font-family: var(--font-mono), monospace;
+  color: var(--stone);
+  font-size: 12px;
+}
+
+.ob-market-select-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ─── Terminal grid ─── */
+.ob-terminal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ob-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+}
+
+.ob-book {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.ob-ticket {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px;
+  align-self: start;
+}
+
+/* ─── Depth columns ─── */
+.ob-sides {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ob-side-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.ob-side-heading {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--stone);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ob-side-heading small {
+  margin-left: auto;
+  font-weight: 500;
+  font-size: 10px;
+  color: var(--stone);
+  opacity: 0.8;
+}
+
+.ob-side-heading.bid span { color: var(--spring); }
+.ob-side-heading.ask span { color: var(--ember); }
+
+/* ─── Depth table ─── */
+.ob-depth {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ob-table-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--stone);
+  padding: 4px 8px;
+  letter-spacing: 0.02em;
+}
+
+.ob-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  font-size: 12px;
+  font-family: var(--font-mono), monospace;
+  padding: 5px 8px;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.ob-row:hover { background: rgba(255, 255, 255, 0.03); }
+
+/* depth bar overlay */
+.ob-depth-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.ob-bid .ob-depth-bar {
+  left: 0;
+  background: rgba(52, 211, 153, 0.08);
+}
+
+.ob-ask .ob-depth-bar {
+  right: 0;
+  background: rgba(248, 113, 113, 0.08);
+}
+
+.ob-bid { color: var(--spring); }
+.ob-ask { color: var(--ember); }
+
+.ob-empty {
+  padding: 28px 0;
+  text-align: center;
+  color: var(--stone);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.ob-caption {
+  font-size: 11px;
+  color: var(--stone);
+  text-align: center;
+  padding: 6px 0;
+}
+
+/* ─── Buy/Sell toggle ─── */
+.ob-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--night);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.ob-toggle button {
+  flex: 1;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  color: var(--stone);
+  transition: color 0.15s, background 0.15s;
+}
+
+.ob-toggle button:hover { color: var(--chalk); }
+
+.ob-toggle .active-buy {
+  background: var(--spring);
+  color: var(--night);
+}
+
+.ob-toggle .active-sell {
+  background: var(--ember);
+  color: #fff;
+}
+
+/* ─── Order total card ─── */
+.ob-total-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--night);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ob-total-card .total-label { color: var(--stone); }
+
+.ob-total-card .total-value {
+  font-weight: 700;
+  font-family: var(--font-mono), monospace;
+}
+
+/* ─── Field header ─── */
+.ob-field-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--stone);
+  margin-bottom: 5px;
+}
+
+.ob-field-header span:last-child {
+  font-weight: 500;
+  font-size: 11px;
+}
+
+/* ─── Pagination ─── */
+.ob-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--stone);
+}
+
+.ob-pager button {
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--stone);
+  border: 1px solid var(--line);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.ob-pager button:hover:not(:disabled) {
+  color: var(--chalk);
+  border-color: var(--stone);
+}
+
+/* ─── Orders table ─── */
+.ob-orders-table-wrap {
+  overflow-x: auto;
+}
+
+.ob-orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.ob-orders-table th {
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--stone);
+  border-bottom: 1px solid var(--line);
+}
+
+.ob-orders-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono), monospace;
+}
+
+.ob-orders-table tr:last-child td { border-bottom: none; }
+
+.ob-cancel-btn {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ember);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  transition: background 0.15s;
+  font-family: var(--font-sans), sans-serif;
+}
+
+.ob-cancel-btn:hover {
+  background: rgba(248, 113, 113, 0.1);
+}
+
+/* ─── Feedback / settings ─── */
+.ob-feedback-box {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--night);
+  font-size: 12px;
+  color: var(--stone);
+  line-height: 1.5;
+}
+
+.ob-settings-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  z-index: 20;
+  min-width: 200px;
+  font-size: 12px;
+}
+
+/* ─── Credit box (settlement) ─── */
+.ob-credit-box {
+  padding: 14px;
+  border-radius: 8px;
+  background: var(--night);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ob-refresh-btn {
+  padding: 4px;
+  border-radius: 4px;
+  color: var(--stone);
+  transition: color 0.15s;
+}
+
+.ob-refresh-btn:hover { color: var(--chalk); }
+
+/* ─── Portfolio stats ─── */
+.pf-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.pf-stat-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.pf-stat-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.pf-stat-top svg { color: var(--stone); }
+
+.pf-stat-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--stone);
+}
+
+.pf-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: var(--font-mono), monospace;
+  letter-spacing: -0.02em;
+}
+
+.pf-stat-unit {
+  font-size: 12px;
+  color: var(--stone);
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+/* ─── Portfolio connect prompt ─── */
+.pf-connect {
+  max-width: 440px;
+  margin: 48px auto;
+  text-align: center;
+  padding: 40px 32px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.pf-connect-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(52, 211, 153, 0.12);
+  color: var(--spring);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 16px;
+}
+
+.pf-connect h2 {
+  margin-bottom: 8px;
+}
+
+.pf-connect p {
+  color: var(--stone);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* ─── Portfolio holdings ─── */
+.pf-holdings-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.pf-token-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pf-token-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 900px) {
+  .ob-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ob-terminal {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .ob-sides {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ob-card { padding: 14px; }
+  .ob-market-bar { padding: 10px 14px; }
+}
