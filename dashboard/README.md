@@ -51,6 +51,25 @@ Joining checks the factory relationship, not the deployed contract's authenticit
 
 The orderbook reads up to 40 orders per page and filters/sorts that page by pair. It is not a global best-price feed. Trading pairs are paginated. Portfolio reads native USDC, settlement credits, and holdings among the latest 40 coins; older/external coins and escrowed tokens are excluded.
 
+### Seed a MOFU orderbook demo
+
+To put a visible bid/ask ladder on the shared Arc Testnet book, run the guarded
+activity script from `dashboard/`:
+
+```sh
+MOFU_ACTIVITY_DRY_RUN=1 pnpm activity:testnet
+MOFU_ACTIVITY_CONFIRM=ARC_TESTNET pnpm activity:testnet
+```
+
+The script resolves the registered `MOFU` token, verifies that the configured
+orderbook is bound to the configured launchpad, buys only the MOFU inventory
+needed for the asks, and posts three bids plus three asks with a seven-day
+expiry. It refuses to add a second ladder unless
+`MOFU_ACTIVITY_ALLOW_EXISTING=1` is set. It uses the explicit
+`MOFU_DEPLOYER_PRIVATE_KEY` from the deployment environment and never accepts
+a mnemonic. Set `MOFU_ACTIVITY_TOKEN_ADDRESS` if a launchpad contains more
+than one MOFU-symbol token. The dry run performs no writes.
+
 ## Bonding curve
 
 `../contracts/src/CurveLaunchpad.sol` contains the registry and ERC-20 curve token. Each coin starts with zero supply: no creator allocation, presale, owner, mint authority, platform fee, or reserve withdrawal function.

@@ -2,8 +2,6 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { ArrowUpRight, Search, Sparkles, Star } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { isAddress } from "viem";
 import { Launchpad } from "./launchpad";
 import { OrderBook } from "./orderbook";
 import { Portfolio } from "./portfolio";
@@ -15,7 +13,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import type { MarketToken } from "./market-data";
 import { TokenImage, tokenImagePath } from "./token-image";
 import { V2Launchpad } from "./v2-launchpad";
-import { readV2Market, useV2Factory } from "./v2-market";
+import { useV2Factory } from "./v2-market";
 import { ArcMainnetSwap } from "./arc-mainnet-swap";
 import { ThemeToggle } from "./theme";
 
@@ -155,71 +153,6 @@ function SwapRouteSelect({ value, onChange, disabled = false }: { value: string;
   );
 }
 
-function HeroTokenShowcase({ factory, onSwap, onLaunch }: { factory: string; onSwap: () => void; onLaunch: () => void }) {
-  const market = useQuery({
-    queryKey: ["hero-v2-market", factory],
-    enabled: isAddress(factory),
-    queryFn: () => readV2Market(factory, 0),
-    refetchInterval: 15_000,
-    retry: false,
-  });
-  const token = market.data?.tokens[0];
-  const progress = token ? Math.min(100, Number(token.sold) * 100 / Number(token.cap)) : 0;
-  const graduated = token?.graduated === true;
-
-  return (
-    <aside className="hero-token-showcase" aria-label="Featured graduating token">
-      <div className="hero-token-glow" aria-hidden="true" />
-      <div className="hero-token-topline">
-        <span className="eyebrow">Latest launch</span>
-        <span className={`hero-token-status ${graduated ? "is-graduated" : ""}`}>
-          <span className="hero-token-status-dot" />
-          {graduated ? "Graduated" : token ? "On curve" : "V2 launchpad"}
-        </span>
-      </div>
-
-      {token ? (
-        <>
-          <div className="hero-token-identity">
-            <TokenImage src={token.image} name={token.name} size={72} />
-            <div>
-              <h2>{token.name}</h2>
-              <p>${token.symbol} <span>·</span> {token.quoteSymbol}</p>
-            </div>
-          </div>
-          <p className="hero-token-description">
-            {graduated
-              ? "The curve filled and liquidity is now live in a permanently locked pool."
-              : "A live community launch moving toward its locked liquidity pool."}
-          </p>
-          <div className="hero-token-progress" aria-label={`${progress.toFixed(1)} percent toward graduation`}>
-            <div className="hero-token-progress-label">
-              <span>{graduated ? "Pool live" : "Progress to graduation"}</span>
-              <strong>{graduated ? "100%" : `${progress.toFixed(1)}%`}</strong>
-            </div>
-            <div className="hero-token-progress-track"><span style={{ width: `${graduated ? 100 : progress}%` }} /></div>
-          </div>
-          <div className="hero-token-meta">
-            <span>{graduated ? "Liquidity locked" : `${(token.cap - token.sold).toLocaleString()} tokens left`}</span>
-            <a href={`https://testnet.arcscan.app/token/${token.address}`} target="_blank" rel="noreferrer">View contract ↗</a>
-          </div>
-          <div className="hero-token-actions">
-            <button className="btn-primary" onClick={onSwap}>Trade ${token.symbol} <ArrowUpRight size={14} /></button>
-            {graduated && token.pool ? <a className="btn-secondary" href={`https://testnet.arcscan.app/address/${token.pool}`} target="_blank" rel="noreferrer">View pool</a> : <button className="btn-secondary" onClick={onLaunch}>Launch yours</button>}
-          </div>
-        </>
-      ) : (
-        <div className="hero-token-empty">
-          <TokenImage src={tokenImagePath("mofu")} name="Mofu" size={56} />
-          <strong>{market.isPending ? "Reading the live market…" : "Launch the first graduating token."}</strong>
-          <p>Fill a fair curve, then let the protocol open a locked pool.</p>
-          <button className="btn-secondary" onClick={onLaunch}>Launch a token</button>
-        </div>
-      )}
-    </aside>
-  );
-}
-
 /* ───── Dashboard ───── */
 export default function Dashboard() {
   const [tab, setTabRaw] = useState<Tab>("Explore");
@@ -342,7 +275,7 @@ export default function Dashboard() {
         {tab === "Explore" && (
           <>
             {/* hero */}
-            <section className="hero hero-marketplace">
+            <section className="hero">
               <div className="hero-copy">
                 <span className="eyebrow">Arc testnet · fair launches</span>
                 <h1 className="heading-hero">From first buy to <em>pool live.</em></h1>
@@ -352,7 +285,6 @@ export default function Dashboard() {
                   <button className="btn-secondary" onClick={() => navigate("Swap")}>Explore live pools</button>
                 </div>
               </div>
-              <HeroTokenShowcase factory={v2Factory} onSwap={() => navigate("Swap")} onLaunch={() => navigate("Launch")} />
             </section>
 
             {/* market explorer */}

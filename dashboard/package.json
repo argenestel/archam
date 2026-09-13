@@ -15,6 +15,7 @@
     "build:webpack": "next build --webpack",
     "export:v2": "node scripts/export-mofu-v2.mjs",
     "deploy:testnet": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.deploy.local scripts/deploy-all-testnet.mjs",
+    "activity:testnet": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.deploy.local scripts/create-orderbook-activity.mjs",
     "verify:testnet": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.deploy.local scripts/verify-testnet.mjs",
     "verify:mainnet-router": "node --env-file-if-exists=.env.local scripts/verify-mainnet-router.mjs",
     "test:v2-local": "node scripts/test-mofu-v2-local.mjs",

@@ -35,7 +35,7 @@ Open the local URL printed by Next.js. Injected wallets work without a WalletCon
 
 ## Repository
 
-- `dashboard/`: Next.js application, wallet and Circle integrations, generated contract artifacts, and local integration scripts.
+- `dashboard/`: Next.js application, wallet and Circle integrations, generated contract artifacts, and local integration scripts, including a guarded MOFU orderbook activity demo.
 - `contracts/src/CurveLaunchpad.sol`: launch registry and reserve-backed curve tokens.
 - `contracts/src/MofuOrderBook.sol`: native-USDC escrow orderbook for the registry's tokens.
 - `.omx/plans/`: MVP scope and verification criteria.
