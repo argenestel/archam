@@ -15,7 +15,7 @@ try {
    await page.screenshot({ path: '/tmp/mofu-neutral-' + tab + '-' + width + '.png', fullPage: true });
  }
  await nav('Launch').click();
-  await page.getByRole('radio', { name: 'Legacy coins', exact: true }).click();
+  await page.getByRole('radio', { name: 'Legacy', exact: true }).click();
   await page.getByRole('button', { name: '+ Launch a Coin', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();

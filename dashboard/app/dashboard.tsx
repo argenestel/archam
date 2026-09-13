@@ -13,6 +13,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import type { MarketToken } from "./market-data";
 import { TokenImage, tokenImagePath } from "./token-image";
 import { V2Launchpad } from "./v2-launchpad";
+import { useV2Factory } from "./v2-market";
 
 /* ───── types ───── */
 type Tab = "Explore" | "Trade" | "Launch" | "Portfolio" | "Swap" | "Bridge" | "Privacy";
@@ -135,14 +136,18 @@ export default function Dashboard() {
   const [filter, setFilter] = useState("All");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [liveMode, setLiveMode] = useState(true);
-  const [swapRoute, setSwapRoute] = useState("v2");
+  const v2Factory = useV2Factory();
+  const [swapRoute, setSwapRoute] = useState("coins");
+  const [swapRouteChanged, setSwapRouteChanged] = useState(false);
   const [launchRoute, setLaunchRoute] = useState("v2");
   const [exploreRoute, setExploreRoute] = useState("v2");
   const [activeToken, setActiveToken] = useState<MarketToken>();
+  const effectiveSwapRoute = v2Factory && !swapRouteChanged ? "v2" : swapRoute;
   const openCoin = (destination: Tab, token: MarketToken) => {
     if (busy) return;
     setActiveToken(token);
     setSwapRoute("coins");
+    setSwapRouteChanged(true);
     setTab(destination);
   };
   const [selected, setSelected] = useState<Market | null>(null);
@@ -269,8 +274,8 @@ export default function Dashboard() {
               {liveMode ? (
                 <>
                   <SegmentedControl.Root aria-label="Live market version" value={exploreRoute} onValueChange={setExploreRoute} disabled={busy}>
-                    <SegmentedControl.Item value="v2">Graduating tokens</SegmentedControl.Item>
-                    <SegmentedControl.Item value="legacy">Legacy coins</SegmentedControl.Item>
+                    <SegmentedControl.Item value="v2">V2 graduating</SegmentedControl.Item>
+                    <SegmentedControl.Item value="legacy">Legacy</SegmentedControl.Item>
                   </SegmentedControl.Root>
                   {exploreRoute === "v2" ? <V2Launchpad onBusy={setBusy} /> : <Launchpad onBusy={setBusy} onSwap={token => openCoin("Swap", token)} />}
                 </>
@@ -412,8 +417,7 @@ export default function Dashboard() {
 
                   {/* note */}
                   <p style={{ fontSize: 12, color: "var(--stone)", marginTop: 8 }}>
-                    These are illustrative concepts, not live tokens.
-                    Switch to live mode to discover and trade real deployments.
+                    Preview markets only. Switch to live mode for onchain tokens.
                   </p>
                 </>
               )}
@@ -434,10 +438,7 @@ export default function Dashboard() {
               <section className="how-it-works">
                 <h2>How it works</h2>
                 <p className="how-prose">
-                  Connect an EVM wallet on Arc Testnet and claim test USDC from the faucet.
-                  Launch a token — the bonding curve prices every buy and sell automatically.
-                  Or trade on the orderbook with fully escrowed limit bids and asks.
-                  Swap USDC and EURC, or bridge USDC across testnets through Circle CCTP.
+                  Launch. Trade. Swap. Bridge.
                 </p>
               </section>
             )}
@@ -451,8 +452,8 @@ export default function Dashboard() {
         {tab === "Launch" && (
           <>
           <SegmentedControl.Root aria-label="Launch version" value={launchRoute} onValueChange={setLaunchRoute} disabled={busy}>
-            <SegmentedControl.Item value="v2">Graduating tokens</SegmentedControl.Item>
-            <SegmentedControl.Item value="legacy">Legacy coins</SegmentedControl.Item>
+            <SegmentedControl.Item value="v2">V2 graduating</SegmentedControl.Item>
+            <SegmentedControl.Item value="legacy">Legacy</SegmentedControl.Item>
           </SegmentedControl.Root>
           {launchRoute === "v2" ? <V2Launchpad onBusy={setBusy} mode="launch" /> : <Launchpad
             onBusy={setBusy}
@@ -471,11 +472,11 @@ export default function Dashboard() {
         {/* === Swap / Bridge === */}
         {tab === "Swap" && <section className="swap-workspace">
           <h1>Swap coins</h1>
-          <p>Swap your launched coins with USDC, or exchange stablecoins.</p>
-          <SegmentedControl.Root className="swap-routes" value={swapRoute} onValueChange={setSwapRoute} disabled={busy}>
-            <SegmentedControl.Item value="v2">Graduating tokens</SegmentedControl.Item>
-            <SegmentedControl.Item value="coins">Launched coins</SegmentedControl.Item>
-            <SegmentedControl.Item value="stablecoins">USDC / EURC</SegmentedControl.Item>
+          <p>Trade tokens on Arc.</p>
+          <SegmentedControl.Root className="swap-routes" value={effectiveSwapRoute} onValueChange={value => { setSwapRouteChanged(true); setSwapRoute(value); }} disabled={busy}>
+            <SegmentedControl.Item value="v2">V2 pools</SegmentedControl.Item>
+            <SegmentedControl.Item value="coins">Legacy</SegmentedControl.Item>
+            <SegmentedControl.Item value="stablecoins">Stablecoins</SegmentedControl.Item>
           </SegmentedControl.Root>
           {swapRoute === "v2" && <V2Launchpad onBusy={setBusy} mode="swap" />}
           {swapRoute === "coins" && <CurveSwap key={activeToken?.address} initialToken={activeToken} onBusy={setBusy} onLaunch={() => navigate("Launch")} onTrade={token => openCoin("Trade", token)} />}

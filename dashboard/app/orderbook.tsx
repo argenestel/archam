@@ -506,7 +506,7 @@ export function OrderBook({
         <div>
           <h1>Pro Trading Terminal</h1>
           <p>
-            Onchain limit orders, 100% escrowed settlement, transparent price depth on Arc Testnet.
+            Escrowed limit orders on Arc.
           </p>
         </div>
 

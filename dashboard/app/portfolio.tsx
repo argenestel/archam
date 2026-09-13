@@ -98,7 +98,7 @@ export function Portfolio({
         <div>
           <h1>Your Arc Assets</h1>
           <p>
-            Track your native USDC wallet balance, escrowed orderbook credits, and community coin holdings.
+            Balances, holdings, and settlement credit.
           </p>
         </div>
 

@@ -394,7 +394,7 @@ export function Launchpad({ onBusy, onTradePair, onSwap }: { onBusy: (busy: bool
             Arc Token Launchpad
           </h1>
           <p className="text-sm text-stone mt-1 max-w-xl">
-            Create a coin with zero creator premint. Every buy mints tokens and deposits native USDC into the reserve; sells burn tokens and return USDC.
+            Create a coin. Curve trading starts at zero supply.
           </p>
         </div>
 

@@ -25,7 +25,7 @@ export function PrivacyHub({ onNavigate }: { onNavigate: (tab: "Launch" | "Swap"
           <span className="privacy-kicker">Arc Privacy Sector / Preview</span>
           <h1>Private finance, onchain.</h1>
           <p>
-            A focused workspace for launches and swaps that can protect sensitive amounts while keeping authorized review in reach.
+            A focused workspace for private launches and swaps when Arc Privacy is available.
           </p>
           <div className="privacy-pills" aria-label="Privacy capabilities">
             <span className="privacy-pill">Opt-in privacy</span>
@@ -38,7 +38,7 @@ export function PrivacyHub({ onNavigate }: { onNavigate: (tab: "Launch" | "Swap"
           <ShieldCheck className="privacy-status-icon" size={24} />
           <h2>Privacy preview</h2>
           <p>
-            Arc Privacy is not live on this testnet yet. These flows are product previews; existing public launch and swap transactions are unchanged.
+            Preview only. Arc Privacy is not live on this testnet.
           </p>
           <a className="privacy-link" href="https://docs.arc.io/arc/concepts/opt-in-privacy" target="_blank" rel="noreferrer">
             Read Arc&apos;s privacy model <ArrowRight size={14} />
@@ -52,7 +52,7 @@ export function PrivacyHub({ onNavigate }: { onNavigate: (tab: "Launch" | "Swap"
           <span className="privacy-eyebrow">Private launchpad</span>
           <h2>Launch with a disclosure policy</h2>
           <p>
-            Sketch a token launch with private-by-default amounts, a clear view-key owner, and an audit path for authorized reviewers.
+            Set a disclosure policy and view-key owner before launch.
           </p>
           <button className="btn-primary" onClick={() => setModal("launch")}>
             Preview private launch <ArrowRight size={15} />
@@ -64,7 +64,7 @@ export function PrivacyHub({ onNavigate }: { onNavigate: (tab: "Launch" | "Swap"
           <span className="privacy-eyebrow">Private swap</span>
           <h2>Swap without broadcasting the amount</h2>
           <p>
-            Review the future private route, slippage, and disclosure policy before a wallet signs. No private transaction is submitted from this preview.
+            Review amount, slippage, and disclosure before signing.
           </p>
           <button className="btn-primary" onClick={() => setModal("swap")}>
             Preview private swap <ArrowRight size={15} />
@@ -73,7 +73,7 @@ export function PrivacyHub({ onNavigate }: { onNavigate: (tab: "Launch" | "Swap"
       </div>
 
       <div className="privacy-note">
-        <strong>Prototype boundary:</strong> Arc Testnet currently exposes the public flow. Do not enter production secrets or assume a preview form provides confidentiality.
+        <strong>Preview:</strong> Arc Testnet uses the public flow. No private transaction is submitted here.
       </div>
 
       <div className="privacy-public-links">

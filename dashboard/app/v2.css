@@ -22,3 +22,4 @@
 .v2-swap-mode .v2-columns { display:block; max-width:520px; margin:0 auto; }
 .v2-swap-mode .v2-columns > :first-child { display:none; }
 .v2-swap-mode .v2-ticket { width:100%; }
+.v2-swap-mode > .ob-heading { display:none; }

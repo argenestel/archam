@@ -8,10 +8,10 @@ try {
   await page.goto(process.env.UI_URL || 'http://localhost:3000');
   await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: 'Swap', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Swap coins' })).toBeVisible();
-  await page.getByRole('radio', { name: 'Launched coins', exact: true }).click();
+  await page.getByRole('radio', { name: 'Legacy', exact: true }).click();
   await page.getByLabel(/You receive/).fill('1.5');
   await expect(page.getByText('Enter 1–1,000,000 whole tokens.')).toBeVisible();
-  await page.getByRole('radio', { name: 'USDC / EURC' }).click();
+  await page.getByRole('radio', { name: 'Stablecoins', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Swap stablecoins' })).toBeVisible();
   await page.getByRole('button', { name: 'Reverse direction' }).click();
   await expect(page.locator('#trade-amount')).toBeVisible();

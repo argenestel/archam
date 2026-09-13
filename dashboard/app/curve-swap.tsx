@@ -126,8 +126,8 @@ export function CurveSwap({ initialToken, onBusy, onLaunch, onTrade }: {
     <div className="curve-swap">
       <Card>
         <Flex direction="column" gap="4">
-          <Text size="4" weight="bold">A simple curve swap</Text>
-          <Text size="2" color="gray">Swap native USDC with coins from your selected launch market. The curve sets the price; no order matching needed.</Text>
+          <Text size="4" weight="bold">Curve swap</Text>
+          <Text size="2" color="gray">USDC ↔ coin. Exact quote, no orderbook.</Text>
           {!isAddress(factory) ? <Callout.Root><Callout.Text>Choose a launch market before swapping coins.</Callout.Text></Callout.Root> : <>
             <div className="swap-token-field">
               <span className="swap-field-label">Coin</span>

@@ -149,7 +149,7 @@ export function V2Launchpad({ onBusy, mode = "launch" }: { onBusy: (busy: boolea
  }
  const estimatedDecimals = token?.graduated && side === "buy" ? 18 : token?.decimals ?? 6;
  return <section className={`v2-workspace ${mode === "swap" ? "v2-swap-mode" : ""}`} aria-label={mode === "swap" ? "Swap graduating tokens" : "Graduating tokens"}>
-  <div className="ob-heading"><div><h2>{mode === "swap" ? "Curve & pool swaps" : "Graduating tokens"}</h2><p>Tokens graduate into a locked liquidity pool when their curve sells out.</p></div>
+  <div className="ob-heading"><div><h2>{mode === "swap" ? "Swap" : "Graduating tokens"}</h2><p>{mode === "swap" ? "Curve or pool. One token at a time." : "Curve buyout creates a locked pool."}</p></div>
    {mode !== "swap" && <div className="v2-actions"><button className="btn-secondary" disabled={busy} onClick={()=>setModal("settings")}>V2 market settings</button><button className="btn-primary" disabled={busy || !isAddress(factory)} onClick={()=>setModal("launch")}>Launch graduating token</button></div>}
   </div>
   {!isAddress(factory) ? <div className="glass-panel v2-empty"><h3>Set up a graduating-token market</h3><p>Legacy coins cannot graduate. Deploy a V2 market or connect an existing one.</p><button className="btn-primary" disabled={busy} onClick={()=>setModal("settings")}>Set up market</button></div> :

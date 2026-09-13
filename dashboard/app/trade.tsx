@@ -206,8 +206,8 @@ export function Trade({
         </h1>
         <p className="text-sm text-stone mt-2">
           {mode === "Swap"
-            ? "Exchange USDC ↔ EURC on Arc Testnet via Circle liquidity."
-            : "Move USDC between supported testnets with Circle CCTP."}
+            ? "USDC ↔ EURC on Arc."
+            : "USDC across supported testnets."}
         </p>
       </div>
 
