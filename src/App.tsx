@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import LiveTerminal from './LiveTerminal';
 import {
   ArrowDown,
   ArrowDownLeft,
@@ -265,8 +266,8 @@ export default function App() {
     <div className="notice">
       <ShieldCheck size={18} />
       <span>
-        Live execution is not enabled. No verified router, launchpad, or lending deployment is
-        bundled. No approvals or transactions will be requested.
+        Arc testnet transactions are enabled only for deployed test tokens, swaps, and the
+        experimental sale. Lending and borrowing remain unavailable: no verified lending market.
       </span>
     </div>
   );
@@ -393,16 +394,25 @@ export default function App() {
               </p>
             </div>
             <div className="demo-label">
-              <span /> {demoMode ? 'Demo workspace' : 'Live · read-only'}
+              <span /> {demoMode ? 'Demo workspace' : 'Arc testnet · live'}
               <small>
                 {demoMode
                   ? 'Virtual funds. Real possibilities.'
-                  : 'Arc testnet · no live deployments'}
+                  : 'Valueless tokens · real testnet transactions'}
               </small>
             </div>
           </div>
           {!demoMode && liveNotice}
-          {page === 'Trade' && (
+          {!demoMode && (page === 'Trade' || page === 'Discover') && (
+            <LiveTerminal
+              address={wallet.address}
+              chainId={wallet.chainId}
+              page={page}
+              openWallet={() => setModal('wallet')}
+              slippageBps={Math.round(slippage * 100)}
+            />
+          )}
+          {page === 'Trade' && demoMode && (
             <>
               <section className="hero-banner">
                 <div className="hero-content">
@@ -698,7 +708,7 @@ export default function App() {
               </div>
             </>
           )}
-          {(page === 'Trade' || page === 'Discover') && (
+          {demoMode && (page === 'Trade' || page === 'Discover') && (
             <section className="pools-section">
               <div className="section-heading">
                 <div>
@@ -767,7 +777,7 @@ export default function App() {
               </div>
             </section>
           )}
-          {page === 'Discover' && (
+          {page === 'Discover' && demoMode && (
             <section>
               <div className="section-heading">
                 <div>
@@ -1107,7 +1117,7 @@ export default function App() {
               </button>
             </>
           )}
-          {page === 'Trade' && (
+          {page === 'Trade' && demoMode && (
             <div className="bottom-callout">
               <div className="callout-icon">
                 <Zap size={20} />
@@ -1123,7 +1133,8 @@ export default function App() {
           )}
           <footer>
             <span>
-              <span className="footer-dot" /> All systems in demo
+              <span className="footer-dot" />{' '}
+              {demoMode ? 'All systems in demo' : 'Arc testnet · experimental'}
             </span>
             <span>
               Built on Arc. Made for you.{' '}

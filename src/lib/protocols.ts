@@ -47,6 +47,11 @@ async function signer(wallet: WalletClient) {
   const account = wallet.account;
   if (!account) throw new Error('Connect a wallet first');
   if ((await wallet.getChainId()) !== arcTestnet.id) throw new Error('Switch to Arc testnet');
+  if (account.type === 'json-rpc') {
+    const accounts = await wallet.getAddresses();
+    if (accounts[0]?.toLowerCase() !== account.address.toLowerCase())
+      throw new Error('Active wallet account changed; reconnect and review');
+  }
   return account;
 }
 // Explicit approval step: exact amount only; never called automatically by the UI.
@@ -83,6 +88,20 @@ export async function approveExact(
   const receipt = await client.waitForTransactionReceipt({ hash });
   if (receipt.status !== 'success') throw new Error('Approval reverted');
   return hash;
+}
+export async function revokeAllowance(wallet: WalletClient, token: Address, spender: Address) {
+  const account = await signer(wallet);
+  await verifyDeployment(token);
+  await verifyDeployment(spender);
+  const { request } = await client.simulateContract({
+    account,
+    address: token,
+    abi: erc20Abi,
+    functionName: 'approve',
+    args: [spender, 0n],
+  });
+  await signer(wallet);
+  return wallet.writeContract({ ...request, chain: arcTestnet });
 }
 export async function executeV2(wallet: WalletClient, quote: Quote, slippageBps: number) {
   const account = await signer(wallet);

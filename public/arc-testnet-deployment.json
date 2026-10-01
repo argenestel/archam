@@ -1,0 +1,222 @@
+{
+  "chainId": 5042002,
+  "network": "Arc Testnet",
+  "contracts": {
+    "TestUSDC": {
+      "address": "0x995ac9f68d8fb92d240064692fa63af7cc02663c",
+      "transaction": "0x4dbec3db6598abd409894fbcbaab4360b803efd4410b244c34be5c1906037fdf",
+      "runtimeCodeHash": "0x5dd4baa169e3cafbfac0e511bf42ece033e3aa60353fda11412cffd1bc75d29b",
+      "constructorArgs": [
+        "Orbit Test USD Coin (no value)",
+        "tUSDC",
+        6,
+        "10000000000000",
+        "1000000000"
+      ]
+    },
+    "TestETH": {
+      "address": "0x461124bf2a8677df03b9f7560060d81442551124",
+      "transaction": "0x31b319123ae95886d33c35dab5cb36383e94d4532e31ec42976c39e34ea89511",
+      "runtimeCodeHash": "0x566d70909b5566b492d72baa0dfe408161d646a793aa90d42874bb11b11e6d83",
+      "constructorArgs": [
+        "Orbit Test Ether (no value)",
+        "tETH",
+        18,
+        "100000000000000000000000",
+        "1000000000000000000"
+      ]
+    },
+    "TestORBIT": {
+      "address": "0xece294e9110fb62e7fbd39b0b7d5b85934b69590",
+      "transaction": "0xa36968963d6fcb481355880f0a1f15b5776d11cd89932605c98048348f46c6bc",
+      "runtimeCodeHash": "0x5ea0e399810851298019e96296cf83dae0f2ef402c13c78cc364ac77e786ad39",
+      "constructorArgs": [
+        "Orbit Test Sale Token (no value)",
+        "tORBIT",
+        18,
+        "1000000000000000000000000",
+        "100000000000000000000"
+      ]
+    },
+    "UniswapV2Factory": {
+      "address": "0x9c074d5f07ab2ad10bb00dfecbf22c14cd1de611",
+      "transaction": "0xe8a7e26ab8f5755b9f9f58b43c20b847c7c34d9a70544139ffaa7461d08b3269",
+      "runtimeCodeHash": "0xbab145d02e7005f0d84c6c1639d39b799b0ea16df99ebbdaf5a14d9da820b4e0",
+      "constructorArgs": ["0x1A86d3148df478a1071e9D3D4825C99FB75ec964"]
+    },
+    "WrappedNativeUSDC": {
+      "address": "0x2c86de6dc916d593d4f029e9243ca24c82e13f82",
+      "transaction": "0xde8bbbb0b166af860bf7be710fd44740151cfa958638799d144f7b0c46df4362",
+      "runtimeCodeHash": "0xe524bd0c25f819b88ff6694c74b8757e843232d912f1d88fc5f924da716e8aaf",
+      "constructorArgs": []
+    },
+    "UniswapV2Router02": {
+      "address": "0xa1ae04767893d81bed19272fee30746132e339de",
+      "transaction": "0x3447a1e38b1faf6312b70beee5ccaa93bba4e39986fe2a37dd4a766408ddaf46",
+      "runtimeCodeHash": "0x0ef3907009015f735e5176b63180d77a51b63b033b063f9f843bf35febe1e294",
+      "constructorArgs": [
+        "0x9c074d5f07ab2ad10bb00dfecbf22c14cd1de611",
+        "0x2c86de6dc916d593d4f029e9243ca24c82e13f82"
+      ]
+    },
+    "FixedPriceLaunchpad": {
+      "address": "0x3fed4122a1a924dcd0fd7ede9afd2dbba964b0c1",
+      "transaction": "0xc48e973ed87050a49f1f2ec69f8f960876c11b8f0a12affb182cc905aa1935b4",
+      "runtimeCodeHash": "0x0208457aed55eca86bac92506814776e4c2691506b28f9e74463f2ac5741243d",
+      "constructorArgs": [
+        "0x1A86d3148df478a1071e9D3D4825C99FB75ec964",
+        "0x995ac9f68d8fb92d240064692fa63af7cc02663c",
+        "0xece294e9110fb62e7fbd39b0b7d5b85934b69590",
+        "1790867983",
+        "1791472483",
+        "1000000000",
+        "200000000000",
+        "2000000000000000000000000000000"
+      ]
+    }
+  },
+  "transactions": [
+    {
+      "label": "Deploy TestUSDC",
+      "hash": "0x4dbec3db6598abd409894fbcbaab4360b803efd4410b244c34be5c1906037fdf",
+      "status": "success",
+      "block": "64965834",
+      "gasUsed": "640362",
+      "gasCost": "16009050000000000"
+    },
+    {
+      "label": "Deploy TestETH",
+      "hash": "0x31b319123ae95886d33c35dab5cb36383e94d4532e31ec42976c39e34ea89511",
+      "status": "success",
+      "block": "64965838",
+      "gasUsed": "640386",
+      "gasCost": "16009650000000000"
+    },
+    {
+      "label": "Deploy TestORBIT",
+      "hash": "0xa36968963d6fcb481355880f0a1f15b5776d11cd89932605c98048348f46c6bc",
+      "status": "success",
+      "block": "64965842",
+      "gasUsed": "662709",
+      "gasCost": "16567725000000000"
+    },
+    {
+      "label": "Deploy UniswapV2Factory",
+      "hash": "0xe8a7e26ab8f5755b9f9f58b43c20b847c7c34d9a70544139ffaa7461d08b3269",
+      "status": "success",
+      "block": "64965848",
+      "gasUsed": "3051511",
+      "gasCost": "76287775000000000"
+    },
+    {
+      "label": "Deploy WrappedNativeUSDC",
+      "hash": "0xde8bbbb0b166af860bf7be710fd44740151cfa958638799d144f7b0c46df4362",
+      "status": "success",
+      "block": "64965854",
+      "gasUsed": "604440",
+      "gasCost": "15111000000000000"
+    },
+    {
+      "label": "Deploy UniswapV2Router02",
+      "hash": "0x3447a1e38b1faf6312b70beee5ccaa93bba4e39986fe2a37dd4a766408ddaf46",
+      "status": "success",
+      "block": "64965863",
+      "gasUsed": "4757729",
+      "gasCost": "118943225000000000"
+    },
+    {
+      "label": "Approve initial tUSDC liquidity",
+      "hash": "0x766d7586c369b0bb5f6d2c25c3dfc52b820024ce4cde85751a45f945d7e80730",
+      "status": "success",
+      "block": "64965874",
+      "gasUsed": "46347",
+      "gasCost": "1158675000000000"
+    },
+    {
+      "label": "Approve initial tETH liquidity",
+      "hash": "0x21d55e8d6a681edcdecf1c61b5a4ea65123c3f1ecf17f5be3819a41cf5fd9f49",
+      "status": "success",
+      "block": "64965878",
+      "gasUsed": "46383",
+      "gasCost": "1159575000000000"
+    },
+    {
+      "label": "Seed tUSDC-tETH pool",
+      "hash": "0xea168c03941fea7c393efa2dbc409bfb327041f8931b67fc48d101bdaada80a9",
+      "status": "success",
+      "block": "64965882",
+      "gasUsed": "2713562",
+      "gasCost": "67839050000000000"
+    },
+    {
+      "label": "Deploy FixedPriceLaunchpad",
+      "hash": "0xc48e973ed87050a49f1f2ec69f8f960876c11b8f0a12affb182cc905aa1935b4",
+      "status": "success",
+      "block": "64965886",
+      "gasUsed": "1134468",
+      "gasCost": "28361700000000000"
+    },
+    {
+      "label": "Fund full launchpad inventory",
+      "hash": "0x657de446b6288801ff68d1f3049f75b89713aa7a7d7f8d527d1e12e7ef56b209",
+      "status": "success",
+      "block": "64965890",
+      "gasUsed": "51610",
+      "gasCost": "1290250000000000"
+    }
+  ],
+  "gasSpent": "358737675000000000",
+  "steps": {
+    "Approve initial tUSDC liquidity": "0x766d7586c369b0bb5f6d2c25c3dfc52b820024ce4cde85751a45f945d7e80730",
+    "Approve initial tETH liquidity": "0x21d55e8d6a681edcdecf1c61b5a4ea65123c3f1ecf17f5be3819a41cf5fd9f49",
+    "Seed tUSDC-tETH pool": "0xea168c03941fea7c393efa2dbc409bfb327041f8931b67fc48d101bdaada80a9",
+    "Fund full launchpad inventory": "0x657de446b6288801ff68d1f3049f75b89713aa7a7d7f8d527d1e12e7ef56b209"
+  },
+  "deployer": "0x1A86d3148df478a1071e9D3D4825C99FB75ec964",
+  "pool": {
+    "address": "0xD2b4A96E2a39e66A33f4B0eC86150b48eB9a61aF",
+    "token0": "0x995ac9f68d8fb92d240064692fa63af7cc02663c",
+    "token1": "0x461124bf2a8677df03b9f7560060d81442551124",
+    "seededUSDC": "268432",
+    "seededETH": "100",
+    "fixtureLiquidity": true
+  },
+  "sale": {
+    "start": "1790867983",
+    "end": "1791472483",
+    "softCap": "1000000000",
+    "hardCap": "200000000000",
+    "rate": "2000000000000000000000000000000"
+  },
+  "completedAt": "2026-10-01T15:14:49.792Z",
+  "liveExecutionEnabled": true,
+  "warning": "Testnet only. All t* assets are freely minted, valueless test tokens. Launchpad unaudited; no Aave lending deployment. WrappedNativeUSDC uses legacy WETH9 metadata but wraps native USDC.",
+  "smoke": {
+    "completedAt": "2026-10-01T15:22:05.491Z",
+    "transactions": [
+      {
+        "label": "Approve 1 tUSDC for swap",
+        "hash": "0x6378b0bb9ba4afed2e10d998f43c5fbb564fdb22c2d2d0c826ba772b8cae0cc2",
+        "gasCost": "1158375000000000"
+      },
+      {
+        "label": "Swap 1 tUSDC",
+        "hash": "0xef8c2c22f999ce32e529cd7ee4f88b7ed477bd37fd8c76454b86f40e48c12153",
+        "gasCost": "3286475000000000"
+      },
+      {
+        "label": "Approve 10 tUSDC sale payment",
+        "hash": "0xfa67a7f7f9f9ebd26360a9ff3f2f56f90d6a68ec6b2052fb7f08146eed014586",
+        "gasCost": "1158375000000000"
+      },
+      {
+        "label": "Contribute 10 tUSDC",
+        "hash": "0x36b0f7bea32072e1ee12800f2505f233187a16c176badecf4e40a8c9ccb4750c",
+        "gasCost": "3977525000000000"
+      }
+    ],
+    "swapReceivedETH": "371414845098197",
+    "saleAllocation": "20000000000000000000",
+    "gasSpent": "9580750000000000"
+  }
+}

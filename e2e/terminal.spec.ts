@@ -41,8 +41,14 @@ test('invalid inputs, modal dismissal, token selection and live gates', async ({
   await page.locator('.token-options button').click();
   await expect(page.locator('.token-select').first()).toContainText('EURC');
   await page.getByRole('button', { name: 'Live', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Live router unavailable' })).toBeDisabled();
-  await expect(page.locator('.notice').first()).toContainText('No approvals or transactions');
+  await expect(page.getByRole('button', { name: 'Review live swap' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Approve exact tUSDC' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Connect wallet to transact' })).toBeVisible();
+  await expect(page.locator('.notice').first()).toContainText(
+    'Lending and borrowing remain unavailable',
+  );
+  await page.getByRole('button', { name: 'Lend', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Supply', exact: true })).toBeDisabled();
 });
 
 test('mobile navigation and layout', async ({ page }) => {

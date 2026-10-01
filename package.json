@@ -10,6 +10,10 @@
     "test": "vitest run src contracts",
     "test:e2e": "playwright test",
     "contracts:check": "node scripts/check-contracts.mjs",
+    "wallet:create": "node scripts/testnet-wallet.mjs create",
+    "wallet:status": "node scripts/testnet-wallet.mjs status",
+    "deploy:testnet": "node scripts/deploy-testnet.mjs",
+    "smoke:testnet": "node scripts/smoke-testnet.mjs",
     "format": "prettier --write src e2e scripts *.ts *.json *.md *.yaml docs"
   },
   "dependencies": {
@@ -24,7 +28,10 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@uniswap/v2-core": "1.0.1",
+    "@uniswap/v2-periphery": "1.1.0-beta.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "ethers": "^6.17.0",
     "ganache": "^7.9.2",
     "prettier": "^3.9.9",
     "solc": "^0.8.30",

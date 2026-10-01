@@ -27,9 +27,11 @@ pnpm preview
 
 ## Important: demo is not production trading
 
-**All prices, charts, TVL, APR/APY, token balances, pools, and projects are illustrative.** Demo trades only update browser storage. XP is editable local progress, not a token, payout, or proof of onchain activity. Sale contributions grant no actual allocation or refund claim.
+**Demo prices, charts, TVL, APR/APY, balances, pools, and projects are illustrative.** Demo trades only update browser storage. XP is editable local progress, not a token, payout, or proof of onchain activity. Demo sale contributions grant no actual allocation or refund claim.
 
-Live mode is **read-only**. No verified Arc router/lending market/launchpad addresses ship with the app. The transaction adapters are not wired into the UI. Filling environment variables alone does **not** enable transactions. We do not represent an Aave deployment or a Uniswap fork as existing on Arc without verification.
+**Live mode now supports Arc testnet swaps and a deployed test sale.** The canonical Uniswap V2 factory/router artifacts are deployed, a tUSDC/tETH pool is seeded, and the experimental launchpad has full inventory. Connect a wallet on Arc testnet, claim valueless faucet assets, approve the exact payment, then review and sign. The UI checks runtime bytecode hashes against the committed deployment manifest. This is integrity checking, not an audit or explorer source verification.
+
+**tUSDC is not Circle USDC; tETH is not real ETH.** Both are freely minted test assets with no financial value. Only native testnet USDC pays gas. The legacy WETH9 wrapper required by Router02 wraps native USDC on Arc; native-token swaps and that wrapper are intentionally not exposed in the UI. No verified Aave lending market is enabled. Live portfolio/indexer data and server-verified XP remain outstanding.
 
 The launchpad is **new, unaudited code using existing OpenZeppelin primitives**, not an audited copied sale contract. Local EVM tests do not establish safety for real funds. Do not deploy with real money without independent review.
 
@@ -46,7 +48,19 @@ Source: [official Arc connection reference](https://docs.arc.io/arc/references/c
 
 **ERC-20 USDC and native gas USDC are not interchangeable.** Verify each ERC-20 address and its `decimals()`; the demo USDC uses 6 decimals. ETH/BTC demo symbols do not imply canonical bridged Arc assets.
 
-Copy `.env.example` to `.env.local` only after deployment verification. Client-side variables are public; never put private keys in `VITE_*` variables.
+The live testnet allowlist is `deployments/arc-testnet.json`; changing environment variables does not change the UI's approved contracts. Client-side variables are public; never put private keys in `VITE_*` variables.
+
+## Deployed testnet stack
+
+| Contract                | Address                                      |
+| ----------------------- | -------------------------------------------- |
+| Uniswap V2 Router02     | `0xa1ae04767893d81bed19272fee30746132e339de` |
+| Uniswap V2 Factory      | `0x9c074d5f07ab2ad10bb00dfecbf22c14cd1de611` |
+| Launchpad               | `0x3fed4122a1a924dcd0fd7ede9afd2dbba964b0c1` |
+| Test tUSDC (6 decimals) | `0x995ac9f68d8fb92d240064692fa63af7cc02663c` |
+| Test tETH (18 decimals) | `0x461124bf2a8677df03b9f7560060d81442551124` |
+
+Deployment and actual swap/contribution smoke-test receipts are committed in `deployments/arc-testnet.json`. Wallet secrets are **not**. See [testnet operations](docs/TESTNET.md) for wallet, deployment, and hosting commands.
 
 ## Tests
 
@@ -69,7 +83,9 @@ src/styles.css                    Responsive visual system
 src/lib/market.ts                  Demo fixtures, amount/slippage utilities, storage
 src/lib/arc.ts                     Arc chain and deployment checks
 src/lib/useWallet.ts               Injected wallet lifecycle
-src/lib/protocols.ts               Canonical router/Aave adapters (not UI-connected)
+src/lib/protocols.ts               Canonical router/Aave adapters
+src/LiveTerminal.tsx               Live testnet faucet, swap, and sale transaction UI
+src/lib/deployed.ts                Manifest allowlist and runtime integrity checks
 contracts/src/FixedPriceLaunchpad.sol
 contracts/launchpad.test.js        Local EVM escrow integration tests
 scripts/check-contracts.mjs        Solidity compilation
@@ -78,6 +94,6 @@ scripts/check-contracts.mjs        Solidity compilation
 
 ## Next production milestone
 
-See [deployment checklist](docs/DEPLOYMENT.md). Work outstanding: verified live deployments/token allowlist, actual liquidity and route discovery, live market/indexer data, transaction UI with approval/receipt lifecycle, lending risk/health-factor UI, audited sale deployments, and receipt-verified server-side XP. A production lending market needs oracles, governance, reserves and liquidation infrastructure—not just a copied pool contract.
+See [deployment checklist](docs/DEPLOYMENT.md). Work outstanding: independent security review/source verification, real-asset integrations and route discovery, live market/indexer data, transaction replacement/finality hardening, lending risk/health-factor UI, audited sale deployments, and receipt-verified server-side XP. A production lending market needs oracles, governance, reserves and liquidation infrastructure—not just a copied pool contract.
 
 Upstream protocols: [Uniswap V2 Router](https://github.com/Uniswap/v2-periphery), [Aave V3](https://github.com/aave/aave-v3-core), [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts). Dependencies are reused as packages; upstream license notices remain intact.
