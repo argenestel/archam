@@ -16,3 +16,7 @@ coverage/
 contracts/artifacts/
 test-results/
 playwright-report/
+*.keystore.json
+*.password
+*.pem
+*.key
