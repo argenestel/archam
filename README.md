@@ -14,6 +14,12 @@ pnpm build
 pnpm preview
 ```
 
+## UI and connectivity
+
+The live workspace defaults to a two-pane swap/pool view with real reserve reads, self-hosted fonts, and mobile layout. See [design direction](docs/DESIGN.md).
+
+Browser RPC reads use same-origin proxy routes with official QuickNode/dRPC backups, friendly errors, and retry/recovery controls. See [RPC troubleshooting and hosting requirements](docs/RPC.md). Vite development/preview and the Nginx package include the routes; static-only hosts must configure equivalent proxies.
+
 ## What's working
 
 - **Trade:** token picker, pair reversal, input validation, balance/MAX, illustrative quotes, fee/slippage preview, review dialog, simulated settlement.

@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('swap, supply, withdraw, launch, portfolio and XP persist', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: 'Demo', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Your next move starts here.' })).toBeVisible();
   await page.getByRole('button', { name: 'Review swap' }).click();
   await page.getByRole('button', { name: 'Simulate swap' }).click();
@@ -28,6 +29,7 @@ test('swap, supply, withdraw, launch, portfolio and XP persist', async ({ page }
 
 test('invalid inputs, modal dismissal, token selection and live gates', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: 'Demo', exact: true }).click();
   await page.getByLabel('You pay').fill('-100');
   await expect(page.getByRole('button', { name: 'Enter an amount' })).toBeDisabled();
   await page.getByLabel('You pay').fill('999999');
@@ -44,9 +46,7 @@ test('invalid inputs, modal dismissal, token selection and live gates', async ({
   await expect(page.getByRole('button', { name: 'Review live swap' })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Approve exact tUSDC' })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Connect wallet to transact' })).toBeVisible();
-  await expect(page.locator('.notice').first()).toContainText(
-    'Lending and borrowing remain unavailable',
-  );
+  await expect(page.locator('.testnet-disclosure')).toContainText('Testnet assets');
   await page.getByRole('button', { name: 'Lend', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Supply', exact: true })).toBeDisabled();
 });
@@ -54,6 +54,7 @@ test('invalid inputs, modal dismissal, token selection and live gates', async ({
 test('mobile navigation and layout', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await page.getByRole('button', { name: 'Demo', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Review swap' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.getByRole('button', { name: 'Toggle menu' }).click();

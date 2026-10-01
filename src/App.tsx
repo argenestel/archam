@@ -159,7 +159,7 @@ function Modal({
 export default function App() {
   const [page, setPage] = useState('Trade');
   const [mobileNav, setMobileNav] = useState(false);
-  const [mode, setMode] = useState<'demo' | 'live'>('demo');
+  const [mode, setMode] = useState<'demo' | 'live'>('live');
   const [demo, setDemo] = useState<DemoState>(loadDemo);
   const [from, setFrom] = useState(tokens[0]);
   const [to, setTo] = useState(tokens[1]);
@@ -290,7 +290,7 @@ export default function App() {
           <img src="/orbit.svg" alt="" />
           orbit<span className="brand-dot">.</span>
         </a>
-        <div className="workspace-label">YOUR DEFI, IN ONE ORBIT</div>
+        <div className="workspace-label">Your DeFi workspace</div>
         <nav aria-label="Main navigation">
           {nav.map(({ name, icon: Icon }) => (
             <button
@@ -368,11 +368,13 @@ export default function App() {
           <div className="page-heading">
             <div>
               <div className="eyebrow">
-                <span /> BUILT FOR ARC
+                <span /> Arc workspace
               </div>
               <h1>
                 {page === 'Trade'
-                  ? 'Your next move starts here.'
+                  ? demoMode
+                    ? 'Your next move starts here.'
+                    : 'A simpler way to swap.'
                   : page === 'Discover'
                     ? 'Find your next opportunity.'
                     : page === 'Lend'
@@ -383,7 +385,9 @@ export default function App() {
               </h1>
               <p>
                 {page === 'Trade'
-                  ? 'Swap, earn, and explore. A simpler way to DeFi.'
+                  ? demoMode
+                    ? 'Swap, earn, and explore. A simpler way to DeFi.'
+                    : 'Swap test tokens on Arc. No real-value assets.'
                   : page === 'Discover'
                     ? 'Explore liquidity pools and projects taking off on Arc.'
                     : page === 'Lend'
@@ -402,7 +406,7 @@ export default function App() {
               </small>
             </div>
           </div>
-          {!demoMode && liveNotice}
+          {!demoMode && page !== 'Trade' && page !== 'Discover' && liveNotice}
           {!demoMode && (page === 'Trade' || page === 'Discover') && (
             <LiveTerminal
               address={wallet.address}

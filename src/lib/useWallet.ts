@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { formatUnits, type EIP1193Provider } from 'viem';
 import { arcTestnet, client } from './arc';
+import { userFacingError } from './errors';
 
 declare global {
   interface Window {
@@ -56,7 +57,7 @@ export function useWallet() {
       setAddress(accounts[0]);
       setChainId(Number(await window.ethereum.request({ method: 'eth_chainId' })));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Wallet connection declined.');
+      setError(userFacingError(e, 'Could not connect the wallet. Open it and try again.'));
     } finally {
       setPending(false);
     }
@@ -88,7 +89,7 @@ export function useWallet() {
       }
       setChainId(Number(await window.ethereum.request({ method: 'eth_chainId' })));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Network switch declined.');
+      setError(userFacingError(e, 'Could not switch networks. Select Arc testnet in your wallet.'));
     } finally {
       setPending(false);
     }
