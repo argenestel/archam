@@ -7,3 +7,12 @@ contracts/cache/
 .agents/
 .codex/
 *.log
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.local
+coverage/
+contracts/artifacts/
+test-results/
+playwright-report/
