@@ -3,11 +3,12 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import '@fontsource-variable/dm-sans';
 import '@fontsource-variable/space-grotesk';
-import './styles.css';
-import './live.css';
-import './terminal-design.css';
+import './app.css';
+import ErrorBoundary from './components/ErrorBoundary';
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>,
 );

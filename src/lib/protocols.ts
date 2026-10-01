@@ -1,4 +1,4 @@
-import { erc20Abi, parseAbi, type Address, type WalletClient } from 'viem';
+import { erc20Abi, parseAbi, type Address, type Hash, type WalletClient } from 'viem';
 import { arcTestnet, client, verifyDeployment } from './arc';
 import { minimumOutput } from './market';
 
@@ -61,6 +61,7 @@ export async function approveExact(
   token: Address,
   spender: Address,
   amount: bigint,
+  onSubmitted?: (hash: Hash) => void,
 ) {
   const account = await signer(wallet);
   if (amount <= 0n) throw new Error('Amount must be positive');
@@ -84,8 +85,13 @@ export async function approveExact(
     functionName: 'approve',
     args: [spender, amount],
   });
-  const hash = await wallet.writeContract({ ...request, chain: arcTestnet });
-  const receipt = await client.waitForTransactionReceipt({ hash });
+  const hash = await wallet.writeContract({
+    ...request,
+    account: await signer(wallet),
+    chain: arcTestnet,
+  });
+  onSubmitted?.(hash);
+  const receipt = await client.waitForTransactionReceipt({ hash, timeout: 90000 });
   if (receipt.status !== 'success') throw new Error('Approval reverted');
   return hash;
 }
@@ -103,7 +109,12 @@ export async function revokeAllowance(wallet: WalletClient, token: Address, spen
   await signer(wallet);
   return wallet.writeContract({ ...request, chain: arcTestnet });
 }
-export async function executeV2(wallet: WalletClient, quote: Quote, slippageBps: number) {
+export async function executeV2(
+  wallet: WalletClient,
+  quote: Quote,
+  slippageBps: number,
+  onSubmitted?: (hash: Hash) => void,
+) {
   const account = await signer(wallet);
   if (
     quote.chainId !== arcTestnet.id ||
@@ -125,8 +136,13 @@ export async function executeV2(wallet: WalletClient, quote: Quote, slippageBps:
     functionName: 'swapExactTokensForTokens',
     args: [quote.amountIn, min, quote.path, account.address, block.timestamp + 300n],
   });
-  const hash = await wallet.writeContract({ ...request, chain: arcTestnet });
-  const receipt = await client.waitForTransactionReceipt({ hash });
+  const hash = await wallet.writeContract({
+    ...request,
+    account: await signer(wallet),
+    chain: arcTestnet,
+  });
+  onSubmitted?.(hash);
+  const receipt = await client.waitForTransactionReceipt({ hash, timeout: 90000 });
   if (receipt.status !== 'success') throw new Error('Swap reverted');
   return receipt;
 }

@@ -24,6 +24,7 @@ test('swap, supply, withdraw, launch, portfolio and XP persist', async ({ page }
   await page.getByRole('button', { name: 'Rewards', exact: false }).first().click();
   await expect(page.locator('.reward-level')).toContainText('90 XP');
   await page.reload();
+  await page.getByRole('button', { name: 'Demo', exact: true }).click();
   await expect(page.locator('.xp-mini')).toContainText('90 demo XP');
 });
 
@@ -43,12 +44,15 @@ test('invalid inputs, modal dismissal, token selection and live gates', async ({
   await page.locator('.token-options button').click();
   await expect(page.locator('.token-select').first()).toContainText('EURC');
   await page.getByRole('button', { name: 'Live', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Review live swap' })).toBeDisabled();
-  await expect(page.getByRole('button', { name: 'Approve exact tUSDC' })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Connect wallet to transact' })).toBeVisible();
-  await expect(page.locator('.testnet-disclosure')).toContainText('Testnet assets');
-  await page.getByRole('button', { name: 'Lend', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Supply', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Approve tUSDC' })).toHaveCount(0);
+  await expect(page.locator('.product-header nav')).toContainText('Swap');
+  await expect(page.locator('.sidebar')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Testnet only', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('not production-ready');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Activity', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Activity', exact: true })).toBeVisible();
 });
 
 test('mobile navigation and layout', async ({ page }) => {

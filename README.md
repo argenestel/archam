@@ -1,5 +1,7 @@
 # Orbit — a simpler DeFi terminal on Arc
 
+**Release status: testnet preview, not production-ready.** See the explicit [release gates](docs/RELEASE.md).
+
 A React + TypeScript terminal with a Sushi/Aave-inspired workflow and a soft, Jumper-inspired purple palette. Responsive desktop/mobile UI, native dialogs, keyboard navigation, and a persistent virtual trading workspace.
 
 ## Run
@@ -9,18 +11,24 @@ Node 22+, pnpm 11:
 ```sh
 pnpm install
 pnpm dev
-# Open the URL Vite prints (default http://127.0.0.1:5173)
+# Open the URL Vite prints (default http://localhost:5191 (IPv4 and IPv6))
 pnpm build
 pnpm preview
 ```
 
 ## UI and connectivity
 
-The live workspace defaults to a two-pane swap/pool view with real reserve reads, self-hosted fonts, and mobile layout. See [design direction](docs/DESIGN.md).
+The live workspace is a compact, single-action swap card. Faucet controls, real reserve reads, contract details and risk information are revealed on demand. Demo lending/rewards remain separate and lazy-loaded; their CSS is scoped to prevent live-mode style leaks. See [design direction](docs/DESIGN.md).
 
 Browser RPC reads use same-origin proxy routes with official QuickNode/dRPC backups, friendly errors, and retry/recovery controls. See [RPC troubleshooting and hosting requirements](docs/RPC.md). Vite development/preview and the Nginx package include the routes; static-only hosts must configure equivalent proxies.
 
-## What's working
+## Current live preview
+
+Swap test tokens, contribute to the test sale, and inspect locally recorded activity. Submitted hashes are shown before confirmation; unresolved submissions survive reload and require a status check before another submission through the form. Wallet rejection and receipt failures are distinct. These safeguards improve the preview but do not complete every production transaction edge case.
+
+## Separate demo workspace
+
+The **Demo** footer link opens the virtual dashboard:
 
 - **Trade:** token picker, pair reversal, input validation, balance/MAX, illustrative quotes, fee/slippage preview, review dialog, simulated settlement.
 - **Discover:** example liquidity pools and three fictional launchpad sales; virtual contributions with balance checks.
@@ -84,11 +92,15 @@ Ganache may report a missing native µWS binary on Node 22; it falls back to Jav
 ## Structure
 
 ```text
-src/App.tsx                       Terminal screens and demo workflows
-src/styles.css                    Responsive visual system
+src/App.tsx                       Live shell, wallet and local activity
+src/app.css                       Single live visual system
+src/DemoWorkspace.tsx              Separate lazy-loaded virtual dashboard
+src/styles.css                    Scoped demo styles
 src/lib/market.ts                  Demo fixtures, amount/slippage utilities, storage
 src/lib/arc.ts                     Arc chain and deployment checks
 src/lib/useWallet.ts               Injected wallet lifecycle
+src/lib/useLiveTerminal.ts         Live reads, quotes and transaction lifecycle
+src/lib/transactions.ts            Local submitted-hash and outcome records
 src/lib/protocols.ts               Canonical router/Aave adapters
 src/LiveTerminal.tsx               Live testnet faucet, swap, and sale transaction UI
 src/lib/deployed.ts                Manifest allowlist and runtime integrity checks

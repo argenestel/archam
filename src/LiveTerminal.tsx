@@ -1,34 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   ArrowDown,
-  ArrowRight,
   Check,
+  ChevronDown,
   ExternalLink,
   RefreshCw,
+  Settings2,
   ShieldCheck,
 } from 'lucide-react';
-import {
-  createWalletClient,
-  custom,
-  erc20Abi,
-  formatUnits,
-  type Address,
-  type Hash,
-} from 'viem';
-import { arcTestnet, client } from './lib/arc';
-import {
-  deployedTokens,
-  deployedRouter,
-  deployedLaunchpad,
-  deployment,
-  faucetAbi,
-  launchpadAbi,
-  parseTokenAmount,
-  verifyStack,
-} from './lib/deployed';
-import { approveExact, revokeAllowance, executeV2, quoteV2, type Quote } from './lib/protocols';
+import { formatUnits } from 'viem';
+import { arcTestnet } from './lib/arc';
+import { deployedTokens, deployedRouter, deployedLaunchpad } from './lib/deployed';
+import { useLiveTerminal } from './lib/useLiveTerminal';
 import { minimumOutput } from './lib/market';
-import { userFacingError } from './lib/errors';
+import { formatAmount } from './lib/format';
+import Dialog from './components/Dialog';
 import PoolContext from './PoolContext';
 
 type Props = {
@@ -36,707 +22,579 @@ type Props = {
   chainId?: number;
   page: string;
   openWallet: () => void;
-  slippageBps: number;
+  slippageBps?: number;
 };
+const display = formatAmount;
 export default function LiveTerminal({ address, chainId, page, openWallet, slippageBps }: Props) {
-  const [ready, setReady] = useState(false);
-  const [checking, setChecking] = useState(true);
-  const [checkAttempt, setCheckAttempt] = useState(0);
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState('');
-  const [hash, setHash] = useState<Hash>();
-  const [status, setStatus] = useState('');
-  const [reverse, setReverse] = useState(false);
-  const [amount, setAmount] = useState('100');
-  const [quote, setQuote] = useState<Quote>();
-  const [quoteError, setQuoteError] = useState('');
-  const [tick, setTick] = useState(0);
-  const [balances, setBalances] = useState<Record<string, bigint>>({});
-  const [allowance, setAllowance] = useState(0n);
-  const [saleAllowance, setSaleAllowance] = useState(0n);
-  const [saleAmount, setSaleAmount] = useState('100');
-  const [sale, setSale] = useState<{
-    raised: bigint;
-    contribution: bigint;
-    allocation: bigint;
-    successful: boolean;
-    cancelled: boolean;
-    timestamp: bigint;
-  }>();
-  const [review, setReview] = useState(false);
-  const from = deployedTokens[reverse ? 1 : 0],
-    to = deployedTokens[reverse ? 0 : 1];
-  const connected = !!address && chainId === arcTestnet.id;
-  let input = 0n,
-    contribution = 0n;
-  try {
-    input = parseTokenAmount(amount, from.decimals);
-  } catch {
-    /* invalid input disables submit */
+  const [tolerance, setTolerance] = useState(50);
+  const [tokenSide, setTokenSide] = useState<'sell' | 'buy'>('sell');
+  const [dialog, setDialog] = useState<'settings' | 'faucet' | 'risk' | 'token' | 'sale' | null>(
+    null,
+  );
+  const bps = slippageBps ?? tolerance;
+  const t = useLiveTerminal(address, chainId, page, bps);
+  const trade = page === 'Trade';
+  const minimum = t.quote ? minimumOutput(t.quote.amountOut, bps) : 0n;
+  const needsReset = t.allowance > 0n && t.allowance < t.input;
+  const saleValid =
+    t.connected &&
+    t.ready &&
+    t.saleOpen &&
+    t.contribution > 0n &&
+    t.contribution <= (t.balances.tUSDC || 0n) &&
+    !t.blocked;
+  const swapDisabled =
+    t.connected &&
+    (!t.ready || !t.input || !t.quote || t.input > (t.balances[t.from.symbol] || 0n) || t.blocked);
+  const primaryLabel = !t.connected
+    ? 'Connect wallet to transact'
+    : t.phase === 'unknown'
+      ? 'Check transaction status'
+      : t.busy
+        ? t.busy + '…'
+        : !t.ready
+          ? 'Connection unavailable'
+          : !t.amount
+            ? 'Enter an amount'
+            : !t.input
+              ? 'Invalid amount'
+              : t.input > (t.balances[t.from.symbol] || 0n)
+                ? `Insufficient ${t.from.symbol}`
+                : !t.quote
+                  ? 'Getting quote…'
+                  : needsReset
+                    ? 'Reset allowance'
+                    : t.allowance < t.input
+                      ? `Approve ${t.from.symbol}`
+                      : 'Review swap';
+  function primaryAction() {
+    if (!t.connected) return openWallet();
+    if (t.phase === 'unknown') return t.checkTransaction();
+    if (needsReset) return t.resetSwap();
+    if (t.allowance < t.input) return t.approveSwap();
+    t.setReview(true);
   }
-  try {
-    contribution = parseTokenAmount(saleAmount, 6);
-  } catch {
-    /* invalid input disables submit */
-  }
-  const currentKey = useRef('');
-  currentKey.current = `${address}:${chainId}:${from.address}`;
-  const pollPaused = useRef(false);
-  pollPaused.current = !!busy || review;
-  const refresh = useCallback(async () => {
-    const key = `${address}:${chainId}:${from.address}`;
-    const block = await client.getBlock();
-    const [raised, successful, cancelled] = await Promise.all([
-      client.readContract({
-        address: deployedLaunchpad,
-        abi: launchpadAbi,
-        functionName: 'totalRaised',
-      }),
-      client.readContract({
-        address: deployedLaunchpad,
-        abi: launchpadAbi,
-        functionName: 'successful',
-      }),
-      client.readContract({
-        address: deployedLaunchpad,
-        abi: launchpadAbi,
-        functionName: 'cancelled',
-      }),
-    ]);
-    if (currentKey.current !== key) return;
-    if (!address || chainId !== arcTestnet.id) {
-      setBalances({});
-      setAllowance(0n);
-      setSaleAllowance(0n);
-      setSale({
-        raised,
-        successful,
-        cancelled,
-        contribution: 0n,
-        allocation: 0n,
-        timestamp: block.timestamp,
-      });
-      return;
-    }
-    const account = address as Address;
-    const [values, approval, saleApproval, supplied, allocation] = await Promise.all([
-      Promise.all(
-        deployedTokens.map((t) =>
-          client.readContract({
-            address: t.address,
-            abi: erc20Abi,
-            functionName: 'balanceOf',
-            args: [account],
-          }),
-        ),
-      ),
-      client.readContract({
-        address: from.address,
-        abi: erc20Abi,
-        functionName: 'allowance',
-        args: [account, deployedRouter],
-      }),
-      client.readContract({
-        address: deployedTokens[0].address,
-        abi: erc20Abi,
-        functionName: 'allowance',
-        args: [account, deployedLaunchpad],
-      }),
-      client.readContract({
-        address: deployedLaunchpad,
-        abi: launchpadAbi,
-        functionName: 'contributions',
-        args: [account],
-      }),
-      client.readContract({
-        address: deployedLaunchpad,
-        abi: launchpadAbi,
-        functionName: 'allocations',
-        args: [account],
-      }),
-    ]);
-    if (currentKey.current !== key) return;
-    setBalances(Object.fromEntries(deployedTokens.map((t, i) => [t.symbol, values[i]])));
-    setAllowance(approval);
-    setSaleAllowance(saleApproval);
-    setSale({
-      raised,
-      successful,
-      cancelled,
-      contribution: supplied,
-      allocation,
-      timestamp: block.timestamp,
-    });
-  }, [address, chainId, from.address]);
-  useEffect(() => {
-    let ignore = false;
-    setReady(false);
-    setChecking(true);
-    setError('');
-    verifyStack()
-      .then(() => {
-        if (!ignore) setReady(true);
-      })
-      .catch((e) => {
-        if (!ignore) setError(userFacingError(e));
-      })
-      .finally(() => {
-        if (!ignore) setChecking(false);
-      });
-    return () => {
-      ignore = true;
-    };
-  }, [checkAttempt]);
-  useEffect(() => {
-    if (ready || checking || busy) return;
-    const retry = setTimeout(() => setCheckAttempt((n) => n + 1), 15000);
-    return () => clearTimeout(retry);
-  }, [ready, checking, busy]);
-  useEffect(() => {
-    setBalances({});
-    setAllowance(0n);
-    setReview(false);
-    if (!ready) return;
-    refresh().catch((e) => {
-      setError(userFacingError(e));
-      setReady(false);
-    });
-    const timer = setInterval(() => {
-      if (pollPaused.current) return;
-      setTick((t) => t + 1);
-      refresh().catch((e) => {
-        setError(userFacingError(e));
-        setReady(false);
-      });
-    }, 15000);
-    return () => clearInterval(timer);
-  }, [ready, refresh]);
-  useEffect(() => {
-    let ignore = false;
-    setQuote(undefined);
-    setQuoteError('');
-    setReview(false);
-    if (!ready || !input) return;
-    const timer = setTimeout(
-      () =>
-        quoteV2(deployedRouter, input, [from.address, to.address])
-          .then((q) => {
-            if (!ignore) setQuote(q);
-          })
-          .catch((e) => {
-            if (!ignore) setQuoteError(userFacingError(e));
-          }),
-      350,
-    );
-    return () => {
-      ignore = true;
-      clearTimeout(timer);
-    };
-  }, [ready, input, from.address, to.address, tick]);
-  useEffect(() => {
-    setReview(false);
-  }, [slippageBps]);
-  async function getWallet() {
-    if (!window.ethereum || !address || !connected)
-      throw new Error('Connect your wallet on Arc testnet');
-    const wallet = createWalletClient({
-      account: address as Address,
-      chain: arcTestnet,
-      transport: custom(window.ethereum),
-    });
-    const accounts = await wallet.getAddresses();
-    if (
-      accounts[0]?.toLowerCase() !== address.toLowerCase() ||
-      (await wallet.getChainId()) !== arcTestnet.id
-    )
-      throw new Error('Wallet changed; reconnect and review');
-    await verifyStack();
-    return wallet;
-  }
-  async function action(label: string, fn: () => Promise<Hash | null>) {
-    if (busy) return;
-    setBusy(label);
-    setError('');
-    setStatus('Waiting for wallet confirmation…');
-    setHash(undefined);
-    setReview(false);
-    try {
-      const txHash = await fn();
-      if (txHash) {
-        setHash(txHash);
-        setStatus('Submitted. Waiting for confirmation…');
-        const receipt = await client.waitForTransactionReceipt({ hash: txHash, timeout: 120000 });
-        if (receipt.status !== 'success') throw new Error('Transaction reverted');
-      }
-      setStatus(`${label} confirmed on Arc testnet.`);
-      await refresh();
-      setTick((t) => t + 1);
-    } catch (e) {
-      setError(
-        userFacingError(e, 'Could not complete the request. Check your wallet and try again.'),
-      );
-      setStatus('');
-    } finally {
-      setBusy('');
-    }
-  }
-  async function contractAction(
-    kind: 'faucet' | 'contribute' | 'claim' | 'refund',
-    token = deployedTokens[0],
-  ): Promise<Hash> {
-    const wallet = await getWallet();
-    if (kind === 'faucet') {
-      const { request } = await client.simulateContract({
-        account: wallet.account,
-        address: token.address,
-        abi: faucetAbi,
-        functionName: 'faucet',
-      });
-      return wallet.writeContract({ ...request, chain: arcTestnet });
-    }
-    if (kind === 'contribute') {
-      const { request } = await client.simulateContract({
-        account: wallet.account,
-        address: deployedLaunchpad,
-        abi: launchpadAbi,
-        functionName: 'contribute',
-        args: [contribution],
-      });
-      return wallet.writeContract({ ...request, chain: arcTestnet });
-    }
-    const { request } = await client.simulateContract({
-      account: wallet.account,
-      address: deployedLaunchpad,
-      abi: launchpadAbi,
-      functionName: kind,
-    });
-    return wallet.writeContract({ ...request, chain: arcTestnet });
-  }
-  const start = BigInt(deployment.sale.start),
-    end = BigInt(deployment.sale.end);
-  const saleOpen = !!sale && !sale.cancelled && sale.timestamp >= start && sale.timestamp < end;
-  const failed = !!sale && (sale.cancelled || (sale.timestamp >= end && !sale.successful));
-  const validSwap =
-    ready &&
-    connected &&
-    input > 0n &&
-    input <= (balances[from.symbol] || 0n) &&
-    !!quote &&
-    quote.amountIn === input &&
-    quote.path[0] === from.address &&
-    quote.path[quote.path.length - 1] === to.address &&
-    !busy;
-  const explorer = `${arcTestnet.blockExplorers.default.url}/tx/`;
   return (
-    <section className="live-terminal">
-      <div className="section-top terminal-heading">
-        <div>
-          <h2>{page === 'Discover' ? 'Orbit testnet launchpad' : 'Arc spot market'}</h2>
-          <p className="subtle">Onchain quotes. Wallet-confirmed transactions.</p>
-        </div>
-        <span className="badge-green">
-          <ShieldCheck size={14} />
-          {ready ? 'Arc connected' : checking ? 'Connecting to Arc…' : 'Connection interrupted'}
-        </span>
-      </div>
-      <details className="testnet-disclosure">
-        <summary>
-          <ShieldCheck size={16} />
-          Testnet assets, not real USDC or ETH<span>Read risks</span>
-        </summary>
-        <p>
-          tUSDC and tETH are freely minted test assets with no value. Native testnet USDC pays gas.
-          This deployment is experimental and unaudited. Never send real-value assets.
-        </p>
-      </details>
-      {!ready && (
-        <div className="connection-recovery" role="status">
-          <div>
-            <strong>{checking ? 'Finding a route to Arc' : 'We can’t reach Arc right now'}</strong>
-            <p>
-              {checking
-                ? 'Checking the network and deployed contracts.'
-                : 'Trading is paused. Check your connection and try again.'}
-            </p>
+    <div className="exchange-view">
+      <div className="exchange-card">
+        <div className="exchange-title">
+          <div className="exchange-tabs">
+            <h1>{trade ? 'Swap' : 'Launchpad'}</h1>
+            {trade && <span>Arc</span>}
           </div>
-          <button
-            className="secondary"
-            disabled={checking}
-            onClick={() => setCheckAttempt((n) => n + 1)}
-          >
-            <RefreshCw size={15} />
-            {checking ? 'Connecting…' : 'Retry connection'}
-          </button>
-        </div>
-      )}
-      <div className="live-layout">
-        <div className="live-workspace">
-          {!connected && (
-            <button className="primary full" onClick={openWallet}>
-              {address ? 'Switch wallet to Arc testnet' : 'Connect wallet to transact'}
+          <div className="exchange-tools">
+            <span
+              className={`connection-dot ${t.ready ? 'online' : ''}`}
+              title={t.ready ? 'Arc connected' : 'Connection unavailable'}
+              aria-label={t.ready ? 'Arc connected' : 'Connection unavailable'}
+            />
+            <button
+              className="quiet-button"
+              aria-label="Swap settings"
+              onClick={() => setDialog('settings')}
+            >
+              <Settings2 size={19} />
             </button>
-          )}
-          <div className="live-faucets">
-            <div className="faucet-heading">
-              <h3>Start with test tokens</h3>
-              <span>Free, once per wallet</span>
-            </div>
-            {deployedTokens.map((t) => (
-              <div key={t.symbol}>
-                <div>
-                  <strong>{t.symbol}</strong>
-                  <span>{formatUnits(balances[t.symbol] || 0n, t.decimals)} available</span>
-                </div>
-                <button
-                  className="secondary"
-                  disabled={!ready || !connected || !!busy}
-                  onClick={() => action(`Claim ${t.symbol}`, () => contractAction('faucet', t))}
-                >
-                  Claim test {t.symbol}
-                </button>
-              </div>
-            ))}
           </div>
-          {page === 'Trade' && (
-            <div className="live-trade-content">
-              <div className="live-form-title">
-                <h3>Swap</h3>
-                <span>Uniswap V2</span>
+        </div>
+        {!t.ready && (
+          <div className="recovery-strip" role="status">
+            <span>
+              {t.checking ? 'Connecting to Arc…' : 'Arc is unavailable. Trading is paused.'}
+            </span>
+            <button disabled={t.checking} onClick={t.retry}>
+              <RefreshCw size={14} />
+              {t.checking ? 'Checking' : 'Retry connection'}
+            </button>
+          </div>
+        )}
+        {trade ? (
+          <>
+            <div className="swap-input-box">
+              <div className="input-caption">
+                <label htmlFor="live-amount">Sell</label>
+                <span>
+                  {t.connected
+                    ? `Balance ${display(t.balances[t.from.symbol] || 0n, t.from.decimals, 4)}`
+                    : 'Not connected'}
+                  {t.connected && (
+                    <button
+                      disabled={t.blocked}
+                      onClick={() =>
+                        t.setAmount(formatUnits(t.balances[t.from.symbol] || 0n, t.from.decimals))
+                      }
+                    >
+                      Max
+                    </button>
+                  )}
+                </span>
               </div>
-              <div className="token-field">
-                <div className="field-label">
-                  <label htmlFor="live-amount">You pay · {from.symbol}</label>
-                  <button
-                    disabled={!connected || !!busy}
-                    onClick={() =>
-                      setAmount(formatUnits(balances[from.symbol] || 0n, from.decimals))
-                    }
-                  >
-                    MAX
-                  </button>
-                </div>
-                <div className="amount-row">
-                  <input
-                    id="live-amount"
-                    inputMode="decimal"
-                    value={amount}
-                    disabled={!!busy}
-                    onChange={(e) => setAmount(e.target.value)}
-                  />
-                  <span className="token-select">
-                    <span className={`live-coin ${from.symbol === 'tUSDC' ? 'usdc' : 'eth'}`}>
-                      {from.symbol === 'tUSDC' ? '$' : '♦'}
-                    </span>
-                    {from.symbol}
-                  </span>
-                </div>
-              </div>
-              <div className="live-reverse">
-                <button
-                  className="icon-button"
-                  aria-label="Reverse live pair"
-                  disabled={!!busy}
-                  onClick={() => {
-                    setReverse(!reverse);
-                    setAmount('');
-                  }}
-                >
-                  <ArrowDown size={19} />
-                </button>
-              </div>
-              <div className="token-field">
-                <div className="field-label">Estimated receive · onchain quote</div>
-                <div className="amount-row">
-                  <output title={quote ? formatUnits(quote.amountOut, to.decimals) : undefined}>
-                    {quote
-                      ? formatUnits(quote.amountOut, to.decimals).replace(/(\.\d{8})\d+$/, '$1')
-                      : '—'}
-                  </output>
-                  <span className="token-select">
-                    <span className={`live-coin ${to.symbol === 'tUSDC' ? 'usdc' : 'eth'}`}>
-                      {to.symbol === 'tUSDC' ? '$' : '♦'}
-                    </span>
-                    {to.symbol}
-                  </span>
-                </div>
-              </div>
-              <div className="detail-row">
-                <span>Minimum received · {slippageBps / 100}% slippage</span>
-                <strong>
-                  {quote
-                    ? formatUnits(minimumOutput(quote.amountOut, slippageBps), to.decimals)
-                    : '—'}{' '}
-                  {to.symbol}
-                </strong>
-              </div>
-              <div className="detail-row">
-                <span>Route</span>
-                <strong>Uniswap V2 · 0.30% LP fee</strong>
-              </div>
-              {quoteError && <p className="error">{quoteError}</p>}
-              {input > (balances[from.symbol] || 0n) && connected && (
-                <p className="subtle">Insufficient {from.symbol}. Claim faucet tokens above.</p>
-              )}
-              <div className="button-row live-buttons">
-                <button
-                  className="secondary"
-                  disabled={!validSwap || allowance >= input}
-                  onClick={() =>
-                    action(`Approve ${from.symbol}`, async () =>
-                      approveExact(await getWallet(), from.address, deployedRouter, input),
-                    )
-                  }
-                >
-                  {allowance >= input && input > 0n ? <Check size={15} /> : null}
-                  {allowance >= input && input > 0n
-                    ? 'Allowance ready'
-                    : `Approve exact ${from.symbol}`}
-                </button>
-                <button
-                  className="primary"
-                  disabled={!validSwap || allowance < input}
-                  onClick={() => setReview(true)}
-                >
-                  Review live swap <ArrowRight size={15} />
-                </button>
-              </div>
-              {allowance > 0n && (
-                <button
-                  className="text-button full"
-                  disabled={!!busy || !connected}
-                  onClick={() =>
-                    action('Reset router allowance', async () =>
-                      revokeAllowance(await getWallet(), from.address, deployedRouter),
-                    )
-                  }
-                >
-                  Reset router allowance to zero
-                </button>
-              )}
-              {review && quote && (
-                <div className="live-review">
-                  <h3>Confirm testnet swap</h3>
-                  <p>
-                    {formatUnits(input, from.decimals)} {from.symbol} → at least{' '}
-                    {formatUnits(minimumOutput(quote.amountOut, slippageBps), to.decimals)}{' '}
-                    {to.symbol}
-                  </p>
-                  <p>
-                    Recipient: {address?.slice(0, 10)}…{address?.slice(-8)} · Chain 5042002. Your
-                    wallet will show gas before signing. No XP is awarded for live test trades.
-                  </p>
-                  <button
-                    className="primary full"
-                    disabled={!validSwap || allowance < input}
-                    onClick={() =>
-                      action(
-                        'Swap',
-                        async () =>
-                          (await executeV2(await getWallet(), quote, slippageBps)).transactionHash,
-                      )
-                    }
-                  >
-                    Confirm swap on Arc testnet
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-          {page === 'Discover' && (
-            <div className="live-sale">
-              <div className="detail-row">
-                <span>Sale status</span>
-                <strong>
-                  {!sale
-                    ? 'Loading…'
-                    : sale.cancelled
-                      ? 'Cancelled'
-                      : sale.timestamp < start
-                        ? 'Starts shortly'
-                        : sale.timestamp < end
-                          ? 'Open'
-                          : sale.successful
-                            ? 'Succeeded · claims open'
-                            : 'Failed · refunds open'}
-                </strong>
-              </div>
-              <div className="detail-row">
-                <span>Closes</span>
-                <strong>{new Date(Number(end) * 1000).toLocaleString()}</strong>
-              </div>
-              <div className="detail-row">
-                <span>Raised / hard cap</span>
-                <strong>{sale ? formatUnits(sale.raised, 6) : '—'} / 200,000 tUSDC</strong>
-              </div>
-              <div className="detail-row">
-                <span>Soft cap / rate</span>
-                <strong>1,000 tUSDC · 2 tORBIT per tUSDC</strong>
-              </div>
-              <div className="detail-row">
-                <span>Your contribution / allocation</span>
-                <strong>
-                  {sale ? formatUnits(sale.contribution, 6) : '—'} tUSDC /{' '}
-                  {sale ? formatUnits(sale.allocation, 18) : '—'} tORBIT
-                </strong>
-              </div>
-              <label className="action-input-label" htmlFor="live-sale-amount">
-                Contribution in test tUSDC
-              </label>
-              <div className="action-input">
+              <div className="swap-amount-row">
                 <input
-                  id="live-sale-amount"
+                  id="live-amount"
                   inputMode="decimal"
-                  value={saleAmount}
-                  disabled={!!busy}
-                  onChange={(e) => setSaleAmount(e.target.value)}
+                  autoComplete="off"
+                  placeholder="0"
+                  value={t.amount}
+                  disabled={t.blocked}
+                  onChange={(e) => t.setAmount(e.target.value)}
                 />
-              </div>
-              <div className="button-row live-buttons">
                 <button
-                  className="secondary"
-                  disabled={
-                    !ready ||
-                    !connected ||
-                    !!busy ||
-                    !saleOpen ||
-                    contribution <= 0n ||
-                    contribution > (balances.tUSDC || 0n) ||
-                    saleAllowance >= contribution
-                  }
-                  onClick={() =>
-                    action('Approve sale payment', async () =>
-                      approveExact(
-                        await getWallet(),
-                        deployedTokens[0].address,
-                        deployedLaunchpad,
-                        contribution,
-                      ),
-                    )
-                  }
-                >
-                  Approve exact payment
-                </button>
-                <button
-                  className="primary"
-                  disabled={
-                    !ready ||
-                    !connected ||
-                    !!busy ||
-                    !saleOpen ||
-                    contribution <= 0n ||
-                    contribution > (balances.tUSDC || 0n) ||
-                    saleAllowance < contribution
-                  }
+                  className="asset-pill"
+                  disabled={t.blocked}
                   onClick={() => {
-                    if (
-                      window.confirm(
-                        `Contribute ${formatUnits(contribution, 6)} valueless tUSDC to the experimental sale? Funds are escrowed until settlement or cancellation.`,
-                      )
-                    )
-                      action('Contribute', () => contractAction('contribute'));
+                    setTokenSide('sell');
+                    setDialog('token');
                   }}
                 >
-                  Contribute test tokens
+                  <span className={`asset-dot ${t.from.symbol === 'tUSDC' ? 'usdc' : 'eth'}`}>
+                    {t.from.symbol === 'tUSDC' ? '$' : '♦'}
+                  </span>
+                  {t.from.symbol}
+                  <ChevronDown size={14} />
                 </button>
               </div>
-              <div className="button-row live-buttons">
-                <button
-                  className="secondary"
-                  disabled={
-                    !ready || !connected || !!busy || !sale?.successful || sale.allocation === 0n
-                  }
-                  onClick={() => action('Claim sale tokens', () => contractAction('claim'))}
+              <p className="asset-note">Test token · no monetary value</p>
+            </div>
+            <div className="pair-switch">
+              <button aria-label="Reverse live pair" disabled={t.blocked} onClick={t.reversePair}>
+                <ArrowDown size={18} />
+              </button>
+            </div>
+            <div className="swap-input-box receive">
+              <div className="input-caption">
+                <span>Buy</span>
+                <span>
+                  {t.connected
+                    ? `Balance ${display(t.balances[t.to.symbol] || 0n, t.to.decimals, 4)}`
+                    : ''}
+                </span>
+              </div>
+              <div className="swap-amount-row">
+                <output
+                  className={!t.quote ? 'empty-output' : undefined}
+                  title={t.quote ? formatUnits(t.quote.amountOut, t.to.decimals) : undefined}
                 >
-                  Claim tORBIT
-                </button>
+                  {t.quote ? display(t.quote.amountOut, t.to.decimals) : '0'}
+                </output>
                 <button
-                  className="secondary"
-                  disabled={!ready || !connected || !!busy || !failed || !sale?.contribution}
-                  onClick={() => action('Refund', () => contractAction('refund'))}
+                  className="asset-pill"
+                  disabled={t.blocked}
+                  onClick={() => {
+                    setTokenSide('buy');
+                    setDialog('token');
+                  }}
                 >
-                  Refund failed sale
+                  <span className={`asset-dot ${t.to.symbol === 'tUSDC' ? 'usdc' : 'eth'}`}>
+                    {t.to.symbol === 'tUSDC' ? '$' : '♦'}
+                  </span>
+                  {t.to.symbol}
+                  <ChevronDown size={14} />
                 </button>
               </div>
-              {saleAllowance > 0n && (
-                <button
-                  className="text-button full"
-                  disabled={!!busy || !connected}
-                  onClick={() =>
-                    action('Reset sale allowance', async () =>
-                      revokeAllowance(
-                        await getWallet(),
-                        deployedTokens[0].address,
-                        deployedLaunchpad,
-                      ),
-                    )
-                  }
-                >
-                  Reset sale allowance to zero
-                </button>
-              )}
-              <p className="subtle">
-                Owner can cancel before sale end, enabling refunds. Token allocations become
-                claimable only after a successful raise ends. No liquidity-pool creation or vesting.
+              <p className="asset-note">
+                {t.quote
+                  ? 'Estimated output, after the pool fee'
+                  : 'Enter an amount to see your quote'}
               </p>
             </div>
-          )}
-          {busy && (
-            <p className="live-status" role="status">
-              <RefreshCw size={15} />
-              {busy} · {status}
-            </p>
-          )}
-          {!busy && status && (
-            <p className="live-status" role="status">
-              <Check size={15} />
-              {status}
-            </p>
-          )}
-          {hash && (
-            <a className="text-button" href={`${explorer}${hash}`} target="_blank" rel="noreferrer">
-              View transaction <ExternalLink size={14} />
-            </a>
-          )}
-          {error && (
-            <p className="error" role="alert">
-              {error}
-            </p>
-          )}
-          <div className="live-contract-links">
-            <a
-              href={`${arcTestnet.blockExplorers.default.url}/address/${deployedRouter}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Router <ExternalLink size={12} />
-            </a>
-            <a
-              href={`${arcTestnet.blockExplorers.default.url}/address/${deployedLaunchpad}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Launchpad <ExternalLink size={12} />
-            </a>
+            {t.quote && (
+              <details className="quote-details">
+                <summary>
+                  <span>
+                    1 {t.from.symbol} ≈{' '}
+                    {display(
+                      (t.quote.amountOut * 10n ** BigInt(t.from.decimals)) / t.quote.amountIn,
+                      t.to.decimals,
+                    )}{' '}
+                    {t.to.symbol}
+                  </span>
+                  <ChevronDown size={14} />
+                </summary>
+                <dl>
+                  <div>
+                    <dt>Minimum received</dt>
+                    <dd>
+                      {formatUnits(minimum, t.to.decimals)} {t.to.symbol}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Slippage tolerance</dt>
+                    <dd>{bps / 100}%</dd>
+                  </div>
+                  <div>
+                    <dt>Pool fee</dt>
+                    <dd>0.30%</dd>
+                  </div>
+                  <div>
+                    <dt>Route</dt>
+                    <dd>Uniswap V2</dd>
+                  </div>
+                </dl>
+              </details>
+            )}
             <button
-              className="text-button"
-              disabled={!!busy}
+              className="primary-action"
+              disabled={t.phase === 'unknown' ? !!t.busy : swapDisabled || !!t.busy}
+              onClick={primaryAction}
+            >
+              {primaryLabel}
+            </button>
+            {t.connected && t.input > 0n && t.allowance < t.input && t.ready && !t.blocked && (
+              <p className="step-note">
+                {needsReset
+                  ? 'Reset the existing allowance before approving a new amount.'
+                  : 'First approve the exact amount. Then review your swap.'}
+              </p>
+            )}
+          </>
+        ) : (
+          <div className="sale-content">
+            <div className="sale-identity">
+              <span className="sale-mark">✳</span>
+              <div>
+                <h2>Orbit test sale</h2>
+                <p>2 tORBIT per tUSDC</p>
+              </div>
+              <span className="sale-status">
+                {!t.sale
+                  ? 'Loading'
+                  : t.sale.cancelled
+                    ? 'Cancelled'
+                    : t.saleOpen
+                      ? 'Open'
+                      : t.sale.successful
+                        ? 'Successful'
+                        : t.failed
+                          ? 'Refunds open'
+                          : 'Not started'}
+              </span>
+            </div>
+            <dl className="sale-facts">
+              <div>
+                <dt>Raised</dt>
+                <dd>{t.sale ? display(t.sale.raised, 6, 2) : '—'} / 200,000 tUSDC</dd>
+              </div>
+              <div>
+                <dt>Minimum raise</dt>
+                <dd>1,000 tUSDC</dd>
+              </div>
+              <div>
+                <dt>Sale ends</dt>
+                <dd>{new Date(Number(t.end) * 1000).toLocaleDateString()}</dd>
+              </div>
+              <div>
+                <dt>Your allocation</dt>
+                <dd>{t.sale ? display(t.sale.allocation, 18, 4) : '—'} tORBIT</dd>
+              </div>
+            </dl>
+            <div className="swap-input-box">
+              <div className="input-caption">
+                <label htmlFor="live-sale-amount">Contribute</label>
+                <span>Balance {display(t.balances.tUSDC || 0n, 6, 2)}</span>
+              </div>
+              <div className="swap-amount-row">
+                <input
+                  id="live-sale-amount"
+                  placeholder="0"
+                  inputMode="decimal"
+                  disabled={t.blocked}
+                  value={t.saleAmount}
+                  onChange={(e) => t.setSaleAmount(e.target.value)}
+                />
+                <span className="asset-pill">
+                  <span className="asset-dot usdc">$</span>tUSDC
+                </span>
+              </div>
+            </div>
+            {!t.connected ? (
+              <button className="primary-action" onClick={openWallet}>
+                Connect wallet to transact
+              </button>
+            ) : (
+              <button
+                className="primary-action"
+                disabled={!saleValid}
+                onClick={() => {
+                  if (t.saleAllowance > 0n && t.saleAllowance < t.contribution) t.resetSale();
+                  else if (t.saleAllowance < t.contribution) t.approveSale();
+                  else setDialog('sale');
+                }}
+              >
+                {t.busy
+                  ? t.busy + '…'
+                  : t.saleAllowance > 0n && t.saleAllowance < t.contribution
+                    ? 'Reset sale allowance'
+                    : t.saleAllowance < t.contribution
+                      ? 'Approve exact payment'
+                      : 'Review contribution'}
+              </button>
+            )}
+            {t.sale?.successful && t.sale.allocation > 0n && (
+              <button
+                className="primary-action"
+                disabled={t.blocked || !t.connected}
+                onClick={t.claimSale}
+              >
+                Claim tORBIT
+              </button>
+            )}
+            {t.failed && !!t.sale?.contribution && (
+              <button
+                className="primary-action"
+                disabled={t.blocked || !t.connected}
+                onClick={t.refundSale}
+              >
+                Refund contribution
+              </button>
+            )}
+            <p className="step-note">
+              Unaudited test sale. Payment is escrowed until settlement or cancellation.
+            </p>
+          </div>
+        )}
+        {(t.error || t.quoteError) && (
+          <div className="inline-error" role="alert">
+            {t.error || t.quoteError}
+          </div>
+        )}
+        {t.phase !== 'idle' && t.phase !== 'error' && (
+          <div className={`transaction-state ${t.phase}`} role="status">
+            <div>
+              {t.phase === 'signing' || t.phase === 'pending' ? (
+                <RefreshCw size={17} />
+              ) : t.phase === 'success' ? (
+                <Check size={17} />
+              ) : (
+                <ShieldCheck size={17} />
+              )}
+              <span>
+                {t.phase === 'signing'
+                  ? 'Confirm in your wallet'
+                  : t.phase === 'pending'
+                    ? 'Transaction submitted. Waiting for confirmation.'
+                    : t.phase === 'success'
+                      ? 'Transaction confirmed'
+                      : 'Confirmation unavailable'}
+              </span>
+            </div>
+            {t.hash && (
+              <a
+                href={`${arcTestnet.blockExplorers.default.url}/tx/${t.hash}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                View transaction <ExternalLink size={13} />
+              </a>
+            )}
+            {!trade && t.phase === 'unknown' && (
+              <button className="secondary-action" disabled={!!t.busy} onClick={t.checkTransaction}>
+                Check transaction status
+              </button>
+            )}
+          </div>
+        )}
+        <div className="exchange-bottom">
+          <button onClick={() => setDialog('faucet')}>Get test tokens</button>
+          <button onClick={() => setDialog('risk')}>
+            <ShieldCheck size={13} />
+            Testnet only
+          </button>
+        </div>
+      </div>
+      <details className="pool-disclosure">
+        <summary>
+          Pool & contract details
+          <ChevronDown size={14} />
+        </summary>
+        <PoolContext connected={t.ready} />
+        <div className="contract-row">
+          <a
+            href={`${arcTestnet.blockExplorers.default.url}/address/${trade ? deployedRouter : deployedLaunchpad}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {trade ? 'Router' : 'Launchpad'} contract <ExternalLink size={13} />
+          </a>
+          <button onClick={t.retry} disabled={t.checking || t.blocked}>
+            Refresh connection
+          </button>
+        </div>
+      </details>
+      <p className="release-caption">Testnet preview. Not audited for real funds.</p>
+      {t.review && t.quote && (
+        <Dialog title="Review swap" close={() => t.setReview(false)}>
+          <div className="review-pair">
+            <span>Sell</span>
+            <strong>
+              {formatUnits(t.input, t.from.decimals)} {t.from.symbol}
+            </strong>
+            <ArrowDown size={18} />
+            <span>Receive at least</span>
+            <strong>
+              {formatUnits(minimum, t.to.decimals)} {t.to.symbol}
+            </strong>
+          </div>
+          <dl className="modal-facts">
+            <div>
+              <dt>Recipient</dt>
+              <dd>
+                {address?.slice(0, 8)}…{address?.slice(-6)}
+              </dd>
+            </div>
+            <div>
+              <dt>Network</dt>
+              <dd>Arc testnet (5042002)</dd>
+            </div>
+            <div>
+              <dt>Slippage / fee</dt>
+              <dd>{bps / 100}% / 0.30%</dd>
+            </div>
+          </dl>
+          <p className="dialog-note">
+            Gas is paid in native testnet USDC. Your wallet will show the estimated cost before you
+            sign.
+          </p>
+          {t.expired ? (
+            <button className="primary-action" onClick={t.refreshQuote}>
+              Refresh expired quote
+            </button>
+          ) : (
+            <button
+              className="primary-action"
+              disabled={!t.validSwap || t.allowance < t.input}
+              onClick={t.swap}
+            >
+              Confirm swap on Arc testnet
+            </button>
+          )}
+        </Dialog>
+      )}
+      {dialog === 'settings' && (
+        <Dialog title="Swap settings" close={() => setDialog(null)}>
+          <p className="dialog-note">Slippage tolerance</p>
+          <div className="setting-options">
+            {[10, 50, 100].map((value) => (
+              <button aria-pressed={bps === value} key={value} onClick={() => setTolerance(value)}>
+                {value / 100}%
+              </button>
+            ))}
+          </div>
+          <p className="dialog-note">
+            If the price moves beyond this tolerance, your swap will revert.
+          </p>
+          <button className="primary-action" onClick={() => setDialog(null)}>
+            Done
+          </button>
+        </Dialog>
+      )}
+      {dialog === 'faucet' && (
+        <Dialog title="Get test tokens" close={() => setDialog(null)}>
+          <p className="dialog-note">
+            Free tokens with no monetary value. You can claim each token once per wallet. Native Arc
+            testnet USDC is still required for gas.
+          </p>
+          {deployedTokens.map((token) => (
+            <div className="faucet-token" key={token.symbol}>
+              <div>
+                <strong>{token.symbol}</strong>
+                <span>{display(t.balances[token.symbol] || 0n, token.decimals, 4)} available</span>
+              </div>
+              <button
+                className="secondary-action"
+                disabled={!t.ready || !t.connected || t.blocked || t.claimed[token.symbol]}
+                onClick={() => {
+                  setDialog(null);
+                  t.faucet(token);
+                }}
+              >
+                {t.claimed[token.symbol] ? 'Already claimed' : `Claim test ${token.symbol}`}
+              </button>
+            </div>
+          ))}
+          {!t.connected && (
+            <button
+              className="primary-action"
               onClick={() => {
-                if (!ready) setCheckAttempt((n) => n + 1);
-                else
-                  refresh().catch((e) => {
-                    setError(userFacingError(e));
-                    setReady(false);
-                  });
-                setTick((t) => t + 1);
+                setDialog(null);
+                openWallet();
               }}
             >
-              <RefreshCw size={12} />
-              Refresh
+              Connect wallet to transact
             </button>
-          </div>
-        </div>
-        <PoolContext connected={ready} />
-      </div>
-    </section>
+          )}
+          <a
+            className="text-link"
+            href="https://faucet.circle.com"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Get native testnet USDC for gas <ExternalLink size={13} />
+          </a>
+        </Dialog>
+      )}
+      {dialog === 'risk' && (
+        <Dialog title="Testnet preview" close={() => setDialog(null)}>
+          <p className="dialog-note">
+            tUSDC is not Circle USDC. tETH is not real Ether. Both are freely minted test assets
+            with no value.
+          </p>
+          <p className="dialog-note">
+            The pool is seeded for testing. The launchpad is experimental and unaudited. Lending and
+            rewards are not enabled for live transactions.
+          </p>
+          <p className="dialog-note">
+            This release is not production-ready. Never send real-value assets to these contracts.
+          </p>
+          <button className="primary-action" onClick={() => setDialog(null)}>
+            Understood
+          </button>
+        </Dialog>
+      )}
+      {dialog === 'token' && (
+        <Dialog title="Choose a token" close={() => setDialog(null)}>
+          {deployedTokens.map((token) => (
+            <button
+              className="token-option"
+              key={token.symbol}
+              onClick={() => {
+                if (token.symbol !== (tokenSide === 'sell' ? t.from.symbol : t.to.symbol))
+                  t.reversePair();
+                setDialog(null);
+              }}
+            >
+              <span className={`asset-dot ${token.symbol === 'tUSDC' ? 'usdc' : 'eth'}`}>
+                {token.symbol === 'tUSDC' ? '$' : '♦'}
+              </span>
+              <strong>{token.symbol}</strong>
+              <span>{display(t.balances[token.symbol] || 0n, token.decimals, 4)}</span>
+            </button>
+          ))}
+        </Dialog>
+      )}
+      {dialog === 'sale' && (
+        <Dialog title="Review contribution" close={() => setDialog(null)}>
+          <p className="dialog-note">
+            Contribute {formatUnits(t.contribution, 6)} valueless tUSDC to the Orbit test sale. Your
+            payment stays in escrow until a successful sale ends, the sale fails, or the owner
+            cancels.
+          </p>
+          <p className="dialog-note">
+            Owner cancellation is possible before the end of the sale. This is an unaudited
+            experiment, not a production token launch.
+          </p>
+          <button
+            className="primary-action"
+            disabled={!saleValid || t.saleAllowance < t.contribution}
+            onClick={() => {
+              setDialog(null);
+              t.contribute();
+            }}
+          >
+            Contribute test tokens
+          </button>
+        </Dialog>
+      )}
+    </div>
   );
 }

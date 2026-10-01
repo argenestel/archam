@@ -34,12 +34,12 @@ Deployment checkpoints completed steps and is normally resumable. **If interrupt
 
 ## Try live mode
 
-1. Start `pnpm dev`; open the printed IPv4 URL (currently `http://127.0.0.1:5173`).
-2. Select Live, connect an injected wallet and switch to Arc testnet.
+1. Start `pnpm dev`; open the printed IPv4 URL (currently `http://localhost:5191`).
+2. Connect an injected wallet and switch to Arc testnet. The default page is the live preview; the footer Demo link opens the separate virtual dashboard.
 3. The user wallet needs **native testnet USDC for gas**. Deploying from the server wallet does not connect that key to your browser.
 4. Claim tUSDC/tETH faucet assets (once per wallet per token).
 5. Enter a valid amount. Approve exact router allowance, review minimum received and recipient, then sign swap.
-6. Discover shows the deployed test sale. Approve exact sale payment then contribute. Claims/refunds are enabled only when the contract allows them.
+6. Launchpad shows the deployed test sale. Approve exact sale payment then contribute. Claims/refunds are enabled only when the contract allows them.
 
 No production rewards are earned. Lending, demo portfolio and demo rewards are intentionally separate from testnet receipts.
 

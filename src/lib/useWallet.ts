@@ -14,9 +14,24 @@ export function useWallet() {
   const [balance, setBalance] = useState<string>();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
+  const [balanceRevision, setBalanceRevision] = useState(0);
   useEffect(() => {
     const provider = window.ethereum;
     if (!provider) return;
+    let cancelled = false;
+    Promise.all([
+      provider.request({ method: 'eth_accounts' }),
+      provider.request({ method: 'eth_chainId' }),
+    ])
+      .then(([accounts, chain]) => {
+        if (!cancelled) {
+          setAddress(accounts[0]);
+          setChainId(Number(chain));
+        }
+      })
+      .catch(() => {
+        /* No prompt or automatic connection when the wallet is locked. */
+      });
     const accounts = (value: unknown) => {
       setAddress((value as string[])[0]);
       setBalance(undefined);
@@ -28,6 +43,7 @@ export function useWallet() {
     provider.on('accountsChanged', accounts);
     provider.on('chainChanged', chain);
     return () => {
+      cancelled = true;
       provider.removeListener('accountsChanged', accounts);
       provider.removeListener('chainChanged', chain);
     };
@@ -46,7 +62,12 @@ export function useWallet() {
     return () => {
       cancelled = true;
     };
-  }, [address, chainId]);
+  }, [address, chainId, balanceRevision]);
+  useEffect(() => {
+    const refresh = () => setBalanceRevision((n) => n + 1);
+    window.addEventListener('orbit:transactions', refresh);
+    return () => window.removeEventListener('orbit:transactions', refresh);
+  }, []);
   async function connect() {
     setPending(true);
     setError('');

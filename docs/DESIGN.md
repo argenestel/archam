@@ -1,26 +1,23 @@
-# Terminal design direction
+# Interface direction
 
-Consulted the public [Anthropic frontend-design skill](https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md) before redesigning. Its guidance informed the plan and screenshot review; it was not installed as executable code.
+The previous dashboard accumulated too many competing elements: greetings, repeated risk banners, faucet cards, a pool illustration, fake/demo metrics, and several simultaneous primary actions. The user's feedback was that this was neither clean nor production-ready.
 
-## Plan
+## Current live interface
 
-Keep the user's Sushi/Aave workflows and Jumper-like purple accent, but remove the oversized marketing treatment from the live workspace. Spend visual emphasis on the swap amount and the actual pool exchange ratio. The secondary panel should help users make a trade, not display invented performance charts.
+- One centered swap card, with a quiet horizontal navigation bar.
+- One primary action matching the next step: connect, approve, review, or check an uncertain transaction.
+- Empty inputs by default; no prefilled trade suggesting a recommended amount.
+- Token balances next to the inputs. Token selection, slippage settings and review use native dialogs.
+- Faucet controls live behind **Get test tokens**.
+- Real pool reserves and contract links live behind **Pool & contract details**.
+- A concise testnet label stays visible; the full risk explanation is available on demand.
+- Only implemented live workflows appear in navigation: swap, test sale, and local activity.
+- The old lending/rewards/demo dashboard is explicitly separate, lazy-loaded and CSS-scoped. It cannot style the live interface after switching modes.
 
-- **Cloud** `#f4f6fa`: workspace background.
-- **Paper** `#ffffff`: transaction surface.
-- **Ink** `#25283d`: primary text.
-- **Orbit violet** `#7045e5`: actions and navigation.
-- **Mist** `#e5e8f0`: structural dividers.
-- **Connected green** `#198268`: operational status, not promised returns.
-- Space Grotesk Variable for headings and amounts; DM Sans Variable for controls and supporting text. Both self-hosted through Fontsource.
+Typography: self-hosted DM Sans Variable for controls, Space Grotesk Variable for amounts. Neutral near-white surfaces and a single muted purple action color. No decorative charts, gradients, or onboarding illustration on the primary screen.
 
-```text
-navigation | page title                       wallet / mode
-           | network status and concise test-asset disclosure
-           | swap + approvals  | actual pool reserves / ratio
-           | faucet balances   | wallet and gas guidance
-```
+The public [Anthropic frontend-design skill](https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md) was consulted in the earlier pass. The latest revision follows the user's feedback by removing unnecessary material rather than adding another dashboard treatment.
 
-Left-aligned forms, quieter risk disclosure with expandable details, readable labels and focus indicators. Mobile keeps the swap first, then pool context. No auto-play decoration or fabricated price history. Demo mode remains explicit and separate from live transactions.
+## What this does not establish
 
-Reviewed desktop and 390px mobile screenshots. Automated browser tests exercise mobile overflow, primary RPC failure, all-RPC failure/recovery, and existing demo flows.
+A cleaner interface is not a production-readiness claim. Independent security review, real-asset integrations, a verified lending market, backend-verified rewards, public HTTPS hosting and operational monitoring remain unresolved. See `RELEASE.md`.

@@ -1,0 +1,28 @@
+name: Validate testnet preview
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --global pnpm@11.1.2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm contracts:check
+      - run: pnpm test
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - name: Validate hosting package
+        run: |
+          docker build -t orbit-preview .
+          docker run --rm orbit-preview nginx -t
+          docker run -d --name orbit-preview-ci -p 8080:8080 orbit-preview
+          for i in $(seq 1 15); do
+            if curl -fsS http://127.0.0.1:8080/healthz; then exit 0; fi
+            sleep 2
+          done
+          docker logs orbit-preview-ci
+          exit 1
