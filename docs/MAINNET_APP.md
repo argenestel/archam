@@ -1,4 +1,6 @@
-# Mainnet protocol hub (opt-in beta)
+# Mofu mainnet protocol hub (opt-in beta)
+
+Public brand: **Mofu**, intended domain **mofu.lol**. Local branding does not configure DNS, hosting, or HTTPS. Existing Orbit-named contract artifacts and internal identifiers remain unchanged. Mainnet contract deployment is paused during the rebrand.
 
 This version aggregates existing Arc mainnet protocols. It does **not** deploy or enable Orbit's unaudited token-launch or lending contracts. It is a beta for deliberate, wallet-approved testing, not an audited production release or a guarantee against loss.
 

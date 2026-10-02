@@ -45,7 +45,12 @@ const expected = {
     UniswapV4StateView: '0xf3334192d15450cdd385c8b70e03f9a6bd9e673b',
   },
 };
+// Preserve durable custom deployments when refreshing replaceable ecosystem discovery.
+const previous = JSON.parse(fs.readFileSync('deployments/arc-mainnet.json', 'utf8'));
 const report = {
+  ...(previous.orbit ? { orbit: previous.orbit } : {}),
+  ...(previous.mofu ? { mofu: previous.mofu } : {}),
+  ...(previous.launch ? { launch: previous.launch } : {}),
   chainId: 5042,
   network: 'Arc',
   verifiedAt: new Date().toISOString(),

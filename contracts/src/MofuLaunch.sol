@@ -72,9 +72,9 @@ contract MofuLaunch is ReentrancyGuard {
     }
 
     address public constant DEAD = 0x000000000000000000000000000000000000dEaD;
-    uint256 public constant TOTAL_SUPPLY = 1_000_000_000 ether;
     uint256 public constant SALE_SUPPLY = 793_100_000 ether;
     uint256 public constant VIRTUAL_TOKEN = 1_073_000_000 ether;
+    uint256 public constant TOTAL_SUPPLY = SALE_SUPPLY + ((VIRTUAL_TOKEN - SALE_SUPPLY) * SALE_SUPPLY) / VIRTUAL_TOKEN;
     uint256 public constant MAX_FEE_BPS = 200;
 
     IERC20 public immutable quote;
@@ -89,7 +89,7 @@ contract MofuLaunch is ReentrancyGuard {
     address public owner;
     address public pendingOwner;
     /// @notice Blocks new launches only. Trading, selling and graduation are never pausable.
-    bool public launchesPaused;
+    bool public launchesPaused = true;
     uint256 public feesAccrued;
 
     address[] public tokens;
@@ -142,8 +142,7 @@ contract MofuLaunch is ReentrancyGuard {
         feeBps = feeBps_;
         feeRecipient = feeRecipient_;
         owner = msg.sender;
-        uint256 finalVirtualToken = VIRTUAL_TOKEN - SALE_SUPPLY;
-        lpSupply = (finalVirtualToken * SALE_SUPPLY) / VIRTUAL_TOKEN;
+        lpSupply = TOTAL_SUPPLY - SALE_SUPPLY;
     }
 
     // ---------------------------------------------------------------- launch

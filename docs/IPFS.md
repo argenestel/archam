@@ -1,4 +1,6 @@
-# Pinata logos and public profiles
+# Mofu: Pinata logos and public profiles
+
+Public domain target: `https://mofu.lol`. IPFS metadata schemas and legacy browser keys remain compatible with the former Orbit branding.
 
 ## Local development
 

@@ -74,7 +74,7 @@ importers:
         version: 3.9.9
       solc:
         specifier: ^0.8.30
-        version: 0.8.37
+        version: 0.8.30
       solc-0.8.19:
         specifier: npm:solc@0.8.19
         version: solc@0.8.19
@@ -1663,8 +1663,8 @@ packages:
     engines: {node: '>=10.0.0'}
     hasBin: true
 
-  solc@0.8.37:
-    resolution: {integrity: sha512-ieUYdPDRGNKMsZpCfi9tY64Q+ASoL8tyhLuvf9cFiqDs+6ijlx8Wn2CRi0N71AlCvRx0V092rlUYu3b3PuxWlA==}
+  solc@0.8.30:
+    resolution: {integrity: sha512-9Srk/gndtBmoUbg4CE6ypAzPQlElv8ntbnl6SigUBAzgXKn35v87sj04uZeoZWjtDkdzT0qKFcIo/wl63UMxdw==}
     engines: {node: '>=12.0.0'}
     hasBin: true
 
@@ -1736,10 +1736,6 @@ packages:
   tmp@0.0.33:
     resolution: {integrity: sha512-jRCJlojKnZ3addtTOjdIqoRuPEKBvNXcGYqzO6zWZX8KfKEpnGY5jfggJQ3EjKuu8D4bJRr0y+cYJFmYbImXGw==}
     engines: {node: '>=0.6.0'}
-
-  tmp@0.2.6:
-    resolution: {integrity: sha512-5sJPdPjfI5Kx+qbrDesxkglRBxW//g7hCsqspEjwkewGvBMGIKMOTKzLt1hFVJzyadba3lDUN20O9qhvbQUSTA==}
-    engines: {node: '>=14.14'}
 
   toidentifier@1.0.1:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
@@ -3813,7 +3809,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  solc@0.8.37:
+  solc@0.8.30:
     dependencies:
       command-exists: 1.2.9
       commander: 8.3.0
@@ -3821,7 +3817,7 @@ snapshots:
       js-sha3: 0.8.0
       memorystream: 0.3.1
       semver: 5.7.2
-      tmp: 0.2.6
+      tmp: 0.0.33
     transitivePeerDependencies:
       - debug
 
@@ -3877,8 +3873,6 @@ snapshots:
   tmp@0.0.33:
     dependencies:
       os-tmpdir: 1.0.2
-
-  tmp@0.2.6: {}
 
   toidentifier@1.0.1: {}
 

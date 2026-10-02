@@ -9,7 +9,7 @@ test('mainnet hub, swap, earn and borrow render across viewport sizes', async ({
     await page.setViewportSize({ width, height: 900 });
     for (const route of ['', 'swap', 'lend', 'borrow', 'portfolio', 'risks']) {
       await page.goto(`/#/${route}`);
-      await expect(page.getByRole('link', { name: 'Orbit home', exact: true })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Mofu home', exact: true })).toBeVisible();
       await expect(page.locator('main :is(h1,h3)').first()).toBeVisible();
       await page.waitForTimeout(600);
       expect(

@@ -198,6 +198,7 @@ async function main() {
     100n,
     account.address,
   ], 'OrbitLaunch');
+  await write('Mofu: enable launch curves', launch, 'setLaunchesPaused', [false]);
   const usdc = { address: USDC_ERC20, abi: erc20Abi };
   const seeds = [
     ['Arc Rocket', 'ROCKET', 'First launch on Orbit. Pure curve, no presale.'],
@@ -225,6 +226,7 @@ async function main() {
     100n,
     account.address,
   ], 'OrbitLaunchV3');
+  await write('Mofu V3: enable launch curves', v3, 'setLaunchesPaused', [false]);
   const seedBuy = parseUnits('0.3', 6);
   await write('V3: approve seed buys', usdc, 'approve', [v3.address, seedBuy * 3n]);
   for (const [name, symbol, description] of seeds)

@@ -6,16 +6,16 @@ const risks: [string, string][] = [
     'Anyone can launch a token, including copies of real projects. Prices move only because people buy and sell; nobody guarantees a buyer. Only spend what you can lose entirely.',
   ],
   [
-    'Orbit’s launch contract is unaudited',
+    'Mofu’s launch contract is unaudited',
     'It has automated tests and an internal review, but no independent audit yet. A bug could lock or lose the USDC held by a curve.',
   ],
   [
     'Graduation is permanent',
-    'When a curve sells out, its USDC and remaining tokens become a Uniswap pool whose liquidity tokens are burned. Nobody, including Orbit, can withdraw that liquidity, and later trades happen at pool prices.',
+    'When a curve sells out, its USDC and remaining tokens become a Uniswap pool whose liquidity tokens are burned. Nobody, including Mofu, can withdraw that liquidity, and later trades happen at pool prices.',
   ],
   [
     'Lending carries liquidation and protocol risk',
-    'Vault yields are variable and come from Morpho markets curated by third parties. Borrowers can be liquidated if collateral prices fall. Orbit does not control those vaults.',
+    'Vault yields are variable and come from Morpho markets curated by third parties. Borrowers can be liquidated if collateral prices fall. Mofu does not control those vaults.',
   ],
   [
     'USDC is also your gas',
@@ -31,7 +31,7 @@ const risks: [string, string][] = [
   ],
   [
     'Agents act with your authority',
-    'If you connect an AI agent to a wallet through Orbit’s fund-manager server, it can move that wallet’s funds within the limits you set in its policy. Use a separate wallet with only what you are willing to delegate.',
+    'If you connect an AI agent to a wallet through Mofu’s fund-manager server, it can move that wallet’s funds within the limits you set in its policy. Use a separate wallet with only what you are willing to delegate.',
   ],
 ];
 

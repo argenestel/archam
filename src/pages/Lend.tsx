@@ -142,7 +142,7 @@ export default function Lend() {
         <div>
           <h1>Lend</h1>
           <p>
-            Earn on USDC in curated Morpho vaults, or borrow against collateral in Orbit’s test
+            Earn on USDC in curated Morpho vaults, or borrow against collateral in Mofu’s test
             market.
           </p>
         </div>
@@ -150,7 +150,7 @@ export default function Lend() {
       <div style={{ marginBottom: 32 }}>
         <Earn />
       </div>
-      <h2 style={{ fontSize: 20, marginBottom: 6 }}>Borrow: Orbit test market</h2>
+      <h2 style={{ fontSize: 20, marginBottom: 6 }}>Borrow: Mofu test market</h2>
       <p className="muted" style={{ marginBottom: 16, maxWidth: '60ch' }}>
         An isolated Morpho Blue market for test assets. Supply {loan.symbol} to earn, or borrow it
         against {coll.symbol}. Rates move with utilization.
@@ -226,7 +226,7 @@ export default function Lend() {
             <Notice tone="warn">
               <b>Liquidation risk.</b> If {coll.symbol}'s price falls far enough that your health
               factor drops below 1.0, anyone can repay your debt and seize collateral plus an
-              incentive. The testnet oracle is posted by the Orbit deployer; mainnet markets must
+              incentive. The testnet oracle is posted by the Mofu deployer; mainnet markets must
               use an independent price feed.
             </Notice>
           </section>

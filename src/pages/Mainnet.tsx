@@ -46,7 +46,7 @@ export default function Mainnet() {
         <div>
           <h1>Arc mainnet</h1>
           <p>
-            Swap, earn and borrow from your wallet. Existing third-party protocols; no Orbit launch
+            Swap, earn and borrow from your wallet. Existing third-party protocols; no Mofu launch
             contracts.
           </p>
         </div>
@@ -54,7 +54,7 @@ export default function Mainnet() {
       </div>
       <Notice tone="warn">
         Mainnet beta — real funds. Integrations are not a safety endorsement. Keep USDC for gas,
-        start small, and review every wallet request. Never send funds to Orbit or a router
+        start small, and review every wallet request. Never send funds to Mofu or a router
         directly.
       </Notice>
       {network.error && <Notice tone="error">{network.error}</Notice>}
@@ -94,7 +94,7 @@ export default function Mainnet() {
         </div>
         <div className="card-pad">
           <p className="muted">
-            Circle routes swaps; Uniswap v4’s PoolManager below is not a standalone router. Orbit
+            Circle routes swaps; Uniswap v4’s PoolManager below is not a standalone router. Mofu
             has no mainnet V2 router or launch deployment. No verified Aave adapter is configured.
             Unintegrated contracts are listed for reference only.
           </p>
@@ -134,7 +134,7 @@ export default function Mainnet() {
       <p className="faint">
         Discovery covers Circle-supported markets and this recorded directory, not every contract on
         Arc. Availability depends on wallet capabilities, region, provider service, and liquidity.
-        Vault funds stay in the chosen protocol, not in Orbit.
+        Vault funds stay in the chosen protocol, not in Mofu.
       </p>
     </div>
   );

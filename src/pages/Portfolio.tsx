@@ -86,7 +86,7 @@ function PointsCard() {
   return (
     <section className="card card-pad" style={{ display: 'grid', gap: 16 }}>
       <div className="row between">
-        <h3 style={{ fontSize: 15 }}>Orbit points</h3>
+        <h3 style={{ fontSize: 15 }}>Mofu points</h3>
         <a className="link" href="#/leaders" style={{ fontSize: 13 }}>
           Leaderboard
         </a>

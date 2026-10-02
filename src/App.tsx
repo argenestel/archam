@@ -81,9 +81,9 @@ function Shell() {
       </a>
       <header className="topbar">
         <div className="topbar-inner">
-          <a className="brand" href="#/" aria-label="Orbit home">
-            <img className="brand-mark" src="/orbit-mark.svg" alt="" />
-            <span>Orbit</span>
+          <a className="brand" href="#/" aria-label="Mofu home">
+            <img className="brand-mark" src="/mofu-mark.svg" alt="" />
+            <span>Mofu</span>
           </a>
           <nav className="nav" aria-label="Primary">
             {nav.map((n) => (
@@ -134,8 +134,8 @@ function Shell() {
         <div className="footer-inner">
           <span>
             {isTestnet
-              ? 'Testnet: assets here have no value. Orbit’s launch contract is unaudited.'
-              : 'Mainnet beta: real funds and third-party protocol risk. Orbit launches are disabled.'}
+              ? 'Testnet: assets here have no value. Mofu’s launch contract is unaudited.'
+              : 'Mainnet beta: real funds and third-party protocol risk. Mofu launches are disabled.'}
           </span>
           <nav aria-label="Resources">
             {isTestnet && (
@@ -318,7 +318,7 @@ function ConnectDialog({ close }: { close: () => void }) {
           </p>
         )}
         <p className="faint" style={{ fontSize: 12 }}>
-          Orbit never holds your keys. Every transaction is signed in your wallet.
+          Mofu never holds your keys. Every transaction is signed in your wallet.
         </p>
       </div>
     </Dialog>

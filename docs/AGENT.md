@@ -1,4 +1,4 @@
-# Orbit fund manager (AI agent)
+# Mofu fund manager (AI agent)
 
 An MCP server that lets Claude Code, Codex or any MCP client manage a wallet on Arc. It reads market data, then swaps, lends and rebalances within limits you set. You choose the strategy in conversation; the policy file decides what the agent may actually do.
 

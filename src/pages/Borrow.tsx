@@ -92,7 +92,7 @@ export default function Borrow() {
         <div className="card-pad">
           <Notice tone="warn">
             Borrowing creates debt and liquidation risk. These are third-party Morpho markets, not
-            Orbit’s test market. Batch-capable wallet support may be required.
+            Mofu’s test market. Batch-capable wallet support may be required.
           </Notice>
         </div>
         {markets.loading ? (

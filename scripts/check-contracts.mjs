@@ -16,7 +16,7 @@ export function compile(extraSources = {}) {
     settings: {
       evmVersion: 'paris',
       optimizer: { enabled: true, runs: 200 },
-      outputSelection: { '*': { '*': ['abi', 'evm.bytecode.object'] } },
+      outputSelection: { '*': { '*': ['abi', 'evm.bytecode.object', 'evm.deployedBytecode.object', 'evm.deployedBytecode.immutableReferences', 'metadata'] } },
     },
   };
   const output = JSON.parse(

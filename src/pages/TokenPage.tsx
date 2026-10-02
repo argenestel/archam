@@ -29,8 +29,8 @@ export default function TokenPage({ address }: { address: Address }) {
   if (l.creator === '0x0000000000000000000000000000000000000000')
     return (
       <div className="card">
-        <Empty title="Not an Orbit launch" action={<a className="btn btn-ghost" href="#/">Back to discover</a>}>
-          This address was not created by the Orbit launch contract.
+        <Empty title="Not a Mofu launch" action={<a className="btn btn-ghost" href="#/">Back to discover</a>}>
+          This address was not created by the Mofu launch contract.
         </Empty>
       </div>
     );

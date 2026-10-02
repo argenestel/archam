@@ -92,7 +92,7 @@ export const server = createServer(async (req, res) => {
       if (!['upload', 'profile'].includes(body.action) || !/^[a-f0-9]{64}$/.test(body.digest || ''))
         fail('Invalid authorization request');
       const nonce = randomBytes(24).toString('hex');
-      const message = `Orbit media authorization\nWallet: ${body.address.toLowerCase()}\nAction: ${body.action}\nPayload SHA-256: ${body.digest}\nNonce: ${nonce}\nExpires: ${Date.now() + 300_000}`;
+      const message = `Mofu media authorization\nWallet: ${body.address.toLowerCase()}\nAction: ${body.action}\nPayload SHA-256: ${body.digest}\nNonce: ${nonce}\nExpires: ${Date.now() + 300_000}`;
       challenges.set(nonce, {
         address: body.address.toLowerCase(),
         message,
@@ -158,4 +158,4 @@ export const server = createServer(async (req, res) => {
   } catch (e) {
     reply(400, { error: e.message || 'Media request failed' });
   }
-}).listen(port, '127.0.0.1', () => console.log(`Orbit media API on ${port}`));
+}).listen(port, '127.0.0.1', () => console.log(`Mofu media API on ${port}`));

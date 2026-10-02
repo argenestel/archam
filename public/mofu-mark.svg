@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Mofu mark</title>
+  <desc id="desc">A fluffy blue mascot with rounded ears and a friendly face.</desc>
+  <path d="M13 25C9 21 9 13 14 9C18 7 23 11 27 16C30 15 34 15 37 16C41 11 46 7 50 9C55 13 55 21 51 25C57 29 59 35 57 41C60 47 55 53 49 53C46 58 39 59 32 56C25 59 18 58 15 53C9 53 4 47 7 41C5 35 7 29 13 25Z" fill="#1d5cf0"/>
+  <path d="M16 16L21 21M48 16L43 21" stroke="#9cb8ff" stroke-width="4" stroke-linecap="round"/>
+  <path d="M19 35C19 31 22 28 26 28C29 28 32 31 32 35C32 31 35 28 38 28C42 28 45 31 45 35" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+  <path d="M26 43Q32 48 38 43" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+</svg>

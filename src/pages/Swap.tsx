@@ -119,7 +119,7 @@ export default function Swap() {
           USDC and EURC
         </button>
         <button aria-pressed={mode === 'pools'} onClick={() => setMode('pools')}>
-          Orbit pools
+          Mofu pools
         </button>
       </div>
       {mode === 'stable' ? (
@@ -318,7 +318,7 @@ function TestFunds() {
         <a className="link" href="https://faucet.circle.com" target="_blank" rel="noreferrer">
           Circle faucet
         </a>
-        . tUSDC and tETH are valueless Orbit test assets for the swap pool and lending market — one
+        . tUSDC and tETH are valueless legacy Orbit test assets for the swap pool and lending market — one
         claim each.
       </p>
       <div className="row wrap">

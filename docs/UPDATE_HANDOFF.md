@@ -1,5 +1,7 @@
 # Mofu — update log and handoff
 
+> **Read section 12 first.** Sections 2, 6 and 11 describe earlier states. Since then, `main` has advanced to `816c7c5` and **the hackathon deployment went live on Arc mainnet**.
+
 Snapshot: end of this working session. This file records what was actually completed, what was only proposed, and what remains unfinished. **Do not infer deployment, audit, or production readiness from plans or passing tests.**
 
 ## 1. Owner decisions and requests
@@ -22,7 +24,7 @@ Snapshot: end of this working session. This file records what was actually compl
 
 - Repository: `https://github.com/argenestel/archam`.
 - Current local branch: `main`.
-- Latest pushed commit on `main`: **`3d9f216`**.
+- Latest pushed commit on `main`: **`816c7c5`** (was `3d9f216` when this section was written).
 - Feature branch `feat/fomo-launch-morpho` was pushed, then fast-forwarded into `main`.
 - GitHub Actions workflow `.github/workflows/ci.yml` was removed at the owner's request. Removing it also resolved the previous push rejection caused by the GitHub token lacking workflow permission.
 - **Mofu branding changes and `public/mofu-mark.svg` are currently local, uncommitted and unpushed.** This handoff is also newly written locally.
@@ -177,7 +179,7 @@ Current launch/token source hash reported by the plan:
 
 This identifies source; it **does not mean the source is audited**.
 
-### Owner-approved hackathon direction — NOT IMPLEMENTED
+### Owner-approved hackathon direction — superseded: implemented and deployed (see section 12)
 
 The owner clarified that they want an experimental hackathon deployment with auditing performed as development continues. Proposed implementation:
 
@@ -309,3 +311,36 @@ The owner subsequently requested a contract audit/report and asked to rename the
 - Current launch/token source hash: **`0x0faacc15c2a9fd9be90c0a4cd50aa4e365b4db7206e48a86cb20e05d7dc8ba89`**. The earlier Orbit hash in section 6 is historical and obsolete for the renamed source.
 - No `.env` audit fields were set; no mainnet transaction was broadcast. Hackathon deployment and launch-first mainnet wiring remain unfinished.
 - Contract rename/audit changes were committed and pushed to `main` as **`770327d`**, separately from the still-local frontend/server branding. The missing `/mofu.svg` favicon and unfinished wordmark remain unresolved even though builds succeed; build success does not check that asset reference.
+
+## 12. Verified state — 2026-10-02 (latest)
+
+Checked against `git`, the working tree and Arc mainnet RPC. Nothing below was changed by this check except documentation.
+
+### Git
+
+- `main` = `origin/main` = **`816c7c5`** (“Tidy audit report and record published contract rename”). Commits since `0a71787`: `ccc6d6c` IPFS/profiles/cards, `ae25e8b` CI workflow removed, `f0f8bfb` mainnet protocol hub, `3d9f216` deployer `.env` loading, `770327d` Mofu rename + internal review, `816c7c5` audit tidy.
+- Branch `feat/fomo-launch-morpho` stops at `ae25e8b` and is fully contained in `main`.
+- **Uncommitted working tree (29 modified + 4 new files)** holds the hackathon release: `scripts/deploy-hackathon.mjs`, `scripts/lib/deployment-journal.mjs`, `contracts/deployment.test.js`, `MofuLaunch.sol` changes (paused at construction, corrected `TOTAL_SUPPLY`), the updated mainnet manifests, `public/mofu-mark.svg` and the remaining rebrand edits.
+
+### Mainnet (hackathon mode), verified on-chain
+
+- UniswapV2Factory `0x58498B4267D7479d6A5E14a8342ce18e08997378`, UniswapV2Router02 `0xe7a42B28f488543a11A75194D44ddC54859D1779` (`factory()` matches), **MofuLaunch `0xB583aD345d9261F267D6966f2D965C40E25e5cb4`**. Runtime hashes match the manifest.
+- All four transactions succeeded: three deploys plus “Enable launches” (blocks 23875539–23875636).
+- Owner and fee recipient: deployer EOA `0x9dF0F47ce262930a0370945A78596d3F6957f822`. Launches open, 0 tokens launched, virtual reserve 5,000 USDC, fee 100 bps. Deployer balance ≈1.53 USDC, nonce 4.
+- Unaudited. The internal review statuses are updated in `CONTRACT_AUDIT.md` (M-01/M-03/L-01 fixed, M-02 fixed for this path, L-02/L-04 open).
+
+### Validation on the current working tree
+
+- Testnet and mainnet production builds: pass.
+- `pnpm test`: **57 passed**. `forge test`: **19 passed** (6 audit-evidence + 8 unit/fuzz + 5 invariants).
+- Not re-run in this check: browser e2e suites.
+
+### Gaps to close next (in order)
+
+1. **Commit and push the working tree.** Mainnet bytecode currently comes from uncommitted source, so `main` cannot reproduce it.
+2. **Wire the mainnet frontend to the deployment.** `src/lib/contracts.ts` still disables Mofu launches on mainnet (comment: “Mainnet has no Mofu deployment yet”), and the footer says launches are disabled. Read `deployments/arc-mainnet.json` → `launch` / `mofu.contracts`, respect live `launchesPaused`, and restore the launch-first homepage.
+3. Graduated-token swaps on mainnet through the new router.
+4. Create `public/mofu.svg`. `index.html` references it; it's still missing.
+5. Explorer source verification for the three contracts; a decision on moving ownership to a Safe.
+6. mofu.lol DNS/hosting/TLS; server-side `PINATA_JWT` for live logos/profiles.
+7. Keep `storage/mainnet-deployment.json` (git-ignored; signed transactions) backed up privately; it is the recovery journal.

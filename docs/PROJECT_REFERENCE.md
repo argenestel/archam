@@ -267,7 +267,18 @@ Source reference: [official Arc connection documentation](https://docs.arc.io/ar
 
 **Native gas USDC and ERC20 token interfaces must not be conflated.** The current swap token is a custom faucet asset called tUSDC with 6 decimals, not Circle USDC. Verify actual token interfaces/decimals before a real-asset integration.
 
-### Public deployment inventory
+### Arc mainnet deployment (hackathon mode, live)
+
+| Deployment | Address |
+| --- | --- |
+| UniswapV2Factory | `0x58498B4267D7479d6A5E14a8342ce18e08997378` |
+| UniswapV2Router02 | `0xe7a42B28f488543a11A75194D44ddC54859D1779` |
+| MofuLaunch | `0xB583aD345d9261F267D6966f2D965C40E25e5cb4` |
+| Owner / fee recipient (EOA) | `0x9dF0F47ce262930a0370945A78596d3F6957f822` |
+
+Unaudited, launches enabled, frontend not yet wired. Details: [MAINNET_PLAN.md](MAINNET_PLAN.md#hackathon-deployment-live).
+
+### Public testnet deployment inventory
 
 | Deployment            | Address                                      |
 | --------------------- | -------------------------------------------- |
@@ -772,6 +783,7 @@ Next recommended update:
 | Owner feedback       | Earlier pages were not clean enough and were not production-ready                                                                |
 | `76779d5`            | Compact live swap, separate scoped demo, better pending/unknown confirmation handling, local activity and explicit release gates |
 | Current handoff      | This document is the central reference for future updates; no production approval or public hosting approval recorded            |
+| 2026-10-02 (latest)  | Mofu rename, IPFS profiles, mainnet protocol hub (`816c7c5`). **Hackathon mainnet deployment live** (MofuLaunch `0xB583…5cb4`, EOA owner, unaudited); release source still uncommitted, mainnet UI not yet wired. See UPDATE_HANDOFF.md §12. |
 | 2026-10-02 (later)   | UI rebuilt curve-first after review against the frontend-design skill. Added fund-manager MCP agent, Circle App Kit Earn/Swap, hardened OrbitLaunch V3 (live testnet launch contract), Foundry invariants, mainnet verify/deploy/monitor tooling. Testnet graduation rehearsal found and fixed a sell-out rounding bug. |
 | 2026-10-02 release   | Owner asked for a FOMO-style app, working router/lending and testnet deployments from the env wallet. Added OrbitLaunch, deployed Morpho Blue/IRM/oracle/market, rebuilt the UI (dark launch terminal), removed the demo workspace, added mainnet network config (no mainnet deploy). Testnet gas for this phase: ~0.31 USDC. Live UI e2e signed launch/buy/sell, faucet/swap and the full Morpho borrow cycle on testnet. |
 

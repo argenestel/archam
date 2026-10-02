@@ -2,7 +2,7 @@
 
 Public brand: **Mofu** (formerly Orbit). Intended domain: **https://mofu.lol**. Domain/DNS/TLS hosting is not provisioned by the local build. Legacy contract artifact names, storage keys, and deployment records remain compatible.
 
-**Release status: testnet beta plus an opt-in mainnet protocol hub beta (not production-certified).** Existing protocol swaps/vaults/cirBTC-backed loans: [mainnet app setup and limitations](docs/MAINNET_APP.md). Custom Mofu mainnet contracts remain gated by audit, Safe, and legal review: [mainnet plan](docs/MAINNET_PLAN.md). See [release gates](docs/RELEASE.md).
+**Release status:** testnet beta, plus an opt-in mainnet protocol hub (Circle-routed swaps, Morpho vaults, cirBTC loans: [setup and limits](docs/MAINNET_APP.md)). **Mofu's launch contract is live on Arc mainnet in hackathon mode**: unaudited, single-wallet owner, launches enabled, at `0xB583aD345d9261F267D6966f2D965C40E25e5cb4` ([details and known gaps](docs/MAINNET_PLAN.md#hackathon-deployment-live)). Not production-certified; production gates (audit, Safe, legal) are in [release gates](docs/RELEASE.md).
 **Start every update with [the project reference](docs/PROJECT_REFERENCE.md).**
 
 Mofu is a FOMO-style trading app for [Arc](https://arc.io), Circle's stablecoin-native L1:

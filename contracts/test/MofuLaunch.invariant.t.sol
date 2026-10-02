@@ -105,6 +105,7 @@ contract MofuLaunchInvariantTest is UniswapV2Fixture {
         (, address router) = deployV2();
         usdc = new MockUSDC();
         launch = new MofuLaunch(IERC20(address(usdc)), IUniswapV2Router02(router), 20e6, 100, address(0xFEE));
+        launch.setLaunchesPaused(false);
         for (uint256 i; i < 3; ++i) {
             address t = launch.launch("Fuzz", "FZZ", "", "", 0, 0);
             tokens.push(t);
@@ -166,6 +167,7 @@ contract MofuLaunchUnitTest is UniswapV2Fixture {
         (, address router) = deployV2();
         usdc = new MockUSDC();
         launch = new MofuLaunch(IERC20(address(usdc)), IUniswapV2Router02(router), 20e6, 100, address(0xFEE));
+        launch.setLaunchesPaused(false);
         usdc.mint(address(this), 1_000e6);
         usdc.approve(address(launch), type(uint256).max);
     }

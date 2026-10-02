@@ -989,5 +989,129 @@
       "utilization": 1,
       "refreshedAt": "2026-10-02T09:34:43.566984Z"
     }
-  ]
+  ],
+  "mofu": {
+    "chainId": 5042,
+    "deployedAt": "2026-10-02T11:55:07.312Z",
+    "deployer": "0x9dF0F47ce262930a0370945A78596d3F6957f822",
+    "owner": "0x9dF0F47ce262930a0370945A78596d3F6957f822",
+    "feeRecipient": "0x9dF0F47ce262930a0370945A78596d3F6957f822",
+    "mode": "hackathon",
+    "auditStatus": "unaudited",
+    "phase": "active",
+    "sourceHash": "0x4bc104c7db4535408bbacaa6d0706e5e6e0be725ef7442b91ee573625482000d",
+    "release": {
+      "chainId": 5042,
+      "deployer": "0x9dF0F47ce262930a0370945A78596d3F6957f822",
+      "virtualQuote": "5000000000",
+      "feeBps": "100",
+      "budget": "750000000000000000",
+      "sourceHash": "0x4bc104c7db4535408bbacaa6d0706e5e6e0be725ef7442b91ee573625482000d",
+      "compiler": "0.8.30+commit.73712a01.Emscripten.clang",
+      "optimizerRuns": 200,
+      "evmVersion": "paris",
+      "lockfileSha256": "391fc78f91186c7e935d172d24585240b0216a632c1edf42121359739d56054a",
+      "initCodeHashes": [
+        "0x6fcf2fff89676353f1f40336d0b92ffb3809e5dc26e3b253b9edf607e296560a",
+        "0x42b4e907f5977345b65dc89759d3dbd5548c6eb64e84b69bf95c9fabdbc4cf7c",
+        "0x8010735e38abeaeb1f3fbffe119ae4f8e196765724e056b261e308556be61a14"
+      ]
+    },
+    "contracts": {
+      "UniswapV2Factory": {
+        "address": "0x58498B4267D7479d6A5E14a8342ce18e08997378",
+        "transaction": "0xfea50294de8ff83fb4ec118757f4b6a77ea4f97c362b5755f01ca40f8dbc0118",
+        "block": "23875539",
+        "runtimeCodeHash": "0xbab145d02e7005f0d84c6c1639d39b799b0ea16df99ebbdaf5a14d9da820b4e0",
+        "constructorArgs": [
+          "0x9dF0F47ce262930a0370945A78596d3F6957f822"
+        ]
+      },
+      "UniswapV2Router02": {
+        "address": "0xe7a42B28f488543a11A75194D44ddC54859D1779",
+        "transaction": "0xe40fba6b4305300784768155ad62f6216da8b3a5fe6b6e9f6301c517ba48ba14",
+        "block": "23875554",
+        "runtimeCodeHash": "0xd385e107f71a8451061cb1c5bd96d8992bc5407a29f668cb5df3e258695a7c45",
+        "constructorArgs": [
+          "0x58498B4267D7479d6A5E14a8342ce18e08997378",
+          "0x3600000000000000000000000000000000000000"
+        ]
+      },
+      "MofuLaunch": {
+        "address": "0xB583aD345d9261F267D6966f2D965C40E25e5cb4",
+        "transaction": "0xad6604e455fa9668ae93a14634b2546f447318a2ff01fd2c4c62c2cd4bacc3c7",
+        "block": "23875566",
+        "runtimeCodeHash": "0x90770451dba3621d296a59848bc1cbf35002b3b1be57b43865cc5f9c01586eaa",
+        "constructorArgs": [
+          "0x3600000000000000000000000000000000000000",
+          "0xe7a42B28f488543a11A75194D44ddC54859D1779",
+          "5000000000",
+          "100",
+          "0x9dF0F47ce262930a0370945A78596d3F6957f822"
+        ]
+      }
+    },
+    "transactions": [
+      {
+        "label": "Deploy UniswapV2Factory",
+        "nonce": 0,
+        "hash": "0xfea50294de8ff83fb4ec118757f4b6a77ea4f97c362b5755f01ca40f8dbc0118",
+        "status": "success",
+        "gas": "3999967",
+        "gasPrice": "40000000000",
+        "block": "23875539",
+        "gasCost": "122060440000000000",
+        "gasUsed": "3051511",
+        "contractAddress": "0x58498b4267d7479d6a5e14a8342ce18e08997378"
+      },
+      {
+        "label": "Deploy UniswapV2Router02",
+        "nonce": 1,
+        "hash": "0xe40fba6b4305300784768155ad62f6216da8b3a5fe6b6e9f6301c517ba48ba14",
+        "status": "success",
+        "gas": "6235354",
+        "gasPrice": "40000000000",
+        "block": "23875554",
+        "gasCost": "190300040000000000",
+        "gasUsed": "4757501",
+        "contractAddress": "0xe7a42b28f488543a11a75194d44ddc54859d1779"
+      },
+      {
+        "label": "Deploy MofuLaunch",
+        "nonce": 2,
+        "hash": "0xad6604e455fa9668ae93a14634b2546f447318a2ff01fd2c4c62c2cd4bacc3c7",
+        "status": "success",
+        "gas": "5198483",
+        "gasPrice": "40000000000",
+        "block": "23875566",
+        "gasCost": "158647520000000000",
+        "gasUsed": "3966188",
+        "contractAddress": "0xb583ad345d9261f267d6966f2d965c40e25e5cb4"
+      },
+      {
+        "label": "Enable launches",
+        "nonce": 3,
+        "hash": "0x6ea1d3bd6fc488d39ab838d38147d3725f1453a8142af16b8ee767521ac119fe",
+        "status": "success",
+        "gas": "38981",
+        "gasPrice": "40000000000",
+        "block": "23875636",
+        "gasCost": "999720000000000",
+        "gasUsed": "24993",
+        "contractAddress": null
+      }
+    ],
+    "gasSpent": "472007720000000000",
+    "verifiedAt": "2026-10-02T11:56:02.484Z"
+  },
+  "launch": {
+    "contract": "0xB583aD345d9261F267D6966f2D965C40E25e5cb4",
+    "quote": "0x3600000000000000000000000000000000000000",
+    "quoteSymbol": "USDC",
+    "virtualQuote": "5000000000",
+    "feeBps": 100,
+    "paused": false,
+    "auditStatus": "unaudited",
+    "totalSupply": "999986011183597390493942218"
+  }
 }

@@ -44,24 +44,27 @@ contract MofuLaunchAuditTest is UniswapV2Fixture {
         (factory, router) = deployV2();
         quote = new MockUSDC();
         launch = new MofuLaunch(IERC20(address(quote)), IUniswapV2Router02(router), 20e6, 100, address(this));
+        launch.setLaunchesPaused(false);
         quote.mint(address(this), 10_000e6);
         quote.approve(address(launch), type(uint256).max);
     }
 
-    function test_auditDeploymentStartsOpenAndPauseDoesNotDisableExistingCurves() public {
-        assertFalse(launch.launchesPaused());
+    function test_auditDeploymentStartsPausedUntilOwnerExplicitlyEnables() public {
+        MofuLaunch fresh = new MofuLaunch(IERC20(address(quote)), IUniswapV2Router02(router), 20e6, 100, address(this));
+        assertTrue(fresh.launchesPaused());
         vm.prank(address(0xBAD));
-        address token = launch.launch("Early", "EARLY", "", "", 0, 0);
-        launch.setLaunchesPaused(true);
-        launch.buy(token, 1e6, 0, block.timestamp);
-        assertGt(IERC20(token).balanceOf(address(this)), 0);
+        vm.expectRevert(MofuLaunch.LaunchesPaused.selector);
+        fresh.launch("Early", "EARLY", "", "", 0, 0);
+        fresh.setLaunchesPaused(false);
+        vm.prank(address(0xBAD));
+        fresh.launch("Enabled", "EN", "", "", 0, 0);
     }
 
-    function test_auditActualSupplyDiffersFromAdvertisedConstant() public {
+    function test_auditActualSupplyMatchesAdvertisedConstant() public {
         address token = launch.launch("Supply", "SUP", "", "", 0, 0);
         uint256 actual = ERC20(token).totalSupply();
         assertEq(actual, launch.SALE_SUPPLY() + launch.lpSupply());
-        assertLt(actual, launch.TOTAL_SUPPLY());
+        assertEq(actual, launch.TOTAL_SUPPLY());
     }
 
     function test_auditQuoteDonationIsSurplusNotCurveMoneyOrFees() public {
@@ -102,6 +105,7 @@ contract MofuLaunchAuditTest is UniswapV2Fixture {
     function test_auditUnsupportedTaxedQuoteBreaksSolvencyAssumption() public {
         AuditTaxedQuote taxed = new AuditTaxedQuote();
         MofuLaunch unsupported = new MofuLaunch(IERC20(address(taxed)), IUniswapV2Router02(router), 20e6, 100, address(this));
+        unsupported.setLaunchesPaused(false);
         taxed.approve(address(unsupported), type(uint256).max);
         address token = unsupported.launch("Unsupported", "UNSUP", "", "", 0, 0);
         unsupported.buy(token, 10e6, 0, block.timestamp);

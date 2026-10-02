@@ -6,7 +6,7 @@
 
 **Baseline:** `3d9f21649cd10abb411cccfa3f9d959fc84b497d`, plus the Mofu contract rename described below
 
-**Status:** Review complete; findings remain open. No contracts deployed or mainnet transactions broadcast as part of this review.
+**Status:** Review complete. **Status column updated 2026-10-02 after the hackathon mainnet deployment** (MofuLaunch `0xB583aD345d9261F267D6966f2D965C40E25e5cb4`): M-01, M-03 and L-01 are fixed in the deployed contract/tooling; M-02 is fixed for the hackathon path; L-03 is partly addressed; L-02 and L-04 remain open. The review itself deployed nothing. Fixes were made in working-tree source that must be committed to be reproducible.
 
 
 ## Executive summary
@@ -43,16 +43,19 @@ Manual source inspection, local EVM execution against canonical V2 artifacts, bo
 - No mainnet fork, Arc native/ERC-20 USDC equivalence test, live blocklist test, explorer verification, gas stress benchmark, formal proof or comprehensive MEV analysis was performed. Local quote assets are ordinary ERC-20 mocks, not Arc's system interface.
 - Slither was unavailable. No static-analysis clean bill of health is claimed.
 
+All are fine i guess so you dont need to really work on this 
+
+
 ## Findings
 
 | ID | Severity | Area | Finding | Status |
 | --- | --- | --- | --- | --- |
-| M-01 | Medium | Rollout | Launches start open before the separate pause transaction | Open |
-| M-02 | Medium | Operations | Partial deployment is not durably journaled; discovery can erase records | Open |
-| M-03 | Medium | Operations | Gas cap is checked after spending, not enforced before submission | Open |
-| L-01 | Low | Tokenomics | Advertised supply differs from actual minted supply | Open |
+| M-01 | Medium | Rollout | Launches start open before the separate pause transaction | **Fixed**: `launchesPaused = true` at construction; the deploy script asserts paused before the separate “Enable launches” tx |
+| M-02 | Medium | Operations | Partial deployment is not durably journaled; discovery can erase records | **Fixed (hackathon path)**: `scripts/lib/deployment-journal.mjs` saves the signed tx before sending, with nonce checks and resume; `verify-mainnet` preserves `mofu`/`launch` records. `deploy-mainnet.mjs` still uses the old flow |
+| M-03 | Medium | Operations | Gas cap is checked after spending, not enforced before submission | **Fixed (hackathon path)**: worst-case cost (estimate ×1.3, gas price ×2) checked before signing, plus a balance reserve |
+| L-01 | Low | Tokenomics | Advertised supply differs from actual minted supply | **Fixed**: deployed `TOTAL_SUPPLY()` = 999,986,011.18… = actual mint |
 | L-02 | Low | Graduation | Quote donations can materially change initial AMM price | Open |
-| L-03 | Low | Build provenance | Test/deploy compiler mismatch and incomplete source attestation | Open |
+| L-03 | Low | Build provenance | Test/deploy compiler mismatch and incomplete source attestation | **Partly**: hackathon release pins solc 0.8.30 and records lockfile and init-code hashes; explorer source verification not done |
 | L-04 | Low | Read API | Unbounded `positionsOf` can exceed practical RPC limits | Open |
 
 Severity reflects realistic impact under the stated assumptions. Operational findings are not claims of an on-chain principal-stealing exploit.

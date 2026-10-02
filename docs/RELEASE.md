@@ -1,6 +1,6 @@
 # Release status: beta, not production-approved for real funds
 
-An **opt-in mainnet protocol hub beta** is now available through `pnpm dev:mainnet` / `pnpm build:mainnet`: existing Circle-routed swaps, Morpho vaults, and cirBTC-backed loans. See [MAINNET_APP.md](MAINNET_APP.md) for coverage, risks, and evidence. No mainnet transaction was sent by this update. This does not close the production gates or authorize deployment of Orbit's custom contracts.
+An **opt-in mainnet protocol hub beta** is now available through `pnpm dev:mainnet` / `pnpm build:mainnet`: existing Circle-routed swaps, Morpho vaults, and cirBTC-backed loans. See [MAINNET_APP.md](MAINNET_APP.md) for coverage, risks, and evidence. Custom Mofu contracts were then deployed to mainnet in an explicit, owner-approved **hackathon mode** (2026-10-02): unaudited, owned by a single deployer wallet, launches enabled. This does **not** close the production gates below; see [MAINNET_PLAN.md](MAINNET_PLAN.md#hackathon-deployment-live).
 
 This is a deployed testnet prototype with a cleaner user interface. Neither a passing build nor a larger test count establishes that it is safe for real funds.
 

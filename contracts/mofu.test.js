@@ -51,6 +51,7 @@ beforeAll(async () => {
     100n,
     owner,
   ]);
+  await write(launch, 'setLaunchesPaused', [false]);
 }, 120000);
 afterAll(async () => {
   await provider?.disconnect();

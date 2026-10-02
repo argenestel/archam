@@ -12,6 +12,12 @@ import {
 import { privateKeyToAccount } from 'viem/accounts';
 import { compile } from './check-contracts.mjs';
 
+// Explicit experimental mode is isolated from the production gates below.
+if (process.argv.includes('--hackathon')) {
+  await import('./deploy-hackathon.mjs');
+  process.exit(0);
+}
+
 // Phase 4: Mofu's own mainnet contracts. PLAN ONLY unless every gate below passes.
 // Swap and lending on mainnet use Circle App Kit and protocol-operated vaults; Mofu
 // deploys only what does not exist: a canonical Uniswap V2 factory/router for graduated
