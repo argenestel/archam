@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/api/arc-rpc", "destination": "https://rpc.testnet.arc.io/" },
+    {
+      "source": "/api/arc-rpc-quicknode",
+      "destination": "https://rpc.quicknode.testnet.arc.io/"
+    },
+    { "source": "/api/arc-rpc-drpc", "destination": "https://rpc.drpc.testnet.arc.io/" },
+    { "source": "/api/arc-rpc-mainnet", "destination": "https://rpc.mainnet.arc.io/" },
+    {
+      "source": "/api/arc-rpc-mainnet-quicknode",
+      "destination": "https://rpc.quicknode.mainnet.arc.io/"
+    },
+    { "source": "/api/arc-rpc-mainnet-drpc", "destination": "https://rpc.drpc.mainnet.arc.io/" }
+  ]
+}

@@ -26,6 +26,8 @@ pnpm preview        # static export preview at http://localhost:4173
 
 The Docker/Nginx image is the production-like server and also provides the RPC and media proxies.
 
+Vercel deployments use the checked-in `vercel.json` to proxy the same-origin Arc RPC endpoints. These platform rewrites are required when hosting the static export; the development proxy is not part of the exported files.
+
 `pnpm dev:mainnet` starts the opt-in mainnet protocol hub at **http://localhost:5193**; `pnpm build:mainnet` writes `out-mainnet/`. Use your own wallet; never send funds directly to Mofu or router addresses. See [mainnet beta documentation](docs/MAINNET_APP.md) before funding.
 
 `VITE_ARC_NETWORK=mainnet VITE_MAINNET_SIGNING=0 pnpm exec next build` produces a read-only mainnet static export (chain 5042). The Next configuration intentionally reads the existing `VITE_*` build flags, so local `.env` files remain compatible. It enables only features with a recorded mainnet deployment, so today every Mofu-operated feature shows a "not live on this network" state instead of pointing at testnet contracts.

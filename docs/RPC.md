@@ -33,4 +33,6 @@ Refresh the page after upgrading the app so the new transport code loads. If eve
 
 Static-only hosting must provide these reverse-proxy routes; uploading `out/` without API routes is insufficient. The Docker/Nginx hosting package includes them. Public production hosting and its TLS/domain still require an actual deployment target. The Docker daemon is unavailable in this environment, so the Nginx container build/runtime has not been validated here.
 
+On Vercel, the repository-root `vercel.json` provides external rewrites for all six testnet/mainnet RPC endpoints. Keep this file in the deployment: Next.js static exports do not include the development server's proxy rules, and deploying the export without these platform routes makes RPC POST requests return 404.
+
 Browser tests use public runtime-code fixtures and simulated outages, not wallet keys. They test fallback, actionable offline messaging, recovery, and mobile layout deterministically. No transactions are sent by these tests.
