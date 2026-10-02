@@ -22,8 +22,8 @@ const rpcProxy = Object.fromEntries(
 );
 export default defineConfig({
   plugins: [react()],
-  server: { proxy: rpcProxy },
-  preview: { proxy: rpcProxy },
+  server: { proxy: { ...rpcProxy, '/api/media': 'http://127.0.0.1:5192' } },
+  preview: { proxy: { ...rpcProxy, '/api/media': 'http://127.0.0.1:5192' } },
   build: {
     rollupOptions: { output: { manualChunks: { web3: ['viem'], react: ['react', 'react-dom'], icons: ['lucide-react'] } } },
   },

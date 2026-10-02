@@ -21,6 +21,8 @@ playwright-report/
 *.pem
 *.key
 
+storage/
+
 # Agent wallet secrets and audit log
 agent/.env
 agent/logs/

@@ -76,6 +76,7 @@ Do not silently resolve a material disagreement between code, chain data, and do
 - [RPC.md](RPC.md): proxy architecture and troubleshooting.
 - [MAINNET_PLAN.md](MAINNET_PLAN.md): mainnet rollout status per phase and the gates only the owner can close.
 - [AGENT.md](AGENT.md): fund-manager MCP server for Claude Code / Codex.
+- [IPFS.md](IPFS.md): Pinata logos, signed public profiles, persistent profile index, and media sidecar deployment.
 
 ## 2. Product brief and priorities
 
@@ -186,7 +187,9 @@ An update to the interface is not accepted merely because it looks different.
 
 React 19, TypeScript, Vite, viem, Lucide, Fontsource, OpenZeppelin, solc, Vitest, Ganache, and Playwright. Exact resolved versions are in `pnpm-lock.yaml`; use the lockfile rather than assuming the ranges in `package.json` identify the deployed compiler or runtime.
 
-There is **no implemented application backend, authoritative portfolio indexer, rewards service, production database, or authenticated account API**.
+A minimal Node media backend (`server/media.mjs`) now pins logos/profile metadata through Pinata with wallet-signature authorization. A persistent JSON index maps wallets to their latest profile CID; it is not on-chain and supports a single server instance. See [IPFS.md](IPFS.md). There is still **no authoritative portfolio indexer, rewards service, or production database**.
+
+Launch discovery now uses a responsive card grid, displaying the existing contract's `image` URI with deterministic fallbacks. New launches may upload a logo; existing launch images cannot be edited. Public profile pages are linked from the leaderboard, trade feed, and creator attribution. Live Pinata uploads require a server-only `PINATA_JWT`; automated tests mock Pinata rather than claiming a live upload.
 
 ### Request/signing paths
 

@@ -8,22 +8,34 @@ export type Route =
   | { page: 'lend' }
   | { page: 'leaders' }
   | { page: 'portfolio' }
-  | { page: 'risks' };
+  | { page: 'risks' }
+  | { page: 'profile'; address?: `0x${string}` };
 
 export function parseRoute(hash: string): Route {
   const [path, query = ''] = hash.replace(/^#/, '').split('?');
   const [, page = '', arg = ''] = path.split('/');
   if (page === 'token' && /^0x[0-9a-fA-F]{40}$/.test(arg)) {
     const buy = new URLSearchParams(query).get('buy') ?? undefined;
-    return { page, address: arg as `0x${string}`, buy: buy && /^\d{1,9}(\.\d{1,6})?$/.test(buy) ? buy : undefined };
+    return {
+      page,
+      address: arg as `0x${string}`,
+      buy: buy && /^\d{1,9}(\.\d{1,6})?$/.test(buy) ? buy : undefined,
+    };
   }
-  if (['create', 'swap', 'lend', 'leaders', 'portfolio', 'risks'].includes(page)) return { page } as Route;
+  if (page === 'profile')
+    return { page, address: /^0x[0-9a-fA-F]{40}$/.test(arg) ? (arg as `0x${string}`) : undefined };
+  if (['create', 'swap', 'lend', 'leaders', 'portfolio', 'risks'].includes(page))
+    return { page } as Route;
   return { page: 'discover' };
 }
 export const href = (route: Route) =>
   route.page === 'token'
     ? `#/token/${route.address}${route.buy ? `?buy=${route.buy}` : ''}`
-    : route.page === 'discover' ? '#/' : `#/${route.page}`;
+    : route.page === 'profile'
+      ? `#/profile${route.address ? `/${route.address}` : ''}`
+      : route.page === 'discover'
+        ? '#/'
+        : `#/${route.page}`;
 
 export function useRoute(): Route {
   const [route, setRoute] = useState(() => parseRoute(window.location.hash));

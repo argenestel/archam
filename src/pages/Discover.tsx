@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Copy, Search, UserCheck, UserPlus } from 'lucide-react';
 import { formatUnits } from 'viem';
 import { Curve } from '../components/Curve';
+import { TokenLogo } from '../components/Media';
 import { Avatar, Empty, Notice, Skeleton } from '../components/ui';
 import { activeChain } from '../lib/arc';
 import { deployments, graduationQuote } from '../lib/contracts';
@@ -27,8 +28,8 @@ export default function Discover() {
     return (
       <div className="card">
         <Empty title={`Launches aren’t open on ${activeChain.name} yet`}>
-          The launch contract hasn’t been deployed to this network. Swap and Lend work with the protocols already
-          running here.
+          The launch contract hasn’t been deployed to this network. Swap and Lend work with the
+          protocols already running here.
         </Empty>
       </div>
     );
@@ -54,10 +55,13 @@ export default function Discover() {
           <div>
             <h1>Launches</h1>
             <p>
-              Every token starts on the same price curve, paid in USDC. When {usd(GRAD, 0)} has gone in, the curve
-              closes and its liquidity moves to Uniswap, locked for good.
+              Every token starts on the same price curve, paid in USDC. When {usd(GRAD, 0)} has gone
+              in, the curve closes and its liquidity moves to Uniswap, locked for good.
             </p>
           </div>
+          <a className="btn btn-primary mobile-launch" href="#/create">
+            Launch a token
+          </a>
         </div>
         {launches.error && !launches.data && <Notice tone="error">{launches.error}</Notice>}
         {leader ? <Leader launch={leader} /> : launches.loading && <Skeleton h={300} />}
@@ -72,10 +76,14 @@ export default function Discover() {
           <label className="search">
             <Search size={15} />
             <span className="sr-only">Search launches</span>
-            <input placeholder="Name, ticker or address" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <input
+              placeholder="Name, ticker or address"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
           </label>
         </div>
-        <section className="card" aria-label="All launches">
+        <section aria-label="All launches">
           {launches.loading ? (
             <div style={{ padding: 20, display: 'grid', gap: 12 }}>
               {Array.from({ length: 5 }, (_, i) => (
@@ -83,16 +91,7 @@ export default function Discover() {
               ))}
             </div>
           ) : shown.length ? (
-            <ul className="launch-list">
-              <li aria-hidden>
-                <div className="launch-row launch-head">
-                  <span />
-                  <span>Token</span>
-                  <span className="hide-sm">Curve</span>
-                  <span className="r hide-sm">Market cap</span>
-                  <span className="r">Last trade</span>
-                </div>
-              </li>
+            <ul className="launch-grid">
               {shown.map((l) => (
                 <li key={l.address}>
                   <LaunchRow launch={l} />
@@ -108,7 +107,9 @@ export default function Discover() {
                 </a>
               }
             >
-              {q ? 'Try a ticker or paste a token address.' : 'The first token launched here shows up at the top.'}
+              {q
+                ? 'Try a ticker or paste a token address.'
+                : 'The first token launched here shows up at the top.'}
             </Empty>
           )}
         </section>
@@ -124,13 +125,17 @@ function Leader({ launch: l }: { launch: Launch }) {
     <section className="card hero" aria-label={`${l.name}, closest to graduating`}>
       <div style={{ minWidth: 0 }}>
         <a className="hero-title" href={href({ page: 'token', address: l.address })}>
-          <Avatar seed={l.address} size={40} />
+          <TokenLogo uri={l.image} seed={l.address} size={40} />
           <div>
             <h2>{l.name}</h2>
             <span className="muted">${l.symbol}, closest to graduating</span>
           </div>
         </a>
-        <Curve variant="hero" progress={l.progress} label={`${l.symbol} is ${pct(l.progress)} along its curve`} />
+        <Curve
+          variant="hero"
+          progress={l.progress}
+          label={`${l.symbol} is ${pct(l.progress)} along its curve`}
+        />
         <div className="hero-axis">
           <span>Launch price</span>
           <span>{pct(l.progress, 0)} sold</span>
@@ -166,23 +171,34 @@ function Leader({ launch: l }: { launch: Launch }) {
 
 function LaunchRow({ launch: l }: { launch: Launch }) {
   return (
-    <a className="launch-row" href={href({ page: 'token', address: l.address })}>
-      <Avatar seed={l.address} size={36} />
+    <a className="launch-row launch-tile card" href={href({ page: 'token', address: l.address })}>
+      <TokenLogo uri={l.image} seed={l.address} size={56} />
       <div style={{ minWidth: 0 }}>
         <div className="name">
-          {l.name} <span className="muted" style={{ fontWeight: 400 }}>${l.symbol}</span>
+          {l.name}{' '}
+          <span className="muted" style={{ fontWeight: 400 }}>
+            ${l.symbol}
+          </span>
         </div>
         <div className="sub">{l.description || `Launched by ${shortAddress(l.creator)}`}</div>
       </div>
-      <div className="hide-sm">
+      <div className="tile-progress">
         {l.graduated ? (
           <span className="chip gold">Graduated</span>
         ) : (
           <Curve progress={l.progress} label={`${pct(l.progress, 0)} along its curve`} />
         )}
       </div>
-      <div className="r hide-sm">{usd(l.marketCap)}</div>
-      <div className="r muted">{l.lastTradeAt ? `${timeAgo(l.lastTradeAt)} ago` : 'No trades'}</div>
+      <div className="tile-metrics">
+        <span className="muted">Market cap</span>
+        <b>{usd(l.marketCap)}</b>
+      </div>
+      <div className="tile-metrics">
+        <span className="muted">{l.graduated ? 'On Uniswap' : `${pct(l.progress, 0)} sold`}</span>
+        <span className="muted">
+          {l.lastTradeAt ? `${timeAgo(l.lastTradeAt)} ago` : 'No trades'}
+        </span>
+      </div>
     </a>
   );
 }
@@ -191,8 +207,13 @@ function TradeFeed({ launches }: { launches: Launch[] }) {
   const feed = useFeed(undefined, 50);
   const { follows, toggle, isFollowing } = useFollows();
   const [tab, setTab] = useState<'all' | 'following'>('all');
-  const tokens = useMemo(() => new Map(launches.map((l) => [l.address.toLowerCase(), l])), [launches]);
-  const items = (feed.data ?? []).filter((t) => tab === 'all' || follows.includes(t.trader.toLowerCase()));
+  const tokens = useMemo(
+    () => new Map(launches.map((l) => [l.address.toLowerCase(), l])),
+    [launches],
+  );
+  const items = (feed.data ?? []).filter(
+    (t) => tab === 'all' || follows.includes(t.trader.toLowerCase()),
+  );
   return (
     <aside className="card feed" aria-label="Recent trades">
       <div className="card-head">
@@ -253,13 +274,20 @@ export function FeedRow({
       <Avatar seed={t.trader} size={28} round />
       <div style={{ minWidth: 0 }}>
         <div className="who">
-          {shortAddress(t.trader)} <span className={t.isBuy ? 'up' : 'down'}>{t.isBuy ? 'bought' : 'sold'}</span>{' '}
+          <a className="link" href={`#/profile/${t.trader}`}>
+            {shortAddress(t.trader)}
+          </a>{' '}
+          <span className={t.isBuy ? 'up' : 'down'}>{t.isBuy ? 'bought' : 'sold'}</span>{' '}
           <a href={href({ page: 'token', address: t.token })}>
             <b>${launch?.symbol ?? '…'}</b>
           </a>
         </div>
         <div className="actions">
-          <button className="btn-quiet" onClick={toggle} aria-label={`${following ? 'Unfollow' : 'Follow'} ${t.trader}`}>
+          <button
+            className="btn-quiet"
+            onClick={toggle}
+            aria-label={`${following ? 'Unfollow' : 'Follow'} ${t.trader}`}
+          >
             {following ? <UserCheck size={13} /> : <UserPlus size={13} />}
             {following ? 'Following' : 'Follow'}
           </button>

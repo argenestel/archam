@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { formatUnits, getAddress } from 'viem';
 import { Curve } from '../components/Curve';
-import { ActionButton, Avatar, Notice } from '../components/ui';
+import { ImageUpload, TokenLogo } from '../components/Media';
+import { ActionButton, Notice } from '../components/ui';
 import { client } from '../lib/arc';
 import { USDC, deployments, graduationQuote, launchAbi, launchConfig } from '../lib/contracts';
 import { useBalances } from '../lib/data';
@@ -19,6 +20,8 @@ export default function CreateLaunch() {
   const [symbol, setSymbol] = useState('');
   const [description, setDescription] = useState('');
   const [initial, setInitial] = useState('');
+  const [image, setImage] = useState('');
+  const [uploading, setUploading] = useState(false);
   const balances = useBalances(address, [USDC]);
   const usdc = balances.data?.[USDC.address.toLowerCase()];
   const buy = tryParse(initial, 6);
@@ -26,7 +29,11 @@ export default function CreateLaunch() {
   const net = buy - (buy * launchConfig.feeBps) / 10_000n;
   const expected = buy ? (launchConfig.virtualToken * net) / (launchConfig.virtualQuote + net) : 0n;
   const count = useQuery('launch-count', () =>
-    client.readContract({ address: deployments.launch!, abi: launchAbi, functionName: 'tokenCount' }),
+    client.readContract({
+      address: deployments.launch!,
+      abi: launchAbi,
+      functionName: 'tokenCount',
+    }),
   );
   const problems = [
     !name.trim() && 'Enter a name',
@@ -49,13 +56,21 @@ export default function CreateLaunch() {
           <div>
             <h1 style={{ fontSize: 28 }}>Launch a token</h1>
             <p className="muted" style={{ marginTop: 6 }}>
-              1 billion tokens. 793.1 million are sold on the curve; the rest are paired with the USDC raised and
-              locked on Uniswap when the curve sells out. You get no free allocation, and neither does anyone else.
+              1 billion tokens. 793.1 million are sold on the curve; the rest are paired with the
+              USDC raised and locked on Uniswap when the curve sells out. You get no free
+              allocation, and neither does anyone else.
             </p>
           </div>
           <div className="field">
             <label htmlFor="name">Name</label>
-            <input id="name" className="input" maxLength={32} value={name} onChange={(e) => setName(e.target.value)} placeholder="Sub Second" />
+            <input
+              id="name"
+              className="input"
+              maxLength={32}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Sub Second"
+            />
           </div>
           <div className="field">
             <label htmlFor="symbol">Ticker</label>
@@ -69,6 +84,12 @@ export default function CreateLaunch() {
             />
             <span className="hint">Letters and numbers, up to 10.</span>
           </div>
+          <ImageUpload
+            value={image}
+            onChange={setImage}
+            label="Token logo (optional)"
+            onBusy={setUploading}
+          />
           <div className="field">
             <label htmlFor="desc">Description</label>
             <textarea
@@ -79,7 +100,9 @@ export default function CreateLaunch() {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What's the story?"
             />
-            <span className="hint">{280 - bytes(description)} characters left. Stored on-chain.</span>
+            <span className="hint">
+              {280 - bytes(description)} characters left. Stored on-chain.
+            </span>
           </div>
           <div className="field">
             <label htmlFor="initial">First buy (optional)</label>
@@ -93,19 +116,27 @@ export default function CreateLaunch() {
             />
             <span className="hint">
               Buying in the same transaction means nobody can buy before you.
-              {expected > 0n && ` You get ≈ ${compact(Number(formatUnits(expected, 18)))} ${symbol || 'tokens'}.`}
+              {expected > 0n &&
+                ` You get ≈ ${compact(Number(formatUnits(expected, 18)))} ${symbol || 'tokens'}.`}
             </span>
           </div>
           <ActionButton
             label="Launch token"
             onConnect={openConnect}
-            disabledReason={problems[0]}
+            disabledReason={uploading ? 'Uploading logo…' : problems[0]}
             approve={buy ? { token: USDC, spender: deployments.launch, amount: buy } : undefined}
             request={{
               address: deployments.launch,
               abi: launchAbi,
               functionName: 'launch',
-              args: [name.trim(), symbol.trim(), '', description.trim(), buy, buy ? withSlippage(expected, 100) : 0n],
+              args: [
+                name.trim(),
+                symbol.trim(),
+                image,
+                description.trim(),
+                buy,
+                buy ? withSlippage(expected, 100) : 0n,
+              ],
             }}
             onDone={async () => {
               invalidate('launch');
@@ -131,22 +162,35 @@ export default function CreateLaunch() {
             }}
           />
           <p className="faint" style={{ fontSize: 12 }}>
-            Launch contract is unaudited. Tokens are locked to the curve until graduation, so they can't be sent or
-            paired elsewhere early. 1% trading fee.
+            Launch contract is unaudited. Tokens are locked to the curve until graduation, so they
+            can't be sent or paired elsewhere early. 1% trading fee.
           </p>
         </section>
         <aside style={{ display: 'grid', gap: 14 }}>
-          <h2 style={{ fontSize: 15 }}>How it will look in the list</h2>
-          <div className="card" aria-hidden>
-            <div className="launch-row" style={{ gridTemplateColumns: '36px minmax(0,1fr) auto' }}>
-              <Avatar seed={`${name}${symbol}${count.data ?? ''}`} size={36} />
+          <h2 style={{ fontSize: 15 }}>Token preview</h2>
+          <div aria-hidden>
+            <div className="launch-row launch-tile card">
+              <TokenLogo uri={image} seed={`${name}${symbol}${count.data ?? ''}`} size={56} />
               <div style={{ minWidth: 0 }}>
                 <div className="name">
-                  {name || 'Your token'} <span className="muted" style={{ fontWeight: 400 }}>${symbol || 'TICKER'}</span>
+                  {name || 'Your token'}{' '}
+                  <span className="muted" style={{ fontWeight: 400 }}>
+                    ${symbol || 'TICKER'}
+                  </span>
                 </div>
                 <div className="sub">{description || 'Your description'}</div>
               </div>
-              <Curve progress={0} label="preview" />
+              <div className="tile-progress">
+                <Curve progress={0} label="preview" />
+              </div>
+              <div className="tile-metrics">
+                <span className="muted">Market cap</span>
+                <b>{usd(startPrice * 1e9)}</b>
+              </div>
+              <div className="tile-metrics">
+                <span className="muted">0% sold</span>
+                <span className="muted">No trades</span>
+              </div>
             </div>
           </div>
           <dl className="card card-pad kv">

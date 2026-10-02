@@ -1,0 +1,22 @@
+services:
+  web:
+    build: .
+    ports:
+      - '8080:8080'
+    restart: unless-stopped
+  media:
+    build:
+      context: .
+      dockerfile: Dockerfile.media
+    # Share loopback with nginx; the media API is not publicly exposed directly.
+    network_mode: 'service:web'
+    depends_on:
+      - web
+    environment:
+      PINATA_JWT: ${PINATA_JWT:?Set PINATA_JWT in your server environment or .env}
+      MEDIA_DATA_DIR: /data
+    volumes:
+      - profiles:/data
+    restart: unless-stopped
+volumes:
+  profiles:

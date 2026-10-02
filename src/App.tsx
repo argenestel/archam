@@ -33,6 +33,7 @@ const Lend = lazy(() => import('./pages/Lend'));
 const Leaders = lazy(() => import('./pages/Leaders'));
 const Portfolio = lazy(() => import('./pages/Portfolio'));
 const Risks = lazy(() => import('./pages/Risks'));
+const Profile = lazy(() => import('./pages/Profile'));
 
 const nav: { route: Route; label: string; icon: typeof Compass }[] = [
   { route: { page: 'discover' }, label: 'Launches', icon: Compass },
@@ -101,6 +102,7 @@ function Shell() {
           {route.page === 'leaders' && <Leaders />}
           {route.page === 'portfolio' && <Portfolio />}
           {route.page === 'risks' && <Risks />}
+          {route.page === 'profile' && <Profile address={route.address} />}
         </Suspense>
       </main>
       <footer className="footer">
@@ -182,6 +184,7 @@ function WalletButton() {
             <a className="btn btn-ghost" href="#/portfolio" onClick={() => setOpen(false)}>
               <Wallet size={16} /> Portfolio
             </a>
+            <a className="btn btn-ghost" href="#/profile" onClick={() => setOpen(false)}>Your profile</a>
             <button
               className="btn btn-ghost"
               onClick={() => {

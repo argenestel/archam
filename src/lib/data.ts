@@ -30,6 +30,7 @@ export type Launch = {
   volume: bigint;
   trades: number;
   pair: Address;
+  image: string;
   description: string;
   price: number;
   marketCap: number;
@@ -65,7 +66,7 @@ async function fetchLaunch(address: Address): Promise<Launch> {
     client.readContract({ address, abi: erc20Abi, functionName: 'name' }),
     client.readContract({ address, abi: erc20Abi, functionName: 'symbol' }),
   ]);
-  const [creator, createdAt, lastTradeAt, graduated, vq, vt, realQuote, tokensLeft, volume, trades, pair, , description] =
+  const [creator, createdAt, lastTradeAt, graduated, vq, vt, realQuote, tokensLeft, volume, trades, pair, image, description] =
     curve;
   let price = curvePrice(vq, vt);
   if (graduated && pair !== ZERO) {
@@ -92,6 +93,7 @@ async function fetchLaunch(address: Address): Promise<Launch> {
     volume,
     trades,
     pair,
+    image,
     description,
     price,
     marketCap: price * 1e9,

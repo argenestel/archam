@@ -36,6 +36,7 @@ export default function Portfolio() {
           </div>
         </div>
       </div>
+      <a className="btn btn-ghost" href="#/profile" style={{ marginBottom: 20 }}>Edit IPFS profile</a>
       <div style={{ display: 'grid', gap: 20 }}>
         <div className="grid-2">
           <PointsCard />

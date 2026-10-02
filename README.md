@@ -23,6 +23,10 @@ pnpm build && pnpm preview
 
 `VITE_ARC_NETWORK=mainnet pnpm build` produces a mainnet build (chain 5042). It enables only features with a recorded mainnet deployment, so today every Orbit-operated feature shows a "not live on this network" state instead of pointing at testnet contracts.
 
+## Logos and profiles
+
+Launches use a responsive card grid. Optional token logos and wallet-authorized public profiles are pinned to Pinata/IPFS. Set server-only `PINATA_JWT` in `.env`, run `pnpm media` alongside Vite, or deploy with `docker compose up --build -d`. See [IPFS setup and storage limitations](docs/IPFS.md). Never put Pinata secrets in `VITE_*` variables.
+
 ## Contracts
 
 | Contract | Source | Notes |

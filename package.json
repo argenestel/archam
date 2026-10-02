@@ -4,10 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "media": "node --env-file-if-exists=.env server/media.mjs",
     "dev": "vite --host :: --port 5191 --strictPort",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "vitest run src contracts",
+    "test": "vitest run src contracts server",
     "test:e2e": "playwright test",
     "contracts:check": "node scripts/check-contracts.mjs",
     "wallet:create": "node scripts/testnet-wallet.mjs create",

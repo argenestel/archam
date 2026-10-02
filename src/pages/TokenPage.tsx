@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ExternalLink, Sparkles, UserCheck, UserPlus } from 'lucide-react';
 import { erc20Abi, formatUnits, type Address } from 'viem';
 import { Curve } from '../components/Curve';
+import { TokenLogo } from '../components/Media';
 import { ActionButton, AddressLink, AmountBox, Avatar, Empty, Notice, Skeleton } from '../components/ui';
 import { addressUrl, client } from '../lib/arc';
 import { USDC, deployments, graduationQuote, launchAbi, type Token } from '../lib/contracts';
@@ -46,13 +47,13 @@ export default function TokenPage({ address }: { address: Address }) {
       <div className="token-page">
         <div className="stack">
           <div className="token-hero">
-            <Avatar seed={l.address} size={64} />
+            <TokenLogo uri={l.image} seed={l.address} size={64} />
             <div className="grow">
               <h1>
                 {l.name} <span className="muted" style={{ fontSize: '0.6em' }}>${l.symbol}</span>
               </h1>
               <p className="muted" style={{ fontSize: 13.5, marginTop: 4 }}>
-                Launched {timeAgo(l.createdAt)} ago by <AddressLink address={l.creator}>{shortAddress(l.creator)}</AddressLink>
+                Launched {timeAgo(l.createdAt)} ago by <a className="link" href={`#/profile/${l.creator}`}>{shortAddress(l.creator)}</a>
               </p>
             </div>
             {l.graduated && (
