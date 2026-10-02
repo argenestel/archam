@@ -2,6 +2,8 @@
 
 **Release status: testnet preview, not production-ready.** See the explicit [release gates](docs/RELEASE.md).
 
+**For future updates, start with [the project reference and roadmap](docs/PROJECT_REFERENCE.md).** It contains the product brief, current scope, architecture, deployed contracts, acceptance criteria, prioritized backlog, and copyable update-request templates.
+
 A React + TypeScript terminal with a Sushi/Aave-inspired workflow and a soft, Jumper-inspired purple palette. Responsive desktop/mobile UI, native dialogs, keyboard navigation, and a persistent virtual trading workspace.
 
 ## Run
