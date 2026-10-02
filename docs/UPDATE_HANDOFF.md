@@ -308,5 +308,4 @@ The owner subsequently requested a contract audit/report and asked to rename the
 - Validation after renaming: **19 Foundry tests**, **44 unit/contract/API tests**, both builds, changed script syntax and whitespace checks passed. Foundry compiler is 0.8.30; actual npm/deployment compiler is 0.8.37, documented in the report. No Slither or new browser test run.
 - Current launch/token source hash: **`0x0faacc15c2a9fd9be90c0a4cd50aa4e365b4db7206e48a86cb20e05d7dc8ba89`**. The earlier Orbit hash in section 6 is historical and obsolete for the renamed source.
 - No `.env` audit fields were set; no mainnet transaction was broadcast. Hackathon deployment and launch-first mainnet wiring remain unfinished.
-- Contract rename/audit changes are being saved separately from the still-local frontend/server branding. The missing `/mofu.svg` favicon and unfinished wordmark remain unresolved even though builds succeed; build success does not check that asset reference.
-
+- Contract rename/audit changes were committed and pushed to `main` as **`770327d`**, separately from the still-local frontend/server branding. The missing `/mofu.svg` favicon and unfinished wordmark remain unresolved even though builds succeed; build success does not check that asset reference.

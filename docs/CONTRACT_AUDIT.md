@@ -1,8 +1,11 @@
 # Mofu contracts — internal security review
 
-**Date:** 2026-10-02  
-**Reviewer:** AI-assisted internal review, not an independent audit firm  
-**Baseline:** `3d9f21649cd10abb411cccfa3f9d959fc84b497d`, plus the Mofu contract rename described below  
+**Date:** 2026-10-02
+
+**Reviewer:** AI-assisted internal review, not an independent audit firm
+
+**Baseline:** `3d9f21649cd10abb411cccfa3f9d959fc84b497d`, plus the Mofu contract rename described below
+
 **Status:** Review complete; findings remain open. No contracts deployed or mainnet transactions broadcast as part of this review.
 
 
