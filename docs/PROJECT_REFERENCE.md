@@ -74,7 +74,8 @@ Do not silently resolve a material disagreement between code, chain data, and do
 - [DEPLOYMENT.md](DEPLOYMENT.md): protocol/deployment checks.
 - [TESTNET.md](TESTNET.md): wallet, deployment, smoke checks, and hosting commands.
 - [RPC.md](RPC.md): proxy architecture and troubleshooting.
-- [MAINNET_PLAN.md](MAINNET_PLAN.md): proposed mainnet rollout, integrations and open decisions.
+- [MAINNET_PLAN.md](MAINNET_PLAN.md): mainnet rollout status per phase and the gates only the owner can close.
+- [AGENT.md](AGENT.md): fund-manager MCP server for Claude Code / Codex.
 
 ## 2. Product brief and priorities
 
@@ -276,7 +277,7 @@ Source reference: [official Arc connection documentation](https://docs.arc.io/ar
 | AdaptiveCurveIrm      | `0x83652fc0887288283f9bc07e8b00292b600e2ca8` |
 | OrbitTestnetOracle    | `0x15f6c41e138e5f7ddb71324b0c77db31c16a7d5b` |
 | Morpho market id      | `0x12a7f36527343c328a938570419ef57996818a50ba6eeb3b487c6129804a9f46` |
-| OrbitLaunch           | `0xa4915305bee76157e4d64a09d946d4a7349db6fe` |
+| OrbitLaunch V3 (live) | `0xcef0c351c9819d15d04c5ee119c59841b7cb7628` (hardened; V1 `0xa491…a6fe` and V2 `0xffd6…1f5d` are legacy) |
 | Arc USDC (ERC-20)     | `0x3600000000000000000000000000000000000000` (Circle; 6 decimals; same balance as gas) |
 
 The factory/router use canonical published artifacts from `@uniswap/v2-core@1.0.1` and `@uniswap/v2-periphery@1.1.0-beta.0`. This is a project-deployed test stack, not evidence of an independently operated Arc marketplace.
@@ -765,6 +766,7 @@ Next recommended update:
 | Owner feedback       | Earlier pages were not clean enough and were not production-ready                                                                |
 | `76779d5`            | Compact live swap, separate scoped demo, better pending/unknown confirmation handling, local activity and explicit release gates |
 | Current handoff      | This document is the central reference for future updates; no production approval or public hosting approval recorded            |
+| 2026-10-02 (later)   | UI rebuilt curve-first after review against the frontend-design skill. Added fund-manager MCP agent, Circle App Kit Earn/Swap, hardened OrbitLaunch V3 (live testnet launch contract), Foundry invariants, mainnet verify/deploy/monitor tooling. Testnet graduation rehearsal found and fixed a sell-out rounding bug. |
 | 2026-10-02 release   | Owner asked for a FOMO-style app, working router/lending and testnet deployments from the env wallet. Added OrbitLaunch, deployed Morpho Blue/IRM/oracle/market, rebuilt the UI (dark launch terminal), removed the demo workspace, added mainnet network config (no mainnet deploy). Testnet gas for this phase: ~0.31 USDC. Live UI e2e signed launch/buy/sell, faucet/swap and the full Morpho borrow cycle on testnet. |
 
 ### Decisions still needed from the owner

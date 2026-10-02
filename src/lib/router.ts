@@ -7,7 +7,8 @@ export type Route =
   | { page: 'swap' }
   | { page: 'lend' }
   | { page: 'leaders' }
-  | { page: 'portfolio' };
+  | { page: 'portfolio' }
+  | { page: 'risks' };
 
 export function parseRoute(hash: string): Route {
   const [path, query = ''] = hash.replace(/^#/, '').split('?');
@@ -16,7 +17,7 @@ export function parseRoute(hash: string): Route {
     const buy = new URLSearchParams(query).get('buy') ?? undefined;
     return { page, address: arg as `0x${string}`, buy: buy && /^\d{1,9}(\.\d{1,6})?$/.test(buy) ? buy : undefined };
   }
-  if (['create', 'swap', 'lend', 'leaders', 'portfolio'].includes(page)) return { page } as Route;
+  if (['create', 'swap', 'lend', 'leaders', 'portfolio', 'risks'].includes(page)) return { page } as Route;
   return { page: 'discover' };
 }
 export const href = (route: Route) =>

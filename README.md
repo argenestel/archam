@@ -1,15 +1,16 @@
 # Orbit — launch, trade and lend on Arc
 
-**Release status: Arc testnet beta. Not approved for mainnet funds.** See [release gates](docs/RELEASE.md).
+**Release status: Arc testnet beta. Mainnet is prepared but gated (audit, Safe, legal): see [the mainnet plan](docs/MAINNET_PLAN.md).** See [release gates](docs/RELEASE.md).
 **Start every update with [the project reference](docs/PROJECT_REFERENCE.md).**
 
 Orbit is a FOMO-style trading app for [Arc](https://arc.io), Circle's stablecoin-native L1:
 
 - **Discover (launches):** anyone launches a fixed-supply token in one transaction. It trades against **real Arc USDC** on a virtual-reserve bonding curve. At ~57 USDC raised (testnet), the curve **graduates**: its USDC and reserved tokens are minted into a Uniswap V2 pool and the LP is burned. Includes King of the Orbit, live trade ticker/feed, per-token chart, trades and positions.
 - **Social:** follow traders (private browser watchlist), "Following" feed, in-app alerts when a followed wallet trades, one-tap **copy trade**.
-- **Leaderboard & points:** P&L (marked to market), volume and points, all recomputed from on-chain launch-contract state. There is no off-chain database. Points have no monetary value.
-- **Swap:** canonical Uniswap V2 router, best of direct/hub routes, exact approvals, slippage minimums.
-- **Lend:** a canonical **Morpho Blue** isolated market (tETH collateral → tUSDC) with AdaptiveCurveIrm rates, health factor, and supply/withdraw/collateral/borrow/repay.
+- **Leaderboard & points:** P&L (marked to market) and volume-based points, recomputed from on-chain launch-contract state. Points have no monetary value and can't be farmed for free.
+- **Swap:** USDC↔EURC through Circle App Kit (mainnet + testnet), plus Orbit's Uniswap V2 pools on testnet.
+- **Lend:** curated Morpho **Earn vaults** through Circle App Kit, plus a canonical Morpho Blue test market (tETH → tUSDC) with health factor and the full borrow cycle.
+- **Fund-manager agent:** an MCP server that Claude Code or Codex drives to read market data and swap, lend and rebalance within a policy you set. See [docs/AGENT.md](docs/AGENT.md).
 - **Portfolio:** balances, launch positions with P&L, lending position, points level, local transaction history.
 
 ## Run
@@ -38,6 +39,8 @@ Addresses, constructor args, receipts and runtime hashes are in `deployments/arc
 ```sh
 pnpm contracts:check           # compile everything
 pnpm test                      # unit + local-EVM contract tests (curve, graduation grief, Morpho flow)
+forge test                     # Foundry invariants + fuzz (needs contracts/lib/forge-std)
+node agent/policy.test.mjs     # fund-manager policy engine
 pnpm test:e2e                  # read-only UI checks against live Arc testnet, 5 viewport widths
 ORBIT_LIVE_E2E=1 ORBIT_E2E_PRIVATE_KEY=0x… pnpm exec playwright test e2e/live.spec.ts
                                # signs real testnet txs through the UI with a throwaway key
@@ -48,6 +51,10 @@ ORBIT_LIVE_E2E=1 ORBIT_E2E_PRIVATE_KEY=0x… pnpm exec playwright test e2e/live.
 ```sh
 pnpm deploy:orbit [--broadcast]     # Morpho + oracle + market + OrbitLaunch (idempotent, gas-capped)
 pnpm oracle:refresh [--broadcast]   # re-post tETH price from the pool (oracle max age: 30 days)
+pnpm monitor [testnet|mainnet]      # health + solvency checks; ALERT_WEBHOOK_URL for alerts
+pnpm verify:mainnet                 # Phase 0: verify mainnet dependencies (read-only)
+pnpm deploy:mainnet                 # Phase 4 plan; refuses to broadcast until every gate passes
+pnpm agent plan | rebalance --execute  # fund manager CLI (see docs/AGENT.md)
 ```
 
 The deployer key is read from the git-ignored `.env` (`ARC_TESTNET_DEPLOYER_PRIVATE_KEY`) or the encrypted keystore. It is never printed or bundled.

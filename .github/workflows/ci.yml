@@ -1,4 +1,4 @@
-name: Validate testnet preview
+name: Validate
 on: [push, pull_request]
 jobs:
   validate:
@@ -13,6 +13,13 @@ jobs:
       - run: pnpm build
       - run: pnpm contracts:check
       - run: pnpm test
+      - uses: foundry-rs/foundry-toolchain@v1
+      - name: Foundry invariant and fuzz suite
+        run: |
+          git clone --depth 1 https://github.com/foundry-rs/forge-std contracts/lib/forge-std
+          forge test
+      - name: Fund-manager policy checks (no network writes)
+        run: node agent/policy.test.mjs
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - name: Validate hosting package

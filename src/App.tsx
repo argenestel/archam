@@ -32,6 +32,7 @@ const Swap = lazy(() => import('./pages/Swap'));
 const Lend = lazy(() => import('./pages/Lend'));
 const Leaders = lazy(() => import('./pages/Leaders'));
 const Portfolio = lazy(() => import('./pages/Portfolio'));
+const Risks = lazy(() => import('./pages/Risks'));
 
 const nav: { route: Route; label: string; icon: typeof Compass }[] = [
   { route: { page: 'discover' }, label: 'Launches', icon: Compass },
@@ -99,6 +100,7 @@ function Shell() {
           {route.page === 'lend' && <Lend />}
           {route.page === 'leaders' && <Leaders />}
           {route.page === 'portfolio' && <Portfolio />}
+          {route.page === 'risks' && <Risks />}
         </Suspense>
       </main>
       <footer className="footer">
@@ -114,6 +116,7 @@ function Shell() {
                 USDC faucet
               </a>
             )}
+            <a href="#/risks">Risks</a>
             <a href="/arc-testnet-deployment.json" target="_blank" rel="noreferrer">
               Deployment manifest
             </a>
