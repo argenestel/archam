@@ -7,7 +7,7 @@ test('mainnet hub, swap, earn and borrow render across viewport sizes', async ({
   page.on('pageerror', (e) => errors.push(e.message));
   for (const width of [360, 390, 768, 1280, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    for (const route of ['', 'swap', 'lend', 'borrow', 'portfolio', 'risks']) {
+    for (const route of ['', 'swap', 'lend', 'borrow', 'portfolio', 'risks', 'bridge', 'apps']) {
       await page.goto(`/#/${route}`);
       await expect(page.getByRole('link', { name: 'Mofu home', exact: true })).toBeVisible();
       await expect(page.locator('main :is(h1,h3)').first()).toBeVisible();
@@ -131,4 +131,13 @@ test('wrong network asks to switch, never tries to transact', async ({ page }) =
   await expect(page.locator('main .btn-block')).toHaveText('Switch to Arc');
   await expect(page.getByLabel('Pay token')).toHaveValue('USDC');
   await expect(page.getByLabel('Receive token')).toHaveValue('EURC');
+});
+
+test('add funds lists Circle bridge source chains for Arc mainnet', async ({ page }) => {
+  await page.goto('/#/bridge');
+  await expect(page.getByRole('heading', { name: 'Add funds' })).toBeVisible();
+  const from = page.getByLabel('From');
+  await expect(from.locator('option', { hasText: 'Base' }).first()).toBeAttached({ timeout: 20_000 });
+  await expect(from).toHaveValue('Base');
+  await expect(page.locator('main .btn-block')).toHaveText('Connect wallet');
 });

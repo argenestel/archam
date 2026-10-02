@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 // Read-only checks against live Arc testnet state through the same-origin RPC proxy.
-const pages = ['', 'swap', 'lend', 'leaders', 'portfolio', 'create', 'risks'];
+const pages = ['', 'swap', 'lend', 'leaders', 'portfolio', 'create', 'risks', 'bridge'];
 const widths = [360, 390, 768, 1280, 1440];
 
 test('every page renders without errors or horizontal overflow', async ({ page }) => {

@@ -36,13 +36,15 @@ const Risks = lazy(() => import('./pages/Risks'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Mainnet = lazy(() => import('./pages/Mainnet'));
 const Borrow = lazy(() => import('./pages/Borrow'));
+const Bridge = lazy(() => import('./pages/Bridge'));
 
-const nav: { route: Route; label: string; icon: typeof Compass }[] = isTestnet
+const nav: { route: Route; label: string; icon: typeof Compass; mobile?: boolean }[] = isTestnet
   ? [
       { route: { page: 'discover' }, label: 'Launches', icon: Compass },
       { route: { page: 'swap' }, label: 'Swap', icon: ArrowLeftRight },
       { route: { page: 'lend' }, label: 'Lend', icon: Landmark },
       { route: { page: 'leaders' }, label: 'Leaderboard', icon: Trophy },
+      { route: { page: 'bridge' }, label: 'Add funds', icon: Wallet, mobile: false },
       { route: { page: 'portfolio' }, label: 'Portfolio', icon: Wallet },
     ]
   : [
@@ -50,8 +52,9 @@ const nav: { route: Route; label: string; icon: typeof Compass }[] = isTestnet
       { route: { page: 'swap' }, label: 'Swap', icon: ArrowLeftRight },
       { route: { page: 'lend' }, label: 'Earn', icon: Landmark },
       { route: { page: 'borrow' }, label: 'Borrow', icon: Landmark },
-      ...(deployments.launch ? [{ route: { page: 'leaders' } as Route, label: 'Leaderboard', icon: Trophy }] : []),
-      { route: { page: deployments.launch ? 'apps' : 'discover' } as Route, label: 'Arc apps', icon: Compass },
+      ...(deployments.launch ? [{ route: { page: 'leaders' } as Route, label: 'Leaderboard', icon: Trophy, mobile: false }] : []),
+      { route: { page: deployments.launch ? 'apps' : 'discover' } as Route, label: 'Arc apps', icon: Compass, mobile: !deployments.launch },
+      { route: { page: 'bridge' }, label: 'Add funds', icon: Wallet, mobile: false },
       { route: { page: 'portfolio' }, label: 'Portfolio', icon: Wallet },
     ];
 
@@ -122,6 +125,7 @@ function Shell() {
         >
           {route.page === 'discover' && (isTestnet || deployments.launch ? <Discover /> : <Mainnet />)}
           {route.page === 'apps' && <Mainnet />}
+          {route.page === 'bridge' && <Bridge />}
           {route.page === 'token' && <TokenPage address={route.address} />}
           {route.page === 'create' && <CreateLaunch />}
           {route.page === 'swap' && <Swap />}
@@ -161,7 +165,7 @@ function Shell() {
         </div>
       </footer>
       <nav className="mobile-nav" aria-label="Primary mobile">
-        {nav.map((n) => (
+        {nav.filter((n) => n.mobile !== false).map((n) => (
           <a key={n.label} href={href(n.route)} aria-current={active(n.route) ? 'page' : undefined}>
             <n.icon size={19} />
             {n.label}
@@ -262,6 +266,9 @@ function WalletButton() {
             </div>
             <a className="btn btn-ghost" href="#/portfolio" onClick={() => setOpen(false)}>
               <Wallet size={16} /> Portfolio
+            </a>
+            <a className="btn btn-ghost" href="#/bridge" onClick={() => setOpen(false)}>
+              Add funds from another chain
             </a>
             <a className="btn btn-ghost" href="#/profile" onClick={() => setOpen(false)}>
               Your profile

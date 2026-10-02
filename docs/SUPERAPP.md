@@ -27,7 +27,7 @@ Mofu is the front door to Arc. A user, or the AI fund manager, should be able to
 | --- | --- | --- | --- |
 | 1 | Mainnet launch wiring | **Done** | Mainnet reads the live `mofu` record (MofuLaunch `0xB583…5cb4`, V2 router/factory); Launches is the home page; Create respects live `launchesPaused`; protocol hub moved to **Arc apps**; market cap uses the real minted supply. |
 | 2 | Adapter layer + smart router | **Done (swap)** | Adapters: Mofu curve, Mofu V2, **Uniswap v4**, Circle. **Best price** is the default Swap mode on both networks. |
-| 3 | Bridge in (CCTP / Gateway / Bridge Kit) | Next | Deposit USDC from Base, Ethereum, Solana… directly into Mofu. |
+| 3 | Bridge in (CCTP via App Kit Bridge) | **Done (EVM sources)** | **Add funds** page: USDC/EURC from ~25 EVM chains; Circle's Forwarding Service mints on Arc, so no Arc gas is needed. Fast or Standard speed, fee estimate before signing, journaled transfers with explorer links, retry, and an explicit resolve for uncertain submissions. Measured fees: Base→Arc mainnet 100 USDC Fast ≈ 0.0036 transfer + 0.016 forwarding. Solana source needs the Solana adapter (not added). **No real bridge transfer has been run yet.** |
 | 4 | Aave V4 adapter | Planned | After the Arc Core Hub and spoke addresses are verified on-chain. |
 | 5 | Unified portfolio over adapters | Planned | Positions from every adapter; oracle prices (Chainlink/Pyth/RedStone/Stork/Chronicle). |
 | 6 | Agent on adapters + ERC-8004 identity | Planned | Fund manager uses the same router; registers identity/reputation on Arc's ERC-8004 registries. |
@@ -51,7 +51,6 @@ Mofu is the front door to Arc. A user, or the AI fund manager, should be able to
 
 ## Next build steps
 
-1. Bridge-in adapter with App Kit Bridge (CCTP), shown as "Add funds from another chain".
 2. Earn and Borrow behind the same adapter interface, so the agent can rebalance through it.
 3. Agent: replace the agent's direct App Kit calls with the adapter router (shared quotes, same safety checks).
 4. Aave V4: verify addresses, then a read-only adapter (rates, positions), then execution.
