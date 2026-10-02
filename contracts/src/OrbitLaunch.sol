@@ -83,8 +83,13 @@ contract OrbitLaunch is ReentrancyGuard {
     uint256 public immutable feeBps;
     /// @notice Tokens reserved for liquidity, matching the final curve price.
     uint256 public immutable lpSupply;
+    uint256 public constant MAX_PAGE = 200;
+
     address public feeRecipient;
     address public owner;
+    address public pendingOwner;
+    /// @notice Blocks new launches only. Trading, selling and graduation are never pausable.
+    bool public launchesPaused;
     uint256 public feesAccrued;
 
     address[] public tokens;
@@ -115,6 +120,12 @@ contract OrbitLaunch is ReentrancyGuard {
     error InvalidAmount();
     error InvalidMetadata();
     error OnlyOwner();
+    error LaunchesPaused();
+
+    event LaunchesPausedSet(bool paused);
+    event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event FeeRecipientSet(address indexed recipient);
 
     constructor(
         IERC20 quote_,
@@ -145,6 +156,7 @@ contract OrbitLaunch is ReentrancyGuard {
         uint256 initialBuy,
         uint256 minTokensOut
     ) external nonReentrant returns (address token) {
+        if (launchesPaused) revert LaunchesPaused();
         _validate(name, symbol, image, description);
         token = address(new OrbitToken(name, symbol, SALE_SUPPLY + lpSupply));
         _init(token, image, description);
@@ -195,8 +207,9 @@ contract OrbitLaunch is ReentrancyGuard {
             // Final buy: take only the quote needed for the remaining inventory.
             tokensOut = c.tokensLeft;
             net = _ceilDiv(c.virtualQuote * tokensOut, c.virtualToken - tokensOut);
-            fee = (net * feeBps) / 10_000;
-            quoteIn = net + fee;
+            uint256 charged = _sellOutCharge(net);
+            if (charged < quoteIn) quoteIn = charged;
+            fee = quoteIn - net;
         }
         if (tokensOut < minTokensOut || tokensOut == 0) revert Slippage();
         quote.safeTransferFrom(msg.sender, address(this), quoteIn);
@@ -261,22 +274,57 @@ contract OrbitLaunch is ReentrancyGuard {
 
     function withdrawFees() external {
         uint256 amount = feesAccrued;
+        require(amount > 0, "no fees");
         feesAccrued = 0;
         quote.safeTransfer(feeRecipient, amount);
     }
 
-    function setFeeRecipient(address recipient) external {
+    modifier onlyOwner() {
         if (msg.sender != owner) revert OnlyOwner();
-        require(recipient != address(0), "zero address");
-        feeRecipient = recipient;
+        _;
     }
 
-    function transferOwnership(address next) external {
-        if (msg.sender != owner) revert OnlyOwner();
-        owner = next;
+    /// @dev Also the recovery path if a recipient ends up on the USDC blocklist: withdrawFees
+    /// reverts atomically, so accrued fees stay put until a new recipient is set.
+    function setFeeRecipient(address recipient) external onlyOwner {
+        require(recipient != address(0), "zero address");
+        feeRecipient = recipient;
+        emit FeeRecipientSet(recipient);
+    }
+
+    function setLaunchesPaused(bool paused) external onlyOwner {
+        launchesPaused = paused;
+        emit LaunchesPausedSet(paused);
+    }
+
+    /// @notice Two-step handover: the new owner (e.g. a multisig) must accept.
+    function transferOwnership(address next) external onlyOwner {
+        pendingOwner = next;
+        emit OwnershipTransferStarted(owner, next);
+    }
+
+    function acceptOwnership() external {
+        if (msg.sender != pendingOwner) revert OnlyOwner();
+        emit OwnershipTransferred(owner, msg.sender);
+        owner = msg.sender;
+        pendingOwner = address(0);
     }
 
     // ---------------------------------------------------------------- views
+
+    struct CurveState {
+        bool graduated;
+        uint256 virtualQuote;
+        uint256 virtualToken;
+        uint256 realQuote;
+        uint256 tokensLeft;
+    }
+
+    /// @notice Compact numeric state of one curve (no strings), for indexers and tests.
+    function curveState(address token) external view returns (CurveState memory) {
+        Curve storage c = curves[token];
+        return CurveState(c.graduated, c.virtualQuote, c.virtualToken, c.realQuote, c.tokensLeft);
+    }
 
     function tokenCount() external view returns (uint256) {
         return tokens.length;
@@ -305,7 +353,8 @@ contract OrbitLaunch is ReentrancyGuard {
         if (tokensOut >= c.tokensLeft) {
             tokensOut = c.tokensLeft;
             net = _ceilDiv(c.virtualQuote * tokensOut, c.virtualToken - tokensOut);
-            charged = net + (net * feeBps) / 10_000;
+            uint256 sellOut = _sellOutCharge(net);
+            if (sellOut < charged) charged = sellOut;
         }
     }
 
@@ -320,6 +369,7 @@ contract OrbitLaunch is ReentrancyGuard {
     function tokensPage(uint256 offset, uint256 limit) external view returns (address[] memory page) {
         uint256 n = tokens.length;
         if (offset >= n) return page;
+        if (limit > MAX_PAGE) limit = MAX_PAGE;
         uint256 size = n - offset < limit ? n - offset : limit;
         page = new address[](size);
         for (uint256 i; i < size; ++i) page[i] = tokens[n - 1 - offset - i];
@@ -333,6 +383,7 @@ contract OrbitLaunch is ReentrancyGuard {
     {
         uint256 n = token == address(0) ? trades.length : tokenTradeIds[token].length;
         if (offset >= n) return (page, ids);
+        if (limit > MAX_PAGE) limit = MAX_PAGE;
         uint256 size = n - offset < limit ? n - offset : limit;
         page = new Trade[](size);
         ids = new uint256[](size);
@@ -351,6 +402,7 @@ contract OrbitLaunch is ReentrancyGuard {
     {
         uint256 n = traders.length;
         if (offset >= n) return (accounts, values);
+        if (limit > MAX_PAGE) limit = MAX_PAGE;
         uint256 size = n - offset < limit ? n - offset : limit;
         accounts = new address[](size);
         values = new TraderStats[](size);
@@ -412,6 +464,12 @@ contract OrbitLaunch is ReentrancyGuard {
             stats[account].firstTradeAt = uint40(block.timestamp);
             traders.push(account);
         }
+    }
+
+    /// @dev Smallest gross amount whose fee-adjusted net still covers `net`, so that sending
+    /// the quoted charge back into `buy` always reaches the sell-out branch.
+    function _sellOutCharge(uint256 net) internal view returns (uint256) {
+        return _ceilDiv(net * 10_000, 10_000 - feeBps);
     }
 
     function _ceilDiv(uint256 a, uint256 b) internal pure returns (uint256) {

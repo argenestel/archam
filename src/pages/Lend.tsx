@@ -8,6 +8,7 @@ import { useBalances, useMarket } from '../lib/data';
 import { compact, formatAmount, pct, shortAddress, timeAgo, tryParse } from '../lib/format';
 import { healthFactor, maxBorrow } from '../lib/math';
 import { openConnect, useWallet } from '../lib/wallet';
+import Earn from './Earn';
 
 type Action = 'supply' | 'withdraw' | 'collateral' | 'uncollateral' | 'borrow' | 'repay';
 const earnActions: [Action, string][] = [
@@ -33,12 +34,15 @@ export default function Lend() {
   const balances = useBalances(address, loan && coll ? [loan, coll] : []);
   if (!market || !deployments.morpho || !loan || !coll)
     return (
-      <div className="card">
-        <Empty title={`Lending isn't enabled on ${activeChain.name} in this build`}>
-          Aave V4 and Morpho run lending markets on Arc mainnet. Orbit enables a market only once its contract
-          addresses, oracle and risk parameters are recorded and reviewed.
-        </Empty>
-      </div>
+      <>
+        <div className="page-head">
+          <div>
+            <h1>Lend</h1>
+            <p>Put idle USDC to work in curated Morpho vaults on {activeChain.name}.</p>
+          </div>
+        </div>
+        <Earn />
+      </>
     );
   const d = m.data;
   const lltv = market.params.lltv;
@@ -113,13 +117,18 @@ export default function Lend() {
     <>
       <div className="page-head">
         <div>
-          <h1>Lend &amp; borrow</h1>
-          <p>
-            An isolated Morpho Blue market. Supply {loan.symbol} to earn variable interest, or borrow it against{' '}
-            {coll.symbol}. Rates come from Morpho's AdaptiveCurveIrm and move with utilization.
-          </p>
+          <h1>Lend</h1>
+          <p>Earn on USDC in curated Morpho vaults, or borrow against collateral in Orbit’s test market.</p>
         </div>
       </div>
+      <div style={{ marginBottom: 32 }}>
+        <Earn />
+      </div>
+      <h2 style={{ fontSize: 20, marginBottom: 6 }}>Borrow: Orbit test market</h2>
+      <p className="muted" style={{ marginBottom: 16, maxWidth: '60ch' }}>
+        An isolated Morpho Blue market for test assets. Supply {loan.symbol} to earn, or borrow it against {coll.symbol}.
+        Rates move with utilization.
+      </p>
       <div className="lend">
         <div style={{ display: 'grid', gap: 20, minWidth: 0 }}>
           <section className="card">

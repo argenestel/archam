@@ -41,7 +41,9 @@ it('converts per-second rates to APY', () => {
   expect(rateToApy(BigInt(Math.round((0.04 / 31_536_000) * 1e18)))).toBeCloseTo(Math.expm1(0.04), 6);
 });
 it('derives points and levels deterministically', () => {
-  expect(points({ trades: 3, volume: 25_500_000n, launches: 1 })).toBe(155);
+  expect(points({ trades: 3, volume: 25_500_000n, launches: 5 })).toBe(25);
+  // many tiny trades earn nothing extra
+  expect(points({ trades: 1000, volume: 999_999n, launches: 0 })).toBe(0);
   expect(level(0)).toMatchObject({ level: 1, progress: 0, next: 50 });
   expect(level(200).level).toBe(3);
 });

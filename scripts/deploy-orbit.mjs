@@ -214,7 +214,47 @@ async function main() {
     feeBps: 100,
     graduation: 'Uniswap V2 pair via project factory, LP burned to 0xdEaD',
   };
+  // ---- Hardened launch contract (two-step owner, launch-only pause, capped pages).
+  // Testnet uses a 3 USDC virtual reserve so a full graduation can be rehearsed for ~8.6 USDC.
+  const v3 = await deploy('OrbitLaunchV3', own['contracts/src/OrbitLaunch.sol'].OrbitLaunch, [
+    USDC_ERC20,
+    c.UniswapV2Router02.address,
+    parseUnits('3', 6),
+    100n,
+    account.address,
+  ]);
+  const seedBuy = parseUnits('0.3', 6);
+  await write('V3: approve seed buys', usdc, 'approve', [v3.address, seedBuy * 3n]);
+  for (const [name, symbol, description] of seeds)
+    await write(`V3: launch ${symbol}`, v3, 'launch', [name, symbol, '', description, seedBuy, 0n]);
+  if (!manifest.legacyLaunch) manifest.legacyLaunch = { ...manifest.launch, note: 'superseded; see OrbitLaunchV3 (hardened, sell-out rounding fix)' };
+  manifest.launch = {
+    contract: v3.address,
+    quote: USDC_ERC20,
+    quoteSymbol: 'USDC',
+    virtualQuote: '3000000',
+    feeBps: 100,
+    graduation: 'Uniswap V2 pair via project factory, LP burned to 0xdEaD',
+  };
   manifest.capabilities = { ...manifest.capabilities, lending: true, launches: true };
+  save();
+  if (process.argv.includes('--rehearse')) {
+  // Rehearsal: one curve bought out completely, which must graduate into a burned V2 pool.
+    const [, charged] = await rpc.readContract({
+      ...v3,
+      functionName: 'quoteBuy',
+      args: [await rpc.readContract({ ...v3, functionName: 'tokens', args: [0n] }), parseUnits('100', 6)],
+    });
+    await write('V3: approve graduation rehearsal', usdc, 'approve', [v3.address, charged]);
+    const gradToken = await rpc.readContract({ ...v3, functionName: 'tokens', args: [0n] });
+    await write('V3: graduation rehearsal buy', v3, 'buy', [
+      gradToken,
+      charged,
+      0n,
+      BigInt(Math.floor(Date.now() / 1000) + 600),
+    ]);
+    manifest.launch.rehearsal = { token: gradToken, transaction: manifest.steps['V3: graduation rehearsal buy'] };
+  }
   manifest.phase2CompletedAt = new Date().toISOString();
   save();
   console.log(`Done. Cumulative gas: ${formatUnits(BigInt(manifest.gasSpent), 18)} USDC.`);

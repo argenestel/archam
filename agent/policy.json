@@ -1,0 +1,14 @@
+{
+  "network": "testnet",
+  "dryRun": false,
+  "maxPerTxUsd": 5,
+  "maxDailyUsd": 20,
+  "minGasReserveUsdc": 0.3,
+  "maxSlippageBps": 100,
+  "minApyImprovementBps": 50,
+  "minMoveUsd": 0.1,
+  "allowedActions": ["swap", "earn_deposit", "earn_withdraw"],
+  "allowedTokens": ["USDC", "EURC"],
+  "vaultAllowlist": [],
+  "mainnetEnabled": false
+}

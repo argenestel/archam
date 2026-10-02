@@ -116,7 +116,7 @@ export default function Leaders() {
         )}
       </section>
       <p className="faint" style={{ fontSize: 12, marginTop: 14 }}>
-        Points: 10 per trade, 1 per USDC traded, 100 per launch. Points have no monetary value and are not a promise
+        Points: 1 per USDC traded. Trade count and launch count earn nothing, so splitting, spamming launches or wash-trading only costs fees. Points have no monetary value and are not a promise
         of any reward. Following is a private watchlist stored in this browser.
       </p>
     </>

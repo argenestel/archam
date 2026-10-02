@@ -16,16 +16,25 @@
     "smoke:testnet": "node scripts/smoke-testnet.mjs",
     "format": "prettier --write src e2e scripts *.ts *.json *.md *.yaml docs",
     "deploy:orbit": "node scripts/deploy-orbit.mjs",
-    "oracle:refresh": "node scripts/oracle-refresh.mjs"
+    "oracle:refresh": "node scripts/oracle-refresh.mjs",
+    "agent": "node --env-file-if-exists=agent/.env agent/run.mjs",
+    "agent:mcp": "node --env-file-if-exists=agent/.env agent/server.mjs",
+    "verify:mainnet": "node scripts/verify-mainnet.mjs",
+    "monitor": "node scripts/monitor.mjs",
+    "deploy:mainnet": "node scripts/deploy-mainnet.mjs"
   },
   "dependencies": {
+    "@circle-fin/adapter-viem-v2": "^1.19.0",
+    "@circle-fin/app-kit": "^1.16.0",
     "@fontsource/ibm-plex-sans": "^5.3.0",
     "@fontsource/ibm-plex-sans-condensed": "^5.3.0",
+    "@modelcontextprotocol/sdk": "^1.31.0",
     "@openzeppelin/contracts": "^5.4.0",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "viem": "^2.38.0"
+    "viem": "^2.38.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

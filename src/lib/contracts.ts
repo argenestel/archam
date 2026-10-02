@@ -29,7 +29,7 @@ export const deployments = {
   router: at('UniswapV2Router02'),
   factory: at('UniswapV2Factory'),
   launch: m?.launch?.contract as Address | undefined,
-  launchBlock: BigInt(m?.contracts.OrbitLaunch?.block ?? '0'),
+  
   morpho: m?.lending?.morpho as Address | undefined,
   oracle: at('OrbitTestnetOracle'),
 };

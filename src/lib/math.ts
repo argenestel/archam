@@ -63,10 +63,12 @@ export function healthFactor(
 /**
  * Orbit points: a deterministic function of onchain launch-curve totals, so anyone can
  * recompute them from chain state. They have no monetary value and confer no entitlement.
+ * Only volume counts, never trade or launch count: every point is backed by ~1¢ of curve
+ * fees (1% each way), so splitting trades or wash-trading cannot mint points for free.
  */
 export function points(stats: { trades: number; volume: bigint; launches: number }): number {
-  const volumePoints = Number(stats.volume / 10n ** 6n); // 1 point per USDC traded
-  return stats.trades * 10 + volumePoints + stats.launches * 100;
+  // Launches earn nothing on their own (they cost only gas); a creator's first buy is volume.
+  return Number(stats.volume / 10n ** 6n);
 }
 export function level(total: number) {
   const index = Math.floor(Math.sqrt(total / 50));

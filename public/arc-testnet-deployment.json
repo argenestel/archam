@@ -117,6 +117,32 @@
         "100",
         "0x1A86d3148df478a1071e9D3D4825C99FB75ec964"
       ]
+    },
+    "OrbitLaunchV2": {
+      "address": "0xffd662cc4b5adb4da8f642f54882f271f5641d2f",
+      "transaction": "0x20e82f08dc49665d507cb91d9929d104ce032c36f388dbff6c3af5ad21736bb1",
+      "block": "65080822",
+      "runtimeCodeHash": "0xf28e32b7831176131b06c2f35943553b4da65d4269aa6451cba7d88ade2fb50f",
+      "constructorArgs": [
+        "0x3600000000000000000000000000000000000000",
+        "0xa1ae04767893d81bed19272fee30746132e339de",
+        "3000000",
+        "100",
+        "0x1A86d3148df478a1071e9D3D4825C99FB75ec964"
+      ]
+    },
+    "OrbitLaunchV3": {
+      "address": "0xcef0c351c9819d15d04c5ee119c59841b7cb7628",
+      "transaction": "0x8660da7bef114e5970b613db95628a9b0e12cf68063d6b084001c0ed1ec0e20b",
+      "block": "65081048",
+      "runtimeCodeHash": "0x991eb15be2d0011bc55e0e9daf40c5e2e7232640a93cdfbd6c3eac54b93837cf",
+      "constructorArgs": [
+        "0x3600000000000000000000000000000000000000",
+        "0xa1ae04767893d81bed19272fee30746132e339de",
+        "3000000",
+        "100",
+        "0x1A86d3148df478a1071e9D3D4825C99FB75ec964"
+      ]
     }
   },
   "transactions": [
@@ -335,9 +361,113 @@
       "block": "65074711",
       "gasUsed": "109508",
       "gasCost": "2737700000000000"
+    },
+    {
+      "label": "Deploy OrbitLaunchV2",
+      "hash": "0x20e82f08dc49665d507cb91d9929d104ce032c36f388dbff6c3af5ad21736bb1",
+      "status": "success",
+      "block": "65080822",
+      "gasUsed": "3936837",
+      "gasCost": "98420925000000000"
+    },
+    {
+      "label": "V2: approve seed buys",
+      "hash": "0x4d8268f4c49682dfdb306e79ce61ab5f742564b174efb65bdd8423ecb5d5d286",
+      "status": "success",
+      "block": "65080826",
+      "gasUsed": "55438",
+      "gasCost": "1385950000000000"
+    },
+    {
+      "label": "V2: launch ROCKET",
+      "hash": "0x646292c54857f0b1057a91c3edccb787dc1aa9ff8f9d837a39e4077d0caaa4fd",
+      "status": "success",
+      "block": "65080838",
+      "gasUsed": "1293066",
+      "gasCost": "32326650000000000"
+    },
+    {
+      "label": "V2: launch FROG",
+      "hash": "0xc1b7f66dd1c5c4d5bed33b600c750a74c33fa9665ab5ff11178f5c0a2289e63c",
+      "status": "success",
+      "block": "65080843",
+      "gasUsed": "1165719",
+      "gasCost": "29142975000000000"
+    },
+    {
+      "label": "V2: launch SUBSEC",
+      "hash": "0xbdb8906c65ce600ac652d8accb66d228dd1a8b95b069dcf4dde6280b7653776e",
+      "status": "success",
+      "block": "65080854",
+      "gasUsed": "1160907",
+      "gasCost": "29022675000000000"
+    },
+    {
+      "label": "V2: approve graduation rehearsal",
+      "hash": "0x1f7ddf79780b4233a20f44b58a6a0309e5cac0482bb6f45df83e417e99f9c102",
+      "status": "success",
+      "block": "65080865",
+      "gasUsed": "55438",
+      "gasCost": "1385950000000000"
+    },
+    {
+      "label": "V2: graduation rehearsal buy",
+      "hash": "0x30cce48da2cb8ae29d7918bc3a2a39191d39b22743ef00f5b073236c27a89aa7",
+      "status": "success",
+      "block": "65080868",
+      "gasUsed": "241227",
+      "gasCost": "6030675000000000"
+    },
+    {
+      "label": "Deploy OrbitLaunchV3",
+      "hash": "0x8660da7bef114e5970b613db95628a9b0e12cf68063d6b084001c0ed1ec0e20b",
+      "status": "success",
+      "block": "65081048",
+      "gasUsed": "3934716",
+      "gasCost": "98367900000000000"
+    },
+    {
+      "label": "V3: approve seed buys",
+      "hash": "0x603b55d3e068ee9b606a769854e86bd30077b558f1231e75e20ffe2efe182de2",
+      "status": "success",
+      "block": "65081053",
+      "gasUsed": "55438",
+      "gasCost": "1385950000000000"
+    },
+    {
+      "label": "V3: launch ROCKET",
+      "hash": "0x3d0fbe5a3e56b78844d5f80276b99f57a60b537dd60c264b92d543cb421ea96e",
+      "status": "success",
+      "block": "65081057",
+      "gasUsed": "1293066",
+      "gasCost": "32326650000000000"
+    },
+    {
+      "label": "V3: launch FROG",
+      "hash": "0x3bee982eb3539d8f9546313a89bdb7293b20bf25f321502c2b4b71e6ca540bc1",
+      "status": "success",
+      "block": "65081060",
+      "gasUsed": "1165719",
+      "gasCost": "29142975000000000"
+    },
+    {
+      "label": "V3: launch SUBSEC",
+      "hash": "0xef63debc48c073033ca4300186ee71e0628b4505a3935b8f9270f8e669196f9d",
+      "status": "success",
+      "block": "65081064",
+      "gasUsed": "1160907",
+      "gasCost": "29022675000000000"
+    },
+    {
+      "label": "V3: approve graduation rehearsal",
+      "hash": "0xa1d817e32419eafc9f1c8ef97b1334c47af57513004d86631702c395b7c4dba5",
+      "status": "success",
+      "block": "65081068",
+      "gasUsed": "55438",
+      "gasCost": "1385950000000000"
     }
   ],
-  "gasSpent": "673623325000000000",
+  "gasSpent": "1062971225000000000",
   "steps": {
     "Approve initial tUSDC liquidity": "0x766d7586c369b0bb5f6d2c25c3dfc52b820024ce4cde85751a45f945d7e80730",
     "Approve initial tETH liquidity": "0x21d55e8d6a681edcdecf1c61b5a4ea65123c3f1ecf17f5be3819a41cf5fd9f49",
@@ -354,7 +484,18 @@
     "Launch SUBSEC": "0xd70ac45fbc7ebfb7058dad0413e962dff6f852511f124f5b6698a7b095f708d0",
     "Approve Morpho seed collateral": "0x142a8fdad186d62c3ee625a9c9fe15e50cc2baba18f2c094eb5f27a37b53bf0e",
     "Seed Morpho tETH collateral": "0x3e94ae82535ff8ad53892c1d586d203927dca3ead02ba8d3e8f98d4ffa5626a1",
-    "Seed Morpho tUSDC borrow": "0x293d959cb5a9ff8872db3099e781c3988e2e3be11e06bc7bccfb69d3a492e631"
+    "Seed Morpho tUSDC borrow": "0x293d959cb5a9ff8872db3099e781c3988e2e3be11e06bc7bccfb69d3a492e631",
+    "V2: approve seed buys": "0x4d8268f4c49682dfdb306e79ce61ab5f742564b174efb65bdd8423ecb5d5d286",
+    "V2: launch ROCKET": "0x646292c54857f0b1057a91c3edccb787dc1aa9ff8f9d837a39e4077d0caaa4fd",
+    "V2: launch FROG": "0xc1b7f66dd1c5c4d5bed33b600c750a74c33fa9665ab5ff11178f5c0a2289e63c",
+    "V2: launch SUBSEC": "0xbdb8906c65ce600ac652d8accb66d228dd1a8b95b069dcf4dde6280b7653776e",
+    "V2: approve graduation rehearsal": "0x1f7ddf79780b4233a20f44b58a6a0309e5cac0482bb6f45df83e417e99f9c102",
+    "V2: graduation rehearsal buy": "0x30cce48da2cb8ae29d7918bc3a2a39191d39b22743ef00f5b073236c27a89aa7",
+    "V3: approve seed buys": "0x603b55d3e068ee9b606a769854e86bd30077b558f1231e75e20ffe2efe182de2",
+    "V3: launch ROCKET": "0x3d0fbe5a3e56b78844d5f80276b99f57a60b537dd60c264b92d543cb421ea96e",
+    "V3: launch FROG": "0x3bee982eb3539d8f9546313a89bdb7293b20bf25f321502c2b4b71e6ca540bc1",
+    "V3: launch SUBSEC": "0xef63debc48c073033ca4300186ee71e0628b4505a3935b8f9270f8e669196f9d",
+    "V3: approve graduation rehearsal": "0xa1d817e32419eafc9f1c8ef97b1334c47af57513004d86631702c395b7c4dba5"
   },
   "deployer": "0x1A86d3148df478a1071e9D3D4825C99FB75ec964",
   "pool": {
@@ -420,10 +561,10 @@
     "note": "Morpho has no official Arc testnet deployment; this instance is deployed by Orbit from vendored upstream source. Oracle is owner-posted and testnet-only."
   },
   "launch": {
-    "contract": "0xa4915305bee76157e4d64a09d946d4a7349db6fe",
+    "contract": "0xcef0c351c9819d15d04c5ee119c59841b7cb7628",
     "quote": "0x3600000000000000000000000000000000000000",
     "quoteSymbol": "USDC",
-    "virtualQuote": "20000000",
+    "virtualQuote": "3000000",
     "feeBps": 100,
     "graduation": "Uniswap V2 pair via project factory, LP burned to 0xdEaD"
   },
@@ -431,5 +572,28 @@
     "lending": true,
     "launches": true
   },
-  "phase2CompletedAt": "2026-10-02T06:40:12.916Z"
+  "phase2CompletedAt": "2026-10-02T07:35:41.066Z",
+  "legacyLaunch": {
+    "contract": "0xa4915305bee76157e4d64a09d946d4a7349db6fe",
+    "quote": "0x3600000000000000000000000000000000000000",
+    "quoteSymbol": "USDC",
+    "virtualQuote": "20000000",
+    "feeBps": 100,
+    "graduation": "Uniswap V2 pair via project factory, LP burned to 0xdEaD",
+    "note": "v1, superseded by OrbitLaunchV2 (hardened)"
+  },
+  "launchGraduationEvidence": {
+    "contract": "OrbitLaunchV2",
+    "token": "0xeFf316b8016Fdc5a9Af6825Fb2b99CE22de7b9AD",
+    "graduated": true,
+    "pair": "0x09676BE20D79e9AeA3B77107A8A35cBC173d7063",
+    "reservesUSDC": "8.500536",
+    "reservesToken": "206886011.183597390493942218",
+    "lpBurnedPct": "100.0000",
+    "launcherLeftover": "0",
+    "poolPrice": 4.108801726790676e-8,
+    "curvePrice": 4.108801714898178e-8,
+    "transaction": "0xbc9887aa3da68e352e4faae5408d562a53a81d3aa24227aab4ca5603f5d50120",
+    "note": "Rehearsal on testnet. V2 left 0.0008 USDC of dust when buying the quoted charge (bug fixed in V3); a follow-up dust buy completed graduation."
+  }
 }

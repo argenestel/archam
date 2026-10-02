@@ -20,3 +20,10 @@ playwright-report/
 *.password
 *.pem
 *.key
+
+# Agent wallet secrets and audit log
+agent/.env
+agent/logs/
+contracts/lib/
+contracts/out/
+contracts/cache/

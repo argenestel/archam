@@ -36,6 +36,8 @@ type TxContextValue = {
   busy: boolean;
   /** Sends one contract call. Resolves true only for a confirmed, successful receipt. */
   send: (label: string, request: TxRequest) => Promise<boolean>;
+  /** Runs an SDK-driven flow (Circle App Kit) that signs through the wallet itself. */
+  runExternal: (label: string, fn: () => Promise<unknown>) => Promise<boolean>;
   unresolved?: LocalTransaction;
   recheck: () => Promise<void>;
   toasts: Toast[];
@@ -181,9 +183,41 @@ export function TxProvider({ children }: { children: ReactNode }) {
     [address, onArc, provider, unresolved, notify, findUnresolved],
   );
 
+  const runExternal = useCallback(
+    async (label: string, fn: () => Promise<unknown>) => {
+      if (busy.current) return false;
+      if (!address || !onArc) {
+        notify({ tone: 'error', title: label, body: `Connect your wallet on ${activeChain.name}.` });
+        return false;
+      }
+      busy.current = true;
+      setTx({ label, phase: 'signing' });
+      try {
+        const result = await fn();
+        // The SDK may send several transactions (approval, then action); record every hash it reports.
+        const hashes = [...new Set(JSON.stringify(result ?? {}).match(/0x[0-9a-fA-F]{64}/g) ?? [])] as Hash[];
+        for (const hash of hashes)
+          saveTransaction({ hash, account: address, chainId: activeChain.id, label, status: 'confirmed', time: Date.now() });
+        if (!hashes.length) window.dispatchEvent(new Event('orbit:transactions'));
+        setTx({ label, phase: 'confirmed', hash: hashes.at(-1) });
+        notify({ tone: 'success', title: label, body: 'Confirmed on Arc', hash: hashes.at(-1) });
+        return true;
+      } catch (e) {
+        const error = userFacingError(e);
+        setTx({ label, phase: 'error', error });
+        notify({ tone: 'error', title: label, body: error });
+        return false;
+      } finally {
+        busy.current = false;
+      }
+    },
+    [address, onArc, notify],
+  );
+
   const value = useMemo(
     () => ({
       tx,
+      runExternal,
       busy: tx?.phase === 'signing' || tx?.phase === 'pending',
       send,
       unresolved,
@@ -192,7 +226,7 @@ export function TxProvider({ children }: { children: ReactNode }) {
       notify,
       dismiss,
     }),
-    [tx, send, unresolved, recheck, toasts, notify, dismiss],
+    [tx, send, runExternal, unresolved, recheck, toasts, notify, dismiss],
   );
   return <TxContext.Provider value={value}>{children}</TxContext.Provider>;
 }
