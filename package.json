@@ -25,7 +25,7 @@
     "agent:mcp": "node --env-file-if-exists=agent/.env agent/server.mjs",
     "verify:mainnet": "node scripts/verify-mainnet.mjs",
     "monitor": "node scripts/monitor.mjs",
-    "deploy:mainnet": "node scripts/deploy-mainnet.mjs"
+    "deploy:mainnet": "node --env-file-if-exists=.env scripts/deploy-mainnet.mjs"
   },
   "dependencies": {
     "@circle-fin/adapter-viem-v2": "^1.19.0",
