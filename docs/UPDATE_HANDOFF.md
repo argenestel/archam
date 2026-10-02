@@ -74,7 +74,7 @@ The original running app was reviewed at desktop and mobile sizes:
 - This is **not an on-chain identity registry**, nor a verified real-world identity system.
 - Single-server file storage; use a database for multi-instance production.
 - Old IPFS versions may remain accessible. Unused uploads are not automatically unpinned.
-- Vite/nginx proxy `/api/media/` to the media service; nginx CSP permits Pinata gateway images.
+- Next.js/nginx proxy `/api/media/` to the media service; nginx CSP permits Pinata gateway images.
 - `Dockerfile.media` and `compose.yaml` provide the sidecar and persistent profile volume.
 - Live Pinata credentials/uploads were not validated in this session; API tests mock Pinata.
 
@@ -86,14 +86,14 @@ Documentation: `docs/IPFS.md`.
 
 ```sh
 pnpm dev:mainnet       # http://localhost:5193, wallet execution enabled
-pnpm build:mainnet     # dist-mainnet/
+pnpm build:mainnet     # out-mainnet/ static export
 pnpm preview:mainnet   # http://localhost:5194
 ```
 
 Default testnet commands remain available. For read-only mainnet:
 
 ```sh
-VITE_ARC_NETWORK=mainnet VITE_MAINNET_SIGNING=0 pnpm exec vite build --outDir dist-mainnet
+VITE_ARC_NETWORK=mainnet VITE_MAINNET_SIGNING=0 pnpm exec next build
 ```
 
 A local mainnet development server was started on port 5193 during this session. Check whether it is still running before starting another instance. Nothing was publicly hosted on mofu.lol.
@@ -239,7 +239,7 @@ Setting nginx names and a canonical URL **does not** register/verify the domain,
 - **Not yet created:** full SVG wordmark/lockup (proposed `public/mofu-logo.svg`).
 - Old `public/orbit.svg` / `public/orbit-mark.svg` still exist.
 - The new mascot was written, but final visual review and post-rebrand tests/builds have **not** run.
-- A running Node media process must be restarted to pick up its new branding; Vite normally hot-reloads frontend changes.
+- A running Node media process must be restarted to pick up its new branding; the Next.js development server normally hot-reloads frontend changes.
 
 ## 8. Validation evidence
 

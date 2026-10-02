@@ -38,16 +38,14 @@ export const arcMainnet = defineChain({
 
 /** Build-time network. Mainnet builds only enable features with a mainnet deployment record. */
 export const networkName: 'testnet' | 'mainnet' =
-  // Vite injects import.meta.env in the browser; Node tooling (the agent under tsx) uses process.env.
-  (import.meta.env?.VITE_ARC_NETWORK ??
-    (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.VITE_ARC_NETWORK) ===
-  'mainnet'
+  // Next.js inlines this public setting; Node tooling reads the same environment variable.
+  process.env.VITE_ARC_NETWORK === 'mainnet'
     ? 'mainnet'
     : 'testnet';
 export const activeChain = networkName === 'mainnet' ? arcMainnet : arcTestnet;
 export const isTestnet = networkName === 'testnet';
 
-// Browser reads stay on this origin; Vite/Nginx forwards to official documented endpoints.
+// Browser reads stay on this origin; Next.js/preview/nginx forwards to official endpoints.
 // Wallet network metadata remains the public RPC URL, never a proxy URL.
 const suffix = networkName === 'mainnet' ? '-mainnet' : '';
 const rpcRoutes = [`/api/arc-rpc${suffix}`, `/api/arc-rpc${suffix}-quicknode`, `/api/arc-rpc${suffix}-drpc`];

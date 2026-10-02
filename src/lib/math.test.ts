@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { candidatePaths } from '../pages/Swap';
+import { candidatePaths } from '../views/Swap';
 import { parseTokenAmount, tryParse } from './format';
 import {
   curvePrice,

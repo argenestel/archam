@@ -2,6 +2,11 @@
 node_modules
 dist
 dist-mainnet
+.next
+.next-mainnet
+out
+out-mainnet
+.vercel
 storage
 .env*
 *.keystore*

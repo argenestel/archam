@@ -24,18 +24,18 @@ import { href, useRoute, type Route } from './lib/router';
 import { useFollowAlerts, useFollows } from './lib/social';
 import { TxProvider, useTx } from './lib/tx';
 import { openConnect, useWallet, WalletProvider } from './lib/wallet';
-import Discover from './pages/Discover';
+import Discover from './views/Discover';
 
-const TokenPage = lazy(() => import('./pages/TokenPage'));
-const CreateLaunch = lazy(() => import('./pages/CreateLaunch'));
-const Swap = lazy(() => import('./pages/Swap'));
-const Lend = lazy(() => import('./pages/Lend'));
-const Leaders = lazy(() => import('./pages/Leaders'));
-const Portfolio = lazy(() => import('./pages/Portfolio'));
-const Risks = lazy(() => import('./pages/Risks'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Borrow = lazy(() => import('./pages/Borrow'));
-const Bridge = lazy(() => import('./pages/Bridge'));
+const TokenPage = lazy(() => import('./views/TokenPage'));
+const CreateLaunch = lazy(() => import('./views/CreateLaunch'));
+const Swap = lazy(() => import('./views/Swap'));
+const Lend = lazy(() => import('./views/Lend'));
+const Leaders = lazy(() => import('./views/Leaders'));
+const Portfolio = lazy(() => import('./views/Portfolio'));
+const Risks = lazy(() => import('./views/Risks'));
+const Profile = lazy(() => import('./views/Profile'));
+const Borrow = lazy(() => import('./views/Borrow'));
+const Bridge = lazy(() => import('./views/Bridge'));
 
 const nav: { route: Route; label: string; icon: typeof Compass; mobile?: boolean }[] = isTestnet
   ? [

@@ -10,6 +10,10 @@ contracts/cache/
 node_modules/
 dist/
 dist-mainnet/
+.next/
+.next-mainnet/
+out/
+out-mainnet/
 *.tsbuildinfo
 .env
 .env.local

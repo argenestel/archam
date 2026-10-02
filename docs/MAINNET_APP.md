@@ -8,14 +8,14 @@ This version aggregates existing Arc mainnet protocols. It does **not** deploy o
 
 ```sh
 pnpm dev:mainnet       # http://localhost:5193 — chain 5042, wallet execution enabled
-pnpm build:mainnet     # dedicated dist-mainnet/ output, same opt-in signing flags
+pnpm build:mainnet     # dedicated out-mainnet/ static export, same opt-in signing flags
 pnpm preview:mainnet   # http://localhost:5194
 ```
 
 Default `pnpm dev` / `pnpm build` still target testnet. For a read-only mainnet build:
 
 ```sh
-VITE_ARC_NETWORK=mainnet VITE_MAINNET_SIGNING=0 pnpm exec vite build --outDir dist-mainnet
+VITE_ARC_NETWORK=mainnet VITE_MAINNET_SIGNING=0 pnpm exec next build
 ```
 
 No wallet key is stored by the frontend. Fund **your own wallet on Arc chain 5042**, not an Orbit, router, vault, or contract address. Keep at least 0.05 USDC unspent as a conservative gas reserve; actual gas costs vary. Start with a small amount only after reviewing the selected third-party protocol and your wallet's transaction details. There is no Orbit deposit address. Do not send a private key to anyone.

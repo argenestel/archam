@@ -24,6 +24,8 @@ Publishing requires a short-lived, single-use challenge bound to the action and 
 
 With Docker: `docker compose up --build -d` after setting `PINATA_JWT` on the server. Nginx serves port 8080; the media sidecar shares nginx's loopback network. The named `profiles` volume persists the profile index. Use HTTPS at your reverse proxy (browser SHA-256 requires a secure context; localhost is allowed).
 
-Without Docker: run `node --env-file-if-exists=.env server/media.mjs` as a supervised Node 22 service beside nginx. Nginx proxies `/api/media/` to `127.0.0.1:5192`; Vite does the same in development/preview. Keep that port private. The updated nginx CSP permits Pinata gateway images.
+Without Docker: run `node --env-file-if-exists=.env server/media.mjs` as a supervised Node 22 service beside nginx. Nginx proxies `/api/media/` to `127.0.0.1:5192`; the Next.js development server uses the same proxy in development. Keep that port private. The updated nginx CSP permits Pinata gateway images.
 
-`MEDIA_PORT` is configurable, but the Vite/nginx proxy must be changed to match if you change it. The existing static-only Dockerfile can still serve the app, but uploads/profile lookup require the media sidecar. Pinata quotas and gateway availability apply.
+For manual nginx deployment, generate its config after each frontend build with `node scripts/build-csp.mjs --output-dir out --output /tmp/mofu-nginx.conf` (use `out-mainnet` for mainnet). Install the generated config alongside `deploy/rpc-proxy.conf`. The source `deploy/nginx.conf` is a template; its script hashes must match the deployed export so Next.js can start under the CSP. Docker performs this step automatically.
+
+`MEDIA_PORT` is configurable, but the Next.js/nginx proxy must be changed to match if you change it. The static-export Dockerfile can still serve the app, but uploads/profile lookup require the media sidecar. Pinata quotas and gateway availability apply.

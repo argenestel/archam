@@ -55,7 +55,7 @@ docker run --rm -p 8080:8080 orbit-terminal
 # http://127.0.0.1:8080
 ```
 
-The container uses an unprivileged Nginx server with CSP, anti-framing, MIME and referrer headers. Put it behind an HTTPS reverse proxy, set a domain, configure TLS/HSTS at the proxy, and monitor RPC/contract health. No hosting account/domain/TLS credentials have been supplied, so no public deployment is claimed. The Docker package still requires an actual build/runtime test on a Docker-capable host.
+The container uses an unprivileged Nginx server with CSP, anti-framing, MIME and referrer headers. The image build hashes inline Next.js bootstrap scripts from the selected `out/` or `out-mainnet/` export into the CSP, so the policy does not need `unsafe-inline` for scripts. Put it behind an HTTPS reverse proxy, set a domain, configure TLS/HSTS at the proxy, and monitor RPC/contract health. No hosting account/domain/TLS credentials have been supplied, so no public deployment is claimed. The Docker package still requires an actual build/runtime test on a Docker-capable host.
 
 Production readiness still requires the checklist in `DEPLOYMENT.md`: independent audit, real protocol integration, key management, backend-verified XP, market/indexer data, adversarial transaction/risk tests and external monitoring.
 

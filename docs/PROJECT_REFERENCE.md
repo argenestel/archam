@@ -189,7 +189,7 @@ An update to the interface is not accepted merely because it looks different.
 
 ### Stack
 
-React 19, TypeScript, Vite, viem, Lucide, Fontsource, OpenZeppelin, solc, Vitest, Ganache, and Playwright. Exact resolved versions are in `pnpm-lock.yaml`; use the lockfile rather than assuming the ranges in `package.json` identify the deployed compiler or runtime.
+Next.js, React 19, TypeScript, viem, Lucide, Fontsource, OpenZeppelin, solc, Vitest, Ganache, and Playwright. Exact resolved versions are in `pnpm-lock.yaml`; use the lockfile rather than assuming the ranges in `package.json` identify the deployed compiler or runtime.
 
 A minimal Node media backend (`server/media.mjs`) now pins logos/profile metadata through Pinata with wallet-signature authorization. A persistent JSON index maps wallets to their latest profile CID; it is not on-chain and supports a single server instance. See [IPFS.md](IPFS.md). There is still **no authoritative portfolio indexer, rewards service, or production database**.
 
@@ -219,7 +219,7 @@ The server does not sign browser-user transactions. A funded deployment wallet i
 | Area                                                    | Files                                                                     |
 | ------------------------------------------------------- | ------------------------------------------------------------------------- |
 | Shell, nav, ticker, wallet picker, toasts, alerts       | `src/App.tsx`                                                             |
-| Pages                                                   | `src/pages/{Discover,TokenPage,CreateLaunch,Swap,Lend,Leaders,Portfolio}.tsx` |
+| Views                                                   | `src/views/{Discover,TokenPage,CreateLaunch,Swap,Lend,Leaders,Portfolio}.tsx` |
 | Wallet (EIP-6963) / tx runner                           | `src/lib/wallet.tsx`, `src/lib/tx.tsx`                                    |
 | Chain reads, polling cache, registry                    | `src/lib/data.ts`, `src/lib/query.ts`, `src/lib/contracts.ts`             |
 | Curve/Morpho/points math                                | `src/lib/math.ts`                                                         |
@@ -241,8 +241,8 @@ The server does not sign browser-user transactions. A funded deployment wallet i
 | Experimental contracts                                  | `contracts/src/FixedPriceLaunchpad.sol`, `contracts/src/TestnetToken.sol` |
 | Solidity checks and deploy/smoke tooling                | `scripts/`                                                                |
 | Address/receipt manifests                               | `deployments/arc-testnet.json`, `public/arc-testnet-deployment.json`      |
-| Dev/preview proxy                                       | `vite.config.ts`                                                          |
-| Container/reverse proxy                                 | `Dockerfile`, `deploy/nginx.conf`, `deploy/rpc-proxy.conf`                |
+| Dev proxy and static-export configuration                | `next.config.mjs`                                                          |
+| Container/reverse proxy                                 | `Dockerfile`, `deploy/nginx.conf`, `deploy/rpc-proxy.conf`, `scripts/build-csp.mjs` |
 | Unit/EVM/browser validation                             | `src/lib/*.test.ts`, `contracts/launchpad.test.js`, `e2e/`                |
 | Proposed CI execution                                   | `.github/workflows/ci.yml`                                                |
 
@@ -374,7 +374,7 @@ Never print, copy into documentation, commit, bundle, or put a private key/passw
 | `/api/arc-rpc-quicknode` | Officially listed QuickNode endpoint |
 | `/api/arc-rpc-drpc`      | Officially listed dRPC endpoint      |
 
-Vite dev/preview and the Nginx package implement these paths. Static-only hosting must add equivalent routes; uploading `dist/` alone is not sufficient.
+The Next.js development server and the Nginx package implement these paths. Static-only hosting must add equivalent routes; uploading `out/` alone is not sufficient.
 
 Wallet network metadata uses public RPC URLs, never localhost proxy URLs.
 
@@ -385,7 +385,7 @@ The owner reported `HTTP request failed / Failed to fetch` for `eth_chainId`. Th
 ### Hosting status
 
 - Development server: default port 5191, IPv4/IPv6, strict port selection.
-- Vite preview: local build inspection, not a hardened production service.
+- Static export preview: local build inspection, not a hardened production service.
 - Docker/Nginx package: prepared, with unprivileged hosting, proxy routes and security headers.
 - Container runtime validation: not completed locally because the Docker daemon was unavailable.
 - CI: configured to build/test and validate the hosting package; configuration is not evidence of a successful CI run.

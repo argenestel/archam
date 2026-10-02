@@ -19,17 +19,20 @@ Mofu is a FOMO-style trading app for [Arc](https://arc.io), Circle's stablecoin-
 
 ```sh
 pnpm install
-pnpm dev            # http://localhost:5191
-pnpm build && pnpm preview
+pnpm dev            # Next.js development server at http://localhost:5191
+pnpm build          # static export in out/
+pnpm preview        # static export preview at http://localhost:4173
 ```
 
-`pnpm dev:mainnet` starts the opt-in mainnet protocol hub at **http://localhost:5193**; `pnpm build:mainnet` writes `dist-mainnet/`. Use your own wallet; never send funds directly to Mofu or router addresses. See [mainnet beta documentation](docs/MAINNET_APP.md) before funding.
+The Docker/Nginx image is the production-like server and also provides the RPC and media proxies.
 
-`VITE_ARC_NETWORK=mainnet pnpm build` produces a read-only mainnet build (chain 5042). It enables only features with a recorded mainnet deployment, so today every Mofu-operated feature shows a "not live on this network" state instead of pointing at testnet contracts.
+`pnpm dev:mainnet` starts the opt-in mainnet protocol hub at **http://localhost:5193**; `pnpm build:mainnet` writes `out-mainnet/`. Use your own wallet; never send funds directly to Mofu or router addresses. See [mainnet beta documentation](docs/MAINNET_APP.md) before funding.
+
+`VITE_ARC_NETWORK=mainnet VITE_MAINNET_SIGNING=0 pnpm exec next build` produces a read-only mainnet static export (chain 5042). The Next configuration intentionally reads the existing `VITE_*` build flags, so local `.env` files remain compatible. It enables only features with a recorded mainnet deployment, so today every Mofu-operated feature shows a "not live on this network" state instead of pointing at testnet contracts.
 
 ## Logos and profiles
 
-Launches use a responsive card grid. Optional token logos and wallet-authorized public profiles are pinned to Pinata/IPFS. Set server-only `PINATA_JWT` in `.env`, run `pnpm media` alongside Vite, or deploy with `docker compose up --build -d`. See [IPFS setup and storage limitations](docs/IPFS.md). Never put Pinata secrets in `VITE_*` variables.
+Launches use a responsive card grid. Optional token logos and wallet-authorized public profiles are pinned to Pinata/IPFS. Set server-only `PINATA_JWT` in `.env`, run `pnpm media` alongside the Next.js dev server, or deploy with `docker compose up --build -d`. See [IPFS setup and storage limitations](docs/IPFS.md). Never put Pinata secrets in `VITE_*` variables.
 
 ## Contracts
 
