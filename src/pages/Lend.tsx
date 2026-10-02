@@ -169,7 +169,7 @@ export default function Lend() {
               <div>
                 <dt>Oracle updated</dt>
                 <dd className={d && !d.oracleFresh ? 'down' : undefined}>
-                  {d ? `${timeAgo(d.oracleUpdatedAt)} ago${d.oracleFresh ? '' : ' · stale'}` : '…'}
+                  {d ? `${timeAgo(d.oracleUpdatedAt)} ago${d.oracleFresh ? '' : ', stale'}` : '…'}
                 </dd>
               </div>
               <div>

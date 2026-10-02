@@ -1,48 +1,49 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Copy, Crown, Flame, Rocket, Search, Sparkles, UserCheck, UserPlus } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Copy, Search, UserCheck, UserPlus } from 'lucide-react';
 import { formatUnits } from 'viem';
-import { Avatar, Empty, Notice, Progress, Skeleton } from '../components/ui';
+import { Curve } from '../components/Curve';
+import { Avatar, Empty, Notice, Skeleton } from '../components/ui';
 import { activeChain } from '../lib/arc';
 import { deployments, graduationQuote } from '../lib/contracts';
 import { useFeed, useLaunches, type FeedTrade, type Launch } from '../lib/data';
-import { compact, pct, shortAddress, timeAgo, usd } from '../lib/format';
+import { pct, shortAddress, timeAgo, usd } from '../lib/format';
 import { href } from '../lib/router';
 import { useFollows } from '../lib/social';
 
-type Sort = 'live' | 'top' | 'new' | 'graduating' | 'graduated';
+type Sort = 'active' | 'new' | 'cap' | 'close';
 const sorts: { id: Sort; label: string }[] = [
-  { id: 'live', label: 'Live' },
-  { id: 'top', label: 'Top' },
-  { id: 'new', label: 'New' },
-  { id: 'graduating', label: 'Graduating' },
-  { id: 'graduated', label: 'Graduated' },
+  { id: 'active', label: 'Recently traded' },
+  { id: 'close', label: 'Closest to graduating' },
+  { id: 'cap', label: 'Market cap' },
+  { id: 'new', label: 'Newest' },
 ];
+const GRAD = Number(graduationQuote) / 1e6;
 
 export default function Discover() {
   const launches = useLaunches();
-  const [sort, setSort] = useState<Sort>('live');
+  const [sort, setSort] = useState<Sort>('active');
   const [query, setQuery] = useState('');
   if (!deployments.launch)
     return (
       <div className="card">
-        <Empty title={`Launches are not live on ${activeChain.name} yet`}>
-          Orbit's launch contracts have not been deployed to this network. Swap and lending integrations appear
-          here once a reviewed deployment is recorded.
+        <Empty title={`Launches aren’t open on ${activeChain.name} yet`}>
+          The launch contract hasn’t been deployed to this network. Swap and Lend work with the protocols already
+          running here.
         </Empty>
       </div>
     );
   const list = launches.data ?? [];
-  const king = [...list].filter((l) => !l.graduated).sort((a, b) => b.progress - a.progress)[0];
+  const leader = [...list].filter((l) => !l.graduated).sort((a, b) => b.progress - a.progress)[0];
   const q = query.trim().toLowerCase();
   const shown = list
-    .filter((l) => !q || l.name.toLowerCase().includes(q) || l.symbol.toLowerCase().includes(q) || l.address.toLowerCase() === q)
-    .filter((l) => (sort === 'graduated' ? l.graduated : sort === 'graduating' ? !l.graduated : true))
+    .filter((l) => !q || `${l.name} ${l.symbol} ${l.address}`.toLowerCase().includes(q))
+    .filter((l) => sort !== 'close' || !l.graduated)
     .sort((a, b) =>
-      sort === 'top'
+      sort === 'cap'
         ? b.marketCap - a.marketCap
         : sort === 'new'
           ? b.createdAt - a.createdAt
-          : sort === 'graduating'
+          : sort === 'close'
             ? b.progress - a.progress
             : b.lastTradeAt - a.lastTradeAt || b.createdAt - a.createdAt,
     );
@@ -51,18 +52,15 @@ export default function Discover() {
       <div className="discover-main">
         <div className="page-head" style={{ marginBottom: 0 }}>
           <div>
-            <h1>What's launching on Arc</h1>
+            <h1>Launches</h1>
             <p>
-              Fair-launch tokens priced on a bonding curve in USDC. At {usd(Number(graduationQuote) / 1e6, 0)} raised,
-              liquidity moves to Uniswap&nbsp;V2 and the LP is burned.
+              Every token starts on the same price curve, paid in USDC. When {usd(GRAD, 0)} has gone in, the curve
+              closes and its liquidity moves to Uniswap, locked for good.
             </p>
           </div>
-          <a className="btn btn-primary" href="#/create">
-            <Rocket size={16} /> Launch a token
-          </a>
         </div>
         {launches.error && !launches.data && <Notice tone="error">{launches.error}</Notice>}
-        {king ? <KingOfTheOrbit launch={king} /> : launches.loading && <Skeleton h={150} />}
+        {leader ? <Leader launch={leader} /> : launches.loading && <Skeleton h={300} />}
         <div className="toolbar">
           <div className="tabs" role="group" aria-label="Sort launches">
             {sorts.map((s) => (
@@ -74,151 +72,142 @@ export default function Discover() {
           <label className="search">
             <Search size={15} />
             <span className="sr-only">Search launches</span>
-            <input placeholder="Search name, symbol, address" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <input placeholder="Name, ticker or address" value={query} onChange={(e) => setQuery(e.target.value)} />
           </label>
         </div>
-        {launches.loading ? (
-          <div className="token-grid">
-            {Array.from({ length: 6 }, (_, i) => (
-              <Skeleton key={i} h={190} />
-            ))}
-          </div>
-        ) : shown.length ? (
-          <div className="token-grid">
-            {shown.map((l) => (
-              <TokenCard key={l.address} launch={l} />
-            ))}
-          </div>
-        ) : (
-          <div className="card">
+        <section className="card" aria-label="All launches">
+          {launches.loading ? (
+            <div style={{ padding: 20, display: 'grid', gap: 12 }}>
+              {Array.from({ length: 5 }, (_, i) => (
+                <Skeleton key={i} h={36} />
+              ))}
+            </div>
+          ) : shown.length ? (
+            <ul className="launch-list">
+              <li aria-hidden>
+                <div className="launch-row launch-head">
+                  <span />
+                  <span>Token</span>
+                  <span className="hide-sm">Curve</span>
+                  <span className="r hide-sm">Market cap</span>
+                  <span className="r">Last trade</span>
+                </div>
+              </li>
+              {shown.map((l) => (
+                <li key={l.address}>
+                  <LaunchRow launch={l} />
+                </li>
+              ))}
+            </ul>
+          ) : (
             <Empty
-              title={q ? 'No launches match' : 'Nothing here yet'}
+              title={q ? `Nothing matches “${query}”` : 'No launches yet'}
               action={
                 <a className="btn btn-primary" href="#/create">
-                  Be first — launch a token
+                  Launch a token
                 </a>
               }
-            />
-          </div>
-        )}
+            >
+              {q ? 'Try a ticker or paste a token address.' : 'The first token launched here shows up at the top.'}
+            </Empty>
+          )}
+        </section>
       </div>
-      <LiveFeed launches={list} />
+      <TradeFeed launches={list} />
     </div>
   );
 }
 
-function KingOfTheOrbit({ launch: l }: { launch: Launch }) {
+function Leader({ launch: l }: { launch: Launch }) {
+  const left = Math.max(0, GRAD - Number(l.realQuote) / 1e6);
   return (
-    <a className="card koth" href={href({ page: 'token', address: l.address })}>
-      <Avatar seed={l.address} size={84} />
-      <div className="koth-meta">
-        <span className="crown eyebrow">
-          <Crown size={13} /> King of the Orbit
-        </span>
-        <h2>
-          {l.name} <span className="muted" style={{ fontSize: 16 }}>${l.symbol}</span>
-        </h2>
-        <div className="koth-metrics">
-          <Metric label="Market cap" value={usd(l.marketCap)} />
-          <Metric label="Volume" value={usd(Number(l.volume) / 1e6)} />
-          <Metric label="Trades" value={compact(l.trades, 0)} />
-        </div>
-        <div style={{ display: 'grid', gap: 6 }}>
-          <div className="row between" style={{ fontSize: 12.5 }}>
-            <span className="muted">Bonding curve</span>
-            <span className="mono">{pct(l.progress)}</span>
+    <section className="card hero" aria-label={`${l.name}, closest to graduating`}>
+      <div style={{ minWidth: 0 }}>
+        <a className="hero-title" href={href({ page: 'token', address: l.address })}>
+          <Avatar seed={l.address} size={40} />
+          <div>
+            <h2>{l.name}</h2>
+            <span className="muted">${l.symbol}, closest to graduating</span>
           </div>
-          <Progress value={l.progress} gold label={`${l.symbol} bonding curve progress`} />
+        </a>
+        <Curve variant="hero" progress={l.progress} label={`${l.symbol} is ${pct(l.progress)} along its curve`} />
+        <div className="hero-axis">
+          <span>Launch price</span>
+          <span>{pct(l.progress, 0)} sold</span>
+          <span>Graduation</span>
         </div>
       </div>
-      <span className="btn btn-primary koth-cta">
-        <Flame size={16} /> Trade
-      </span>
-    </a>
+      <div className="hero-side">
+        <div>
+          <div className="big">{usd(left)}</div>
+          <p className="muted">more USDC graduates it</p>
+        </div>
+        <dl className="kv">
+          <div>
+            <dt>Market cap</dt>
+            <dd>{usd(l.marketCap)}</dd>
+          </div>
+          <div>
+            <dt>Traded</dt>
+            <dd>{usd(Number(l.volume) / 1e6)}</dd>
+          </div>
+          <div>
+            <dt>Trades</dt>
+            <dd>{l.trades}</dd>
+          </div>
+        </dl>
+        <a className="btn btn-primary" href={href({ page: 'token', address: l.address })}>
+          Buy ${l.symbol}
+        </a>
+      </div>
+    </section>
   );
 }
 
-const Metric = ({ label, value }: { label: string; value: string }) => (
-  <div className="stat">
-    <dt>{label}</dt>
-    <dd>{value}</dd>
-  </div>
-);
-
-function TokenCard({ launch: l }: { launch: Launch }) {
-  const [flash, setFlash] = useState(false);
-  const last = useRef(l.trades);
-  useEffect(() => {
-    if (l.trades !== last.current) {
-      last.current = l.trades;
-      setFlash(true);
-      const t = setTimeout(() => setFlash(false), 1200);
-      return () => clearTimeout(t);
-    }
-  }, [l.trades]);
+function LaunchRow({ launch: l }: { launch: Launch }) {
   return (
-    <a className={`card token-card${flash ? ' flash' : ''}`} href={href({ page: 'token', address: l.address })}>
-      <div className="token-card-top">
-        <Avatar seed={l.address} size={48} />
-        <div className="grow">
-          <div className="token-name">{l.name}</div>
-          <div className="token-sym">
-            ${l.symbol} · by <span className="mono">{shortAddress(l.creator)}</span>
-          </div>
+    <a className="launch-row" href={href({ page: 'token', address: l.address })}>
+      <Avatar seed={l.address} size={36} />
+      <div style={{ minWidth: 0 }}>
+        <div className="name">
+          {l.name} <span className="muted" style={{ fontWeight: 400 }}>${l.symbol}</span>
         </div>
+        <div className="sub">{l.description || `Launched by ${shortAddress(l.creator)}`}</div>
+      </div>
+      <div className="hide-sm">
         {l.graduated ? (
-          <span className="chip gold">
-            <Sparkles size={11} /> Graduated
-          </span>
+          <span className="chip gold">Graduated</span>
         ) : (
-          l.createdAt > Date.now() / 1000 - 3600 && <span className="chip accent">New</span>
+          <Curve progress={l.progress} label={`${pct(l.progress, 0)} along its curve`} />
         )}
       </div>
-      <p className="token-desc">{l.description || 'No description.'}</p>
-      <div style={{ display: 'grid', gap: 7 }}>
-        <div className="row between" style={{ fontSize: 13 }}>
-          <span>
-            <span className="muted">MC </span>
-            <b className="mono">{usd(l.marketCap)}</b>
-          </span>
-          <span className="mono muted">{pct(l.progress, 0)}</span>
-        </div>
-        <Progress value={l.progress} gold={l.graduated} label={`${l.symbol} bonding curve progress`} />
-      </div>
-      <div className="token-foot">
-        <span>{l.trades} trades</span>
-        <span>{l.lastTradeAt ? `last trade ${timeAgo(l.lastTradeAt)} ago` : `created ${timeAgo(l.createdAt)} ago`}</span>
-      </div>
+      <div className="r hide-sm">{usd(l.marketCap)}</div>
+      <div className="r muted">{l.lastTradeAt ? `${timeAgo(l.lastTradeAt)} ago` : 'No trades'}</div>
     </a>
   );
 }
 
-function LiveFeed({ launches }: { launches: Launch[] }) {
+function TradeFeed({ launches }: { launches: Launch[] }) {
   const feed = useFeed(undefined, 50);
   const { follows, toggle, isFollowing } = useFollows();
   const [tab, setTab] = useState<'all' | 'following'>('all');
   const tokens = useMemo(() => new Map(launches.map((l) => [l.address.toLowerCase(), l])), [launches]);
   const items = (feed.data ?? []).filter((t) => tab === 'all' || follows.includes(t.trader.toLowerCase()));
   return (
-    <aside className="card feed" aria-label="Live trades">
+    <aside className="card feed" aria-label="Recent trades">
       <div className="card-head">
-        <h2 className="row" style={{ gap: 8 }}>
-          <span className="net-pill" style={{ height: 'auto', border: 0, padding: 0 }}>
-            <i />
-          </span>
-          Live trades
-        </h2>
-        <div className="tabs" role="group" aria-label="Feed filter">
+        <h2>Trades</h2>
+        <div className="tabs" role="group" aria-label="Show trades from">
           <button aria-pressed={tab === 'all'} onClick={() => setTab('all')}>
-            All
+            Everyone
           </button>
           <button aria-pressed={tab === 'following'} onClick={() => setTab('following')}>
-            Following{follows.length ? ` ${follows.length}` : ''}
+            Following
           </button>
         </div>
       </div>
       {feed.loading ? (
-        <div style={{ padding: 16, display: 'grid', gap: 10 }}>
+        <div style={{ padding: 18, display: 'grid', gap: 10 }}>
           {Array.from({ length: 6 }, (_, i) => (
             <Skeleton key={i} h={34} />
           ))}
@@ -236,8 +225,10 @@ function LiveFeed({ launches }: { launches: Launch[] }) {
           ))}
         </ul>
       ) : (
-        <Empty title={tab === 'following' ? 'No trades from people you follow' : 'No trades yet'}>
-          {tab === 'following' ? 'Follow traders from the feed or the leaderboard to see their moves here.' : null}
+        <Empty title={tab === 'following' ? 'You’re not following anyone yet' : 'No trades yet'}>
+          {tab === 'following'
+            ? 'Follow a trader from this list or the leaderboard, and their trades show up here as they happen.'
+            : 'Trades appear here the moment they confirm.'}
         </Empty>
       )}
     </aside>
@@ -259,41 +250,33 @@ export function FeedRow({
   const copyAmount = Math.min(Math.max(amount, 0.1), 1000).toFixed(2);
   return (
     <li className="feed-item">
-      <Avatar seed={t.trader} size={30} round />
+      <Avatar seed={t.trader} size={28} round />
       <div style={{ minWidth: 0 }}>
         <div className="who">
-          <span className="mono">{shortAddress(t.trader)}</span>{' '}
-          <span className={t.isBuy ? 'up' : 'down'}>{t.isBuy ? 'bought' : 'sold'}</span>{' '}
+          {shortAddress(t.trader)} <span className={t.isBuy ? 'up' : 'down'}>{t.isBuy ? 'bought' : 'sold'}</span>{' '}
           <a href={href({ page: 'token', address: t.token })}>
             <b>${launch?.symbol ?? '…'}</b>
           </a>
         </div>
-        <div className="row" style={{ gap: 4 }}>
-          <button
-            className="btn-quiet"
-            style={{ fontSize: 11.5, padding: '2px 4px 2px 0' }}
-            onClick={toggle}
-            aria-label={following ? `Unfollow ${t.trader}` : `Follow ${t.trader}`}
-          >
-            {following ? <UserCheck size={12} /> : <UserPlus size={12} />} {following ? 'Following' : 'Follow'}
+        <div className="actions">
+          <button className="btn-quiet" onClick={toggle} aria-label={`${following ? 'Unfollow' : 'Follow'} ${t.trader}`}>
+            {following ? <UserCheck size={13} /> : <UserPlus size={13} />}
+            {following ? 'Following' : 'Follow'}
           </button>
           {t.isBuy && launch && !launch.graduated && (
             <a
               className="btn-quiet"
-              style={{ fontSize: 11.5, padding: '2px 4px' }}
               href={href({ page: 'token', address: t.token, buy: copyAmount })}
               aria-label={`Copy this buy of ${launch.symbol}`}
             >
-              <Copy size={11} /> Copy
+              <Copy size={12} /> Copy buy
             </a>
           )}
         </div>
       </div>
       <div className="amt">
-        <span className={`mono ${t.isBuy ? 'up' : 'down'}`}>{usd(amount)}</span>
-        <span className="faint" style={{ fontSize: 11.5 }}>
-          {timeAgo(t.time)}
-        </span>
+        {usd(amount)}
+        <span>{timeAgo(t.time)} ago</span>
       </div>
     </li>
   );

@@ -145,7 +145,7 @@ function LaunchPositions() {
         <h2>Launch positions</h2>
         {rows.length > 0 && (
           <span className="mono" style={{ fontSize: 13 }}>
-            {usd(total)} · <span className={pnl >= 0 ? 'up' : 'down'}>{pnl >= 0 ? '+' : ''}{usd(pnl)}</span>
+            {usd(total)} worth, <span className={pnl >= 0 ? 'up' : 'down'}>{pnl >= 0 ? '+' : ''}{usd(pnl)}</span>
           </span>
         )}
       </div>
@@ -276,7 +276,7 @@ function Activity() {
               <span className="grow">
                 {t.label}
                 <span className="muted" style={{ display: 'block', fontSize: 12 }}>
-                  {t.status} · {timeAgo(t.time / 1000)} ago
+                  {t.status[0].toUpperCase() + t.status.slice(1)} {timeAgo(t.time / 1000)} ago
                 </span>
               </span>
               <TxLink hash={t.hash}>Explorer</TxLink>

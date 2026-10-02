@@ -8,36 +8,19 @@ import { useTx, type TxRequest } from '../lib/tx';
 import { useWallet } from '../lib/wallet';
 import type { Token } from '../lib/contracts';
 
-/** Deterministic orbital art from an address — no remote images, CSP stays strict. */
+/** Deterministic flat mark from an address: two tones and a quarter-circle, no remote images. */
+const TONES = ['#1d5cf0', '#0b8a5a', '#d93f3f', '#8a5a00', '#6e56cf', '#0e7490', '#be185d', '#15181d'];
 export function Avatar({ seed, size = 40, round = false }: { seed: string; size?: number; round?: boolean }) {
-  const id = useId().replace(/:/g, '');
-  const h = seed.toLowerCase().replace(/^0x/, '').padEnd(12, '0');
+  const h = seed.toLowerCase().replace(/^0x/, '').padEnd(8, '0');
   const n = (i: number) => parseInt(h.slice(i, i + 2), 16) || 0;
-  const hue = (n(0) * 360) / 255;
-  const hue2 = (hue + 40 + (n(2) % 120)) % 360;
-  const tilt = (n(4) % 90) - 45;
-  const r = 18 + (n(6) % 10);
-  const moon = (n(8) * 360) / 255;
-  const mx = 32 + Math.cos((moon * Math.PI) / 180) * r;
-  const my = 32 + Math.sin((moon * Math.PI) / 180) * r * 0.42;
+  const bg = TONES[n(0) % TONES.length];
+  const corner = n(2) % 4;
+  const cx = corner % 2 ? 0 : 32;
+  const cy = corner < 2 ? 0 : 32;
   return (
-    <svg className={`avatar${round ? ' round' : ''}`} width={size} height={size} viewBox="0 0 64 64" aria-hidden>
-      <defs>
-        <linearGradient id={`g${id}`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor={`hsl(${hue} 70% 22%)`} />
-          <stop offset="1" stopColor={`hsl(${hue2} 60% 10%)`} />
-        </linearGradient>
-        <radialGradient id={`p${id}`} cx="0.35" cy="0.35" r="0.7">
-          <stop offset="0" stopColor={`hsl(${hue2} 90% 78%)`} />
-          <stop offset="1" stopColor={`hsl(${hue} 80% 45%)`} />
-        </radialGradient>
-      </defs>
-      <rect width="64" height="64" fill={`url(#g${id})`} />
-      <g transform={`rotate(${tilt} 32 32)`}>
-        <ellipse cx="32" cy="32" rx={r} ry={r * 0.42} fill="none" stroke={`hsl(${hue2} 80% 70% / .45)`} strokeWidth="1.5" />
-        <circle cx="32" cy="32" r={9 + (n(10) % 6)} fill={`url(#p${id})`} />
-        <circle cx={mx} cy={my} r="3" fill={`hsl(${hue} 90% 85%)`} />
-      </g>
+    <svg className={`avatar${round ? ' round' : ''}`} width={size} height={size} viewBox="0 0 32 32" aria-hidden>
+      <rect width="32" height="32" fill={bg} />
+      <circle cx={cx} cy={cy} r={14 + (n(4) % 10)} fill="#fff" fillOpacity={0.22 + (n(6) % 3) * 0.1} />
     </svg>
   );
 }

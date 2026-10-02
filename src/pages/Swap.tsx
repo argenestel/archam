@@ -139,10 +139,12 @@ export default function Swap() {
               </dd>
             </div>
             <div>
-              <dt>Slippage · LP fee</dt>
-              <dd>
-                {slippage / 100}% · 0.3% per hop
-              </dd>
+              <dt>Slippage tolerance</dt>
+              <dd>{slippage / 100}%</dd>
+            </div>
+            <div>
+              <dt>Pool fee</dt>
+              <dd>0.3% per hop</dd>
             </div>
           </dl>
         )}
@@ -202,7 +204,7 @@ export default function Swap() {
                   <b>{t.symbol}</b>
                   <span className="muted" style={{ display: 'block', fontSize: 12.5 }}>
                     {t.name}
-                    {t.kind === 'test' ? ' · test asset' : t.kind === 'launch' ? ' · graduated launch' : ''}
+                    {t.kind === 'test' ? ', test asset' : t.kind === 'launch' ? ', graduated launch' : ''}
                   </span>
                 </span>
                 <span className="mono muted" style={{ fontSize: 13 }}>

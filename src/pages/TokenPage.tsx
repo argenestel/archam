@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ExternalLink, Sparkles, UserCheck, UserPlus } from 'lucide-react';
 import { erc20Abi, formatUnits, type Address } from 'viem';
-import { ActionButton, AddressLink, AmountBox, Avatar, Empty, Notice, Progress, Skeleton } from '../components/ui';
+import { Curve } from '../components/Curve';
+import { ActionButton, AddressLink, AmountBox, Avatar, Empty, Notice, Skeleton } from '../components/ui';
 import { addressUrl, client } from '../lib/arc';
 import { USDC, deployments, graduationQuote, launchAbi, type Token } from '../lib/contracts';
 import { useBalances, useFeed, useLaunch, usePositions, type FeedTrade } from '../lib/data';
@@ -40,7 +41,7 @@ export default function TokenPage({ address }: { address: Address }) {
   return (
     <>
       <a className="btn-quiet row" href="#/" style={{ marginBottom: 16, width: 'fit-content' }}>
-        <ArrowLeft size={15} /> Discover
+        <ArrowLeft size={15} /> Launches
       </a>
       <div className="token-page">
         <div className="stack">
@@ -51,13 +52,12 @@ export default function TokenPage({ address }: { address: Address }) {
                 {l.name} <span className="muted" style={{ fontSize: '0.6em' }}>${l.symbol}</span>
               </h1>
               <p className="muted" style={{ fontSize: 13.5, marginTop: 4 }}>
-                Created by <AddressLink address={l.creator}>{shortAddress(l.creator)}</AddressLink> ·{' '}
-                {timeAgo(l.createdAt)} ago
+                Launched {timeAgo(l.createdAt)} ago by <AddressLink address={l.creator}>{shortAddress(l.creator)}</AddressLink>
               </p>
             </div>
             {l.graduated && (
               <span className="chip gold">
-                <Sparkles size={11} /> Graduated to Uniswap V2
+                <Sparkles size={11} /> On Uniswap
               </span>
             )}
           </div>
@@ -109,10 +109,10 @@ export default function TokenPage({ address }: { address: Address }) {
           )}
           <div className="card card-pad" style={{ display: 'grid', gap: 12 }}>
             <div className="row between">
-              <h3 style={{ fontSize: 15 }}>Bonding curve</h3>
-              <span className="mono">{pct(l.progress)}</span>
+              <h3 style={{ fontSize: 15 }}>Price curve</h3>
+              <span>{pct(l.progress)} sold</span>
             </div>
-            <Progress value={l.progress} gold label="Bonding curve progress" />
+            <Curve variant="hero" progress={l.progress} graduated={l.graduated} label={`${pct(l.progress)} of the curve sold`} />
             <p className="muted" style={{ fontSize: 13 }}>
               {l.graduated
                 ? 'Graduated. Liquidity is locked in Uniswap V2.'
@@ -374,9 +374,6 @@ function TradesTable({ trades, loading, symbol }: { trades?: FeedTrade[]; loadin
     <section className="card" aria-label="Trades">
       <div className="card-head">
         <h2>Trades</h2>
-        <span className="muted" style={{ fontSize: 12.5 }}>
-          Read directly from the launch contract
-        </span>
       </div>
       {loading ? (
         <div style={{ padding: 16 }}>

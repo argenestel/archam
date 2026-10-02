@@ -34,10 +34,10 @@ const Leaders = lazy(() => import('./pages/Leaders'));
 const Portfolio = lazy(() => import('./pages/Portfolio'));
 
 const nav: { route: Route; label: string; icon: typeof Compass }[] = [
-  { route: { page: 'discover' }, label: 'Discover', icon: Compass },
+  { route: { page: 'discover' }, label: 'Launches', icon: Compass },
   { route: { page: 'swap' }, label: 'Swap', icon: ArrowLeftRight },
   { route: { page: 'lend' }, label: 'Lend', icon: Landmark },
-  { route: { page: 'leaders' }, label: 'Leaders', icon: Trophy },
+  { route: { page: 'leaders' }, label: 'Leaderboard', icon: Trophy },
   { route: { page: 'portfolio' }, label: 'Portfolio', icon: Wallet },
 ];
 
@@ -82,18 +82,14 @@ function Shell() {
           <div className="top-actions">
             {deployments.launch && (
               <a className="btn btn-primary launch-cta" href="#/create">
-                <Plus size={16} /> Launch
+                <Plus size={16} /> Launch a token
               </a>
             )}
-            <span className={`net-pill${isTestnet ? ' warn' : ''}`} title={activeChain.name}>
-              <i />
-              <span>{activeChain.name}</span>
-            </span>
+            <span className={`net-pill${isTestnet ? ' warn' : ''}`}>{activeChain.name}</span>
             <WalletButton />
           </div>
         </div>
       </header>
-      {deployments.launch && <Ticker />}
       <main className="page" id="main">
         <Suspense fallback={<div className="empty"><Loader2 className="spin" /></div>}>
           {route.page === 'discover' && <Discover />}
@@ -108,8 +104,9 @@ function Shell() {
       <footer className="footer">
         <div className="footer-inner">
           <span>
-            Orbit on {activeChain.name}
-            {isTestnet && ' · test assets have no value'} · contracts unaudited
+            {isTestnet
+              ? 'Testnet: assets here have no value. Orbit’s launch contract is unaudited.'
+              : 'Orbit’s launch contract is unaudited. Trade only what you can lose.'}
           </span>
           <nav aria-label="Resources">
             {isTestnet && (
@@ -237,45 +234,6 @@ function ConnectDialog({ close }: { close: () => void }) {
         </p>
       </div>
     </Dialog>
-  );
-}
-
-function Ticker() {
-  const feed = useFeed(undefined, 24);
-  const launches = useLaunches();
-  const bySymbol = useMemo(
-    () => new Map(launches.data?.map((l) => [l.address.toLowerCase(), l]) ?? []),
-    [launches.data],
-  );
-  const items = feed.data ?? [];
-  if (!items.length) return null;
-  const row = (dup: boolean) =>
-    items.map((t) => {
-      const token = bySymbol.get(t.token.toLowerCase());
-      return (
-        <a
-          key={`${t.id}${dup ? '-dup' : ''}`}
-          className="ticker-item"
-          href={`#/token/${t.token}`}
-          aria-hidden={dup || undefined}
-          tabIndex={dup ? -1 : undefined}
-        >
-          <Avatar seed={t.trader} size={16} round />
-          <span className="mono">{shortAddress(t.trader)}</span>
-          <span className={t.isBuy ? 'up' : 'down'}>{t.isBuy ? 'bought' : 'sold'}</span>
-          <span className="mono">{usd(Number(t.quoteAmount) / 1e6)}</span>
-          <span>of</span>
-          <b>${token?.symbol ?? '…'}</b>
-        </a>
-      );
-    });
-  return (
-    <div className="ticker" aria-label="Live trades">
-      <div className="ticker-track">
-        {row(false)}
-        {row(true)}
-      </div>
-    </div>
   );
 }
 

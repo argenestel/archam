@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { formatUnits, getAddress } from 'viem';
-import { ActionButton, Avatar, Notice, Progress } from '../components/ui';
+import { Curve } from '../components/Curve';
+import { ActionButton, Avatar, Notice } from '../components/ui';
 import { client } from '../lib/arc';
 import { USDC, deployments, graduationQuote, launchAbi, launchConfig } from '../lib/contracts';
 import { useBalances } from '../lib/data';
@@ -41,15 +42,15 @@ export default function CreateLaunch() {
   return (
     <>
       <a className="btn-quiet row" href="#/" style={{ marginBottom: 16, width: 'fit-content' }}>
-        <ArrowLeft size={15} /> Discover
+        <ArrowLeft size={15} /> Launches
       </a>
       <div className="create">
         <section className="card card-pad" style={{ display: 'grid', gap: 18 }}>
           <div>
             <h1 style={{ fontSize: 28 }}>Launch a token</h1>
             <p className="muted" style={{ marginTop: 6 }}>
-              One transaction. No presale, no team allocation: 1B supply, 793.1M sold on the curve and the rest
-              reserved for locked liquidity at graduation.
+              1 billion tokens. 793.1 million are sold on the curve; the rest are paired with the USDC raised and
+              locked on Uniswap when the curve sells out. You get no free allocation, and neither does anyone else.
             </p>
           </div>
           <div className="field">
@@ -135,18 +136,18 @@ export default function CreateLaunch() {
           </p>
         </section>
         <aside style={{ display: 'grid', gap: 14 }}>
-          <span className="eyebrow">Preview</span>
-          <div className="card token-card" aria-hidden>
-            <div className="token-card-top">
-              <Avatar seed={`${name}${symbol}${count.data ?? ''}`} size={48} />
-              <div className="grow">
-                <div className="token-name">{name || 'Your token'}</div>
-                <div className="token-sym">${symbol || 'TICKER'}</div>
+          <h2 style={{ fontSize: 15 }}>How it will look in the list</h2>
+          <div className="card" aria-hidden>
+            <div className="launch-row" style={{ gridTemplateColumns: '36px minmax(0,1fr) auto' }}>
+              <Avatar seed={`${name}${symbol}${count.data ?? ''}`} size={36} />
+              <div style={{ minWidth: 0 }}>
+                <div className="name">
+                  {name || 'Your token'} <span className="muted" style={{ fontWeight: 400 }}>${symbol || 'TICKER'}</span>
+                </div>
+                <div className="sub">{description || 'Your description'}</div>
               </div>
-              <span className="chip accent">New</span>
+              <Curve progress={0} label="preview" />
             </div>
-            <p className="token-desc">{description || 'Your description shows up here.'}</p>
-            <Progress value={0} label="preview" />
           </div>
           <dl className="card card-pad kv">
             <div>

@@ -24,7 +24,7 @@ test('every page renders without errors or horizontal overflow', async ({ page }
 
 test('discover lists launches from the chain and opens a token', async ({ page }) => {
   await page.goto('/');
-  const card = page.locator('a.token-card').first();
+  const card = page.locator('a.launch-row').first();
   await expect(card).toBeVisible({ timeout: 30_000 });
   await card.click();
   await expect(page).toHaveURL(/#\/token\/0x/);
