@@ -1,7 +1,15 @@
 import { useState } from 'react';
 import { ShieldAlert } from 'lucide-react';
 import { formatUnits } from 'viem';
-import { ActionButton, AddressLink, AmountBox, Avatar, Empty, Notice, Skeleton } from '../components/ui';
+import {
+  ActionButton,
+  AddressLink,
+  AmountBox,
+  Avatar,
+  Empty,
+  Notice,
+  Skeleton,
+} from '../components/ui';
 import { activeChain } from '../lib/arc';
 import { baseTokens, deployments, lendingMarkets, morphoAbi } from '../lib/contracts';
 import { useBalances, useMarket } from '../lib/data';
@@ -26,8 +34,12 @@ export default function Lend() {
   const market = lendingMarkets[0];
   const { address } = useWallet();
   const m = useMarket(market?.id, market?.params, address);
-  const loan = baseTokens.find((t) => t.address.toLowerCase() === market?.params.loanToken.toLowerCase());
-  const coll = baseTokens.find((t) => t.address.toLowerCase() === market?.params.collateralToken.toLowerCase());
+  const loan = baseTokens.find(
+    (t) => t.address.toLowerCase() === market?.params.loanToken.toLowerCase(),
+  );
+  const coll = baseTokens.find(
+    (t) => t.address.toLowerCase() === market?.params.collateralToken.toLowerCase(),
+  );
   const [mode, setMode] = useState<'earn' | 'borrow'>('earn');
   const [action, setAction] = useState<Action>('supply');
   const [amount, setAmount] = useState('');
@@ -37,8 +49,11 @@ export default function Lend() {
       <>
         <div className="page-head">
           <div>
-            <h1>Lend</h1>
-            <p>Put idle USDC to work in curated Morpho vaults on {activeChain.name}.</p>
+            <h1>Earn</h1>
+            <p>
+              Discover USDC and EURC Morpho vaults on {activeChain.name}. Variable yield, real
+              protocol risk.
+            </p>
           </div>
         </div>
         <Earn />
@@ -73,7 +88,11 @@ export default function Lend() {
     collateral: walletColl,
     uncollateral: d?.collateral,
     borrow: d ? (available < d.liquidity ? available : d.liquidity) : undefined,
-    repay: d ? (walletLoan !== undefined && walletLoan < d.borrowed ? walletLoan : d.borrowed) : undefined,
+    repay: d
+      ? walletLoan !== undefined && walletLoan < d.borrowed
+        ? walletLoan
+        : d.borrowed
+      : undefined,
   };
   const ceiling = ceilings[action];
   const p = market.params;
@@ -93,7 +112,8 @@ export default function Lend() {
       ? { functionName: 'repay', args: [p, 0n, d!.borrowShares, me, '0x'] }
       : { functionName: 'repay', args: [p, input, 0n, me, '0x'] },
   };
-  const approvalAmount = action === 'repay' && fullRepay ? d!.borrowed + d!.borrowed / 1000n + 1n : input;
+  const approvalAmount =
+    action === 'repay' && fullRepay ? d!.borrowed + d!.borrowed / 1000n + 1n : input;
   const needsApproval = action === 'supply' || action === 'collateral' || action === 'repay';
   const disabledReason = !d
     ? 'Loading market…'
@@ -109,7 +129,10 @@ export default function Lend() {
               : `Insufficient ${token.symbol}`
           : (action === 'borrow' || action === 'uncollateral') && hfNext < 1.05
             ? 'Too close to liquidation'
-            : action === 'repay' && walletLoan !== undefined && approvalAmount > walletLoan + 1n && fullRepay
+            : action === 'repay' &&
+                walletLoan !== undefined &&
+                approvalAmount > walletLoan + 1n &&
+                fullRepay
               ? `Insufficient ${loan.symbol}`
               : undefined;
   const actions = mode === 'earn' ? earnActions : borrowActions;
@@ -118,7 +141,10 @@ export default function Lend() {
       <div className="page-head">
         <div>
           <h1>Lend</h1>
-          <p>Earn on USDC in curated Morpho vaults, or borrow against collateral in Orbit’s test market.</p>
+          <p>
+            Earn on USDC in curated Morpho vaults, or borrow against collateral in Orbit’s test
+            market.
+          </p>
         </div>
       </div>
       <div style={{ marginBottom: 32 }}>
@@ -126,8 +152,8 @@ export default function Lend() {
       </div>
       <h2 style={{ fontSize: 20, marginBottom: 6 }}>Borrow: Orbit test market</h2>
       <p className="muted" style={{ marginBottom: 16, maxWidth: '60ch' }}>
-        An isolated Morpho Blue market for test assets. Supply {loan.symbol} to earn, or borrow it against {coll.symbol}.
-        Rates move with utilization.
+        An isolated Morpho Blue market for test assets. Supply {loan.symbol} to earn, or borrow it
+        against {coll.symbol}. Rates move with utilization.
       </p>
       <div className="lend">
         <div style={{ display: 'grid', gap: 20, minWidth: 0 }}>
@@ -145,9 +171,18 @@ export default function Lend() {
                   <Stat label="Supply APY" value={pct(d.supplyApy, 2)} tone="up" />
                   <Stat label="Borrow APY" value={pct(d.borrowApy, 2)} />
                   <Stat label="Utilization" value={pct(d.utilization)} />
-                  <Stat label="Total supplied" value={`${compact(Number(formatUnits(d.totalSupplyAssets, loan.decimals)))} ${loan.symbol}`} />
-                  <Stat label="Total borrowed" value={`${compact(Number(formatUnits(d.totalBorrowAssets, loan.decimals)))} ${loan.symbol}`} />
-                  <Stat label="Available" value={`${compact(Number(formatUnits(d.liquidity, loan.decimals)))} ${loan.symbol}`} />
+                  <Stat
+                    label="Total supplied"
+                    value={`${compact(Number(formatUnits(d.totalSupplyAssets, loan.decimals)))} ${loan.symbol}`}
+                  />
+                  <Stat
+                    label="Total borrowed"
+                    value={`${compact(Number(formatUnits(d.totalBorrowAssets, loan.decimals)))} ${loan.symbol}`}
+                  />
+                  <Stat
+                    label="Available"
+                    value={`${compact(Number(formatUnits(d.liquidity, loan.decimals)))} ${loan.symbol}`}
+                  />
                 </dl>
               ) : m.error ? (
                 <Notice tone="error">{m.error}</Notice>
@@ -166,7 +201,9 @@ export default function Lend() {
               <div>
                 <dt>Morpho contract</dt>
                 <dd>
-                  <AddressLink address={deployments.morpho}>{shortAddress(deployments.morpho)}</AddressLink>
+                  <AddressLink address={deployments.morpho}>
+                    {shortAddress(deployments.morpho)}
+                  </AddressLink>
                 </dd>
               </div>
               <div>
@@ -187,9 +224,10 @@ export default function Lend() {
               </div>
             </dl>
             <Notice tone="warn">
-              <b>Liquidation risk.</b> If {coll.symbol}'s price falls far enough that your health factor drops below
-              1.0, anyone can repay your debt and seize collateral plus an incentive. The testnet oracle is posted by
-              the Orbit deployer; mainnet markets must use an independent price feed.
+              <b>Liquidation risk.</b> If {coll.symbol}'s price falls far enough that your health
+              factor drops below 1.0, anyone can repay your debt and seize collateral plus an
+              incentive. The testnet oracle is posted by the Orbit deployer; mainnet markets must
+              use an independent price feed.
             </Notice>
           </section>
         </div>
@@ -235,7 +273,11 @@ export default function Lend() {
             )}
           </section>
           <section className="card trade-panel">
-            <div className="tabs" role="tablist" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+            <div
+              className="tabs"
+              role="tablist"
+              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}
+            >
               {(['earn', 'borrow'] as const).map((x) => (
                 <button
                   key={x}
@@ -273,7 +315,13 @@ export default function Lend() {
               decimals={token.decimals}
               balance={ceiling}
               onMax={ceiling ? () => setAmount(formatUnits(ceiling, token.decimals)) : undefined}
-              footer={action === 'borrow' ? 'Max = borrow limit' : action === 'withdraw' ? 'Max = withdrawable' : undefined}
+              footer={
+                action === 'borrow'
+                  ? 'Max = borrow limit'
+                  : action === 'withdraw'
+                    ? 'Max = withdrawable'
+                    : undefined
+              }
               token={
                 <span className="token-tag">
                   <Avatar seed={token.address} size={24} round /> {token.symbol}
@@ -290,7 +338,9 @@ export default function Lend() {
               onConnect={openConnect}
               disabledReason={disabledReason}
               approve={
-                needsApproval ? { token, spender: deployments.morpho, amount: approvalAmount } : undefined
+                needsApproval
+                  ? { token, spender: deployments.morpho, amount: approvalAmount }
+                  : undefined
               }
               request={{ address: deployments.morpho, abi: morphoAbi, ...requests[action] }}
               onDone={() => setAmount('')}

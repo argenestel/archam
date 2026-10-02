@@ -1,6 +1,8 @@
 .git
 node_modules
 dist
+dist-mainnet
+storage
 .env*
 *.keystore*
 *.password

@@ -1,0 +1,7 @@
+# Use: docker compose -p orbit-mainnet -f compose.yaml -f compose.mainnet.yaml up --build -d
+services:
+  web:
+    build:
+      args:
+        ARC_NETWORK: mainnet
+        MAINNET_SIGNING: '1'

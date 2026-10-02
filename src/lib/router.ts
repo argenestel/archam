@@ -6,6 +6,7 @@ export type Route =
   | { page: 'create' }
   | { page: 'swap' }
   | { page: 'lend' }
+  | { page: 'borrow' }
   | { page: 'leaders' }
   | { page: 'portfolio' }
   | { page: 'risks' }
@@ -24,7 +25,7 @@ export function parseRoute(hash: string): Route {
   }
   if (page === 'profile')
     return { page, address: /^0x[0-9a-fA-F]{40}$/.test(arg) ? (arg as `0x${string}`) : undefined };
-  if (['create', 'swap', 'lend', 'leaders', 'portfolio', 'risks'].includes(page))
+  if (['create', 'swap', 'lend', 'borrow', 'leaders', 'portfolio', 'risks'].includes(page))
     return { page } as Route;
   return { page: 'discover' };
 }

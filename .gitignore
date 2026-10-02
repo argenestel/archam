@@ -9,6 +9,7 @@ contracts/cache/
 *.log
 node_modules/
 dist/
+dist-mainnet/
 *.tsbuildinfo
 .env
 .env.local

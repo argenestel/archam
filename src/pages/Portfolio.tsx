@@ -10,14 +10,26 @@ import { readTransactions, type LocalTransaction } from '../lib/transactions';
 import { useTx } from '../lib/tx';
 import { openConnect, useWallet } from '../lib/wallet';
 import { UsdcMark } from './TokenPage';
+import { isTestnet } from '../lib/arc';
+import Earn from './Earn';
+import Borrow from './Borrow';
 
 export default function Portfolio() {
   const { address, gas } = useWallet();
   if (!address)
     return (
       <div className="card">
-        <Empty title="Connect to see your portfolio" action={<button className="btn btn-primary" onClick={openConnect}>Connect wallet</button>}>
-          Balances, launch positions, lending and points — read straight from Arc.
+        <Empty
+          title="Connect to see your portfolio"
+          action={
+            <button className="btn btn-primary" onClick={openConnect}>
+              Connect wallet
+            </button>
+          }
+        >
+          {isTestnet
+            ? 'Balances, launch positions, lending and points — read straight from Arc.'
+            : 'Wallet balances, vault positions, provider-indexed loans and local transaction receipts.'}
         </Empty>
       </div>
     );
@@ -31,23 +43,37 @@ export default function Portfolio() {
               {shortAddress(address)}
             </h1>
             <p className="muted" style={{ marginTop: 2 }}>
-              Gas <span className="mono">{gas === undefined ? '…' : compact(Number(formatUnits(gas, 18)), 4)} USDC</span>
+              Gas{' '}
+              <span className="mono">
+                {gas === undefined ? '…' : compact(Number(formatUnits(gas, 18)), 4)} USDC
+              </span>
             </p>
           </div>
         </div>
       </div>
-      <a className="btn btn-ghost" href="#/profile" style={{ marginBottom: 20 }}>Edit IPFS profile</a>
-      <div style={{ display: 'grid', gap: 20 }}>
-        <div className="grid-2">
-          <PointsCard />
+      <a className="btn btn-ghost" href="#/profile" style={{ marginBottom: 20 }}>
+        Edit IPFS profile
+      </a>
+      {!isTestnet ? (
+        <div className="stack">
           <Balances />
-        </div>
-        <LaunchPositions />
-        <div className="grid-2">
-          <LendingSummary />
+          <Earn />
+          <Borrow />
           <Activity />
         </div>
-      </div>
+      ) : (
+        <div style={{ display: 'grid', gap: 20 }}>
+          <div className="grid-2">
+            <PointsCard />
+            <Balances />
+          </div>
+          <LaunchPositions />
+          <div className="grid-2">
+            <LendingSummary />
+            <Activity />
+          </div>
+        </div>
+      )}
     </>
   );
 }
@@ -67,7 +93,11 @@ function PointsCard() {
       </div>
       {s ? (
         <div className="row" style={{ gap: 20 }}>
-          <div className="level-ring" style={{ ['--p' as string]: Math.round(lv.progress * 100) }} aria-label={`Level ${lv.level}`}>
+          <div
+            className="level-ring"
+            style={{ ['--p' as string]: Math.round(lv.progress * 100) }}
+            aria-label={`Level ${lv.level}`}
+          >
             {lv.level}
           </div>
           <dl className="stats grow">
@@ -93,8 +123,8 @@ function PointsCard() {
         <Skeleton h={88} />
       )}
       <p className="faint" style={{ fontSize: 12 }}>
-        {compact(Math.max(0, lv.next - (s?.points ?? 0)), 0)} points to level {lv.level + 1}. Derived from confirmed
-        on-chain trades only; no monetary value.
+        {compact(Math.max(0, lv.next - (s?.points ?? 0)), 0)} points to level {lv.level + 1}.
+        Derived from confirmed on-chain trades only; no monetary value.
       </p>
     </section>
   );
@@ -108,7 +138,7 @@ function Balances() {
       <div className="card-head">
         <h2>Wallet</h2>
         <a className="link" href="#/swap" style={{ fontSize: 13 }}>
-          Get test funds
+          {isTestnet ? 'Get test funds' : 'Swap assets'}
         </a>
       </div>
       <ul className="list">
@@ -116,10 +146,15 @@ function Balances() {
           <li key={t.address}>
             {t === USDC ? <UsdcMark /> : <Avatar seed={t.address} size={24} round />}
             <span className="grow">
-              <b>{t.symbol}</b> <span className="muted" style={{ fontSize: 12.5 }}>{t.name}</span>
+              <b>{t.symbol}</b>{' '}
+              <span className="muted" style={{ fontSize: 12.5 }}>
+                {t.name}
+              </span>
             </span>
             <span className="mono">
-              {balances.data ? formatAmount(balances.data[t.address.toLowerCase()] ?? 0n, t.decimals, 4) : '…'}
+              {balances.data
+                ? formatAmount(balances.data[t.address.toLowerCase()] ?? 0n, t.decimals, 4)
+                : '…'}
             </span>
           </li>
         ))}
@@ -136,7 +171,12 @@ function LaunchPositions() {
   const rows = (positions.data ?? []).map((p) => {
     const l = byToken.get(p.token.toLowerCase());
     const value = (l?.price ?? 0) * Number(formatUnits(p.balance, 18));
-    return { ...p, launch: l, value, pnl: Number(p.received) / 1e6 + value - Number(p.spent) / 1e6 };
+    return {
+      ...p,
+      launch: l,
+      value,
+      pnl: Number(p.received) / 1e6 + value - Number(p.spent) / 1e6,
+    };
   });
   const total = rows.reduce((s, r) => s + r.value, 0);
   const pnl = rows.reduce((s, r) => s + r.pnl, 0);
@@ -146,7 +186,11 @@ function LaunchPositions() {
         <h2>Launch positions</h2>
         {rows.length > 0 && (
           <span className="mono" style={{ fontSize: 13 }}>
-            {usd(total)} worth, <span className={pnl >= 0 ? 'up' : 'down'}>{pnl >= 0 ? '+' : ''}{usd(pnl)}</span>
+            {usd(total)} worth,{' '}
+            <span className={pnl >= 0 ? 'up' : 'down'}>
+              {pnl >= 0 ? '+' : ''}
+              {usd(pnl)}
+            </span>
           </span>
         )}
       </div>
@@ -169,7 +213,11 @@ function LaunchPositions() {
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.token} onClick={() => (window.location.hash = `#/token/${r.token}`)} style={{ cursor: 'pointer' }}>
+                <tr
+                  key={r.token}
+                  onClick={() => (window.location.hash = `#/token/${r.token}`)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <td>
                     <a className="row" style={{ gap: 10 }} href={`#/token/${r.token}`}>
                       <Avatar seed={r.token} size={26} />
@@ -190,7 +238,14 @@ function LaunchPositions() {
           </table>
         </div>
       ) : (
-        <Empty title="No launch trades yet" action={<a className="btn btn-ghost" href="#/">Discover launches</a>} />
+        <Empty
+          title="No launch trades yet"
+          action={
+            <a className="btn btn-ghost" href="#/">
+              Discover launches
+            </a>
+          }
+        />
       )}
     </section>
   );
@@ -244,7 +299,9 @@ function Activity() {
   const [items, setItems] = useState<LocalTransaction[]>([]);
   useEffect(() => {
     const load = () =>
-      setItems(readTransactions().filter((t) => t.account.toLowerCase() === address?.toLowerCase()));
+      setItems(
+        readTransactions().filter((t) => t.account.toLowerCase() === address?.toLowerCase()),
+      );
     load();
     window.addEventListener('orbit:transactions', load);
     return () => window.removeEventListener('orbit:transactions', load);

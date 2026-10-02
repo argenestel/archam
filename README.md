@@ -1,6 +1,6 @@
 # Orbit — launch, trade and lend on Arc
 
-**Release status: Arc testnet beta. Mainnet is prepared but gated (audit, Safe, legal): see [the mainnet plan](docs/MAINNET_PLAN.md).** See [release gates](docs/RELEASE.md).
+**Release status: testnet beta plus an opt-in mainnet protocol hub beta (not production-certified).** Existing protocol swaps/vaults/cirBTC-backed loans: [mainnet app setup and limitations](docs/MAINNET_APP.md). Custom Orbit mainnet contracts remain gated by audit, Safe, and legal review: [mainnet plan](docs/MAINNET_PLAN.md). See [release gates](docs/RELEASE.md).
 **Start every update with [the project reference](docs/PROJECT_REFERENCE.md).**
 
 Orbit is a FOMO-style trading app for [Arc](https://arc.io), Circle's stablecoin-native L1:
@@ -21,7 +21,9 @@ pnpm dev            # http://localhost:5191
 pnpm build && pnpm preview
 ```
 
-`VITE_ARC_NETWORK=mainnet pnpm build` produces a mainnet build (chain 5042). It enables only features with a recorded mainnet deployment, so today every Orbit-operated feature shows a "not live on this network" state instead of pointing at testnet contracts.
+`pnpm dev:mainnet` starts the opt-in mainnet protocol hub at **http://localhost:5193**; `pnpm build:mainnet` writes `dist-mainnet/`. Use your own wallet; never send funds directly to Orbit or router addresses. See [mainnet beta documentation](docs/MAINNET_APP.md) before funding.
+
+`VITE_ARC_NETWORK=mainnet pnpm build` produces a read-only mainnet build (chain 5042). It enables only features with a recorded mainnet deployment, so today every Orbit-operated feature shows a "not live on this network" state instead of pointing at testnet contracts.
 
 ## Logos and profiles
 

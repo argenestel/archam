@@ -1112,6 +1112,21 @@ textarea.input {
   }
 }
 
+/* Mainnet protocol hub */
+.protocol-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.protocol-card:hover {
+  border-color: var(--blue);
+}
+@media (max-width: 880px) {
+  .protocol-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* IPFS media and launch cards */
 .mobile-launch {
   display: none;

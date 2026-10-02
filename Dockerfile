@@ -4,6 +4,10 @@ RUN npm install --global pnpm@11.1.2
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY . .
+ARG ARC_NETWORK=testnet
+ARG MAINNET_SIGNING=0
+ENV VITE_ARC_NETWORK=${ARC_NETWORK}
+ENV VITE_MAINNET_SIGNING=${MAINNET_SIGNING}
 RUN pnpm build
 
 FROM nginxinc/nginx-unprivileged:1.28-alpine

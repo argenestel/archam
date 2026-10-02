@@ -1,6 +1,7 @@
 import { parseAbi, type Address, type Hex } from 'viem';
 import testnet from '../../deployments/arc-testnet.json';
 import { circle, networkName } from './arc';
+import mainnet from '../../deployments/arc-mainnet.json';
 
 export type Token = {
   symbol: string;
@@ -23,13 +24,14 @@ export type MarketParams = {
  * every Orbit-operated feature instead of pointing at testnet contracts.
  */
 const m = networkName === 'testnet' ? testnet : undefined;
-const at = (name: keyof typeof testnet.contracts) => m?.contracts[name]?.address as Address | undefined;
+const at = (name: keyof typeof testnet.contracts) =>
+  m?.contracts[name]?.address as Address | undefined;
 
 export const deployments = {
   router: at('UniswapV2Router02'),
   factory: at('UniswapV2Factory'),
   launch: m?.launch?.contract as Address | undefined,
-  
+
   morpho: m?.lending?.morpho as Address | undefined,
   oracle: at('OrbitTestnetOracle'),
 };
@@ -65,6 +67,18 @@ export const USDC: Token = {
 };
 export const baseTokens: Token[] = [
   USDC,
+  { symbol: 'EURC', name: 'Euro Coin', address: circle.eurc, decimals: 6, kind: 'circle' },
+  ...(networkName === 'mainnet'
+    ? [
+        {
+          symbol: 'cirBTC',
+          name: 'Circle wrapped Bitcoin',
+          address: mainnet.contracts.cirBTC.address as Address,
+          decimals: 8,
+          kind: 'circle' as const,
+        },
+      ]
+    : []),
   ...(m
     ? ([
         {

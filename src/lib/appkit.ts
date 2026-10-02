@@ -1,10 +1,12 @@
-import type { EIP1193Provider } from 'viem';
+import { isAddress, keccak256, parseAbi, type EIP1193Provider } from 'viem';
+import { client } from './arc';
+import mainnet from '../../deployments/arc-mainnet.json';
 import { isTestnet } from './arc';
 import { useQuery } from './query';
 
 // Circle App Kit (docs.arc.io/app-kit): official Swap (USDC/EURC/cirBTC) and Earn (Morpho
 // vault) integrations on Arc mainnet and testnet. Loaded lazily; no API key in the browser.
-export const kitChain = isTestnet ? 'Arc_Testnet' : 'Arc';
+export const kitChain: 'Arc' | 'Arc_Testnet' = isTestnet ? 'Arc_Testnet' : 'Arc';
 /** Mainnet writes stay off until a build sets VITE_MAINNET_SIGNING=1 (Phase 1 gate). */
 export const signingEnabled = isTestnet || import.meta.env.VITE_MAINNET_SIGNING === '1';
 
@@ -25,6 +27,8 @@ export type Vault = {
   tvl: number;
   liquidity: number;
   warnings: string[];
+  status: string;
+  asOf: string;
 };
 
 /**
@@ -32,7 +36,7 @@ export type Vault = {
  * so only named, active vaults without risk warnings, with positive APY and (on mainnet)
  * at least $250k deposited are shown.
  */
-export function curate(raw: Record<string, unknown>[]): Vault[] {
+export function catalogVaults(raw: Record<string, unknown>[]): Vault[] {
   return raw
     .map((v) => ({
       address: v.vaultAddress as `0x${string}`,
@@ -42,16 +46,51 @@ export function curate(raw: Record<string, unknown>[]): Vault[] {
       apy: Number(v.currentApy) || 0,
       tvl: Number(v.totalDeposits) || 0,
       liquidity: Number(v.liquidity) || 0,
-      status: v.status,
+      status: String(v.status || 'unknown'),
+      asOf: String(v.asOf || ''),
       warnings: [
-        ...(((v.riskSignals as { warnings?: string[] })?.warnings) ?? []),
-        ...(((v.riskSignals as { earnKitWarnings?: string[] })?.earnKitWarnings) ?? []),
-      ],
+        ...((v.riskSignals as { warnings?: unknown[] })?.warnings ?? []),
+        ...((v.riskSignals as { earnKitWarnings?: unknown[] })?.earnKitWarnings ?? []),
+      ].map((w) =>
+        typeof w === 'string' ? w : String((w as { type?: string })?.type || 'Provider warning'),
+      ),
     }))
+    .filter((v) => isAddress(v.address) && ['USDC', 'EURC'].includes(v.asset))
+    .sort((a, b) => b.apy - a.apy);
+}
+export function curate(raw: Record<string, unknown>[]): Vault[] {
+  return catalogVaults(raw)
     .filter((v) => v.status === 'active' && v.name.length > 2 && v.apy > 0 && !v.warnings.length)
-    .filter((v) => isTestnet || (v.tvl >= 250_000 && !/\btest\b/i.test(v.name)))
-    .sort((a, b) => b.apy - a.apy)
-    .map(({ status: _status, ...v }) => v);
+    .filter((v) => isTestnet || (v.tvl >= 250_000 && !/\btest\b/i.test(v.name)));
+}
+export function useVaultCatalog() {
+  return useQuery(
+    `appkit:catalog:${kitChain}`,
+    async () => {
+      const { vaults } = await (
+        await getKit()
+      ).earn.exploreVaults({ chain: kitChain, sortBy: 'apy' });
+      return catalogVaults(vaults as unknown as Record<string, unknown>[]);
+    },
+    60_000,
+  );
+}
+export async function verifyVault(vault: Vault, asset: `0x${string}`) {
+  const [code, actualAsset] = await Promise.all([
+    client.getCode({ address: vault.address }),
+    client.readContract({
+      address: vault.address,
+      abi: parseAbi(['function asset() view returns (address)']),
+      functionName: 'asset',
+    }),
+  ]);
+  if (!code || code === '0x' || actualAsset.toLowerCase() !== asset.toLowerCase())
+    throw new Error('Vault code or deposit asset verification failed');
+  const known = mainnet.earnVaults.find(
+    (v) => v.address.toLowerCase() === vault.address.toLowerCase(),
+  );
+  if (!isTestnet && known && keccak256(code) !== known.runtimeCodeHash)
+    throw new Error('Vault bytecode changed since the recorded verification');
 }
 
 export function useVaults() {
@@ -73,9 +112,9 @@ export function useTokenRates() {
       const kit = await getKit();
       const { rates } = await kit.getTokenRates({ chain: kitChain as never });
       return Object.fromEntries(
-        Object.entries((rates as Record<string, Record<string, { priceUSD: string }>>)[kitChain] ?? {}).map(
-          ([a, r]) => [a.toLowerCase(), Number(r.priceUSD)],
-        ),
+        Object.entries(
+          (rates as Record<string, Record<string, { priceUSD: string }>>)[kitChain] ?? {},
+        ).map(([a, r]) => [a.toLowerCase(), Number(r.priceUSD)]),
       );
     },
     60_000,

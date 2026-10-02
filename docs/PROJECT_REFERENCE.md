@@ -2,7 +2,7 @@
 
 > **Start here for every future update.** This document records what the product is supposed to become, what actually exists, what must not be assumed, and how changes should be requested and accepted.
 >
-> **Current release: Arc testnet beta (launch curves, social feed, Morpho lending). Not approved for mainnet funds.** A clean interface, successful transactions, and passing tests do not establish safety for real funds.
+> **Current release: testnet beta plus an opt-in existing-protocol mainnet hub beta. Not production-approved for real funds.** See [MAINNET_APP.md](MAINNET_APP.md). Orbit's custom-contract mainnet gates remain open. A clean interface and passing tests do not establish safety for real funds.
 
 - Last reviewed: **2026-10-02 UTC**.
 - Implementation baseline: **2026-10-02 FOMO/Morpho release** (see decision log).
@@ -76,6 +76,7 @@ Do not silently resolve a material disagreement between code, chain data, and do
 - [RPC.md](RPC.md): proxy architecture and troubleshooting.
 - [MAINNET_PLAN.md](MAINNET_PLAN.md): mainnet rollout status per phase and the gates only the owner can close.
 - [AGENT.md](AGENT.md): fund-manager MCP server for Claude Code / Codex.
+- [MAINNET_APP.md](MAINNET_APP.md): separate mainnet build, supported protocol flows, router directory, confirmation guards, and limits.
 - [IPFS.md](IPFS.md): Pinata logos, signed public profiles, persistent profile index, and media sidecar deployment.
 
 ## 2. Product brief and priorities

@@ -35,10 +35,29 @@ const expected = {
     SafeL2_141: '0x29fcB43b46531BcA003ddC8FCB67FFE91900C762',
   },
   protocols: {
+    // Official Uniswap v4 deployment registry, Arc chain 5042:
+    // https://developers.uniswap.org/docs/protocols/v4/deployments
     UniswapV4PoolManager: '0x8366a39cc670b4001a1121b8f6a443a643e40951',
+    UniswapUniversalRouter: '0x4fca4a51ab4f23a7447b3284fbd7d73289a89fb1',
+    UniswapUniversalRouter212: '0x8702463e73f74d0b6765abceb314ef07acb92650',
+    UniswapV4PositionManager: '0x6049c9a0e26405c0985f9e3685c87d0ae917f82b',
+    UniswapV4Quoter: '0x8dc178efb8111bb0973dd9d722ebeff267c98f94',
+    UniswapV4StateView: '0xf3334192d15450cdd385c8b70e03f9a6bd9e673b',
   },
 };
-const report = { chainId: 5042, network: 'Arc', verifiedAt: new Date().toISOString(), contracts: {}, missing: [], notes: [] };
+const report = {
+  chainId: 5042,
+  network: 'Arc',
+  verifiedAt: new Date().toISOString(),
+  sources: [
+    'https://docs.arc.io/arc/references/contract-addresses',
+    'https://developers.uniswap.org/docs/protocols/v4/deployments',
+    'Circle App Kit live Earn and Borrow discovery',
+  ],
+  contracts: {},
+  missing: [],
+  notes: [],
+};
 const fail = (m) => {
   report.missing.push(m);
   console.log(`MISSING ${m}`);
@@ -55,18 +74,23 @@ async function code(name, address) {
 if ((await rpc.getChainId()) !== 5042) throw new Error('RPC is not Arc mainnet');
 for (const [name, t] of Object.entries(expected.circle)) {
   // USDC is a system precompile-backed interface; check it via ERC-20 calls rather than code.
-  const decimals = await rpc.readContract({ address: t.address, abi: erc20Abi, functionName: 'decimals' }).catch(() => undefined);
+  const decimals = await rpc
+    .readContract({ address: t.address, abi: erc20Abi, functionName: 'decimals' })
+    .catch(() => undefined);
   if (decimals !== t.decimals) fail(`${name}: decimals ${decimals} != ${t.decimals}`);
   else {
     report.contracts[name] = { address: t.address, decimals };
     console.log(`ok      ${name} ${t.address} decimals=${decimals}`);
   }
 }
-for (const [name, address] of Object.entries({ ...expected.infra, ...expected.protocols })) await code(name, address);
+for (const [name, address] of Object.entries({ ...expected.infra, ...expected.protocols }))
+  await code(name, address);
 
 // Circle App Kit: the official swap / earn / borrow integration on Arc.
 const kit = new AppKit();
-const { vaults = [] } = await kit.earn.exploreVaults({ chain: 'Arc', sortBy: 'apy' }).catch((e) => (fail(`App Kit Earn: ${e.message}`), {}));
+const { vaults = [] } = await kit.earn
+  .exploreVaults({ chain: 'Arc', sortBy: 'apy' })
+  .catch((e) => (fail(`App Kit Earn: ${e.message}`), {}));
 report.earnVaults = [];
 for (const v of vaults) {
   const c = await rpc.getCode({ address: v.vaultAddress });
@@ -84,22 +108,54 @@ for (const v of vaults) {
     warnings: [...(v.riskSignals?.warnings || []), ...(v.riskSignals?.earnKitWarnings || [])],
     runtimeCodeHash: keccak256(c),
   });
-  console.log(`ok      Earn vault ${v.name} (${v.protocol}) ${(v.currentApy * 100).toFixed(2)}% APY`);
+  console.log(
+    `ok      Earn vault ${v.name} (${v.protocol}) ${(v.currentApy * 100).toFixed(2)}% APY`,
+  );
 }
-const rates = await kit.getTokenRates({ chain: 'Arc' }).catch((e) => (fail(`App Kit rates: ${e.message}`), undefined));
-if (rates) report.notes.push(`App Kit token rates available for ${Object.keys(rates.rates?.Arc || {}).length} tokens`);
+const rates = await kit
+  .getTokenRates({ chain: 'Arc' })
+  .catch((e) => (fail(`App Kit rates: ${e.message}`), undefined));
+if (rates)
+  report.notes.push(
+    `App Kit token rates available for ${Object.keys(rates.rates?.Arc || {}).length} tokens`,
+  );
 report.swap = { provider: 'Circle App Kit', tokens: ['USDC', 'EURC', 'cirBTC'] };
-report.borrow = { provider: 'Circle App Kit Borrow (cirBTC collateral → USDC)', supported: kit.getSupportedChains('borrow').some((c) => c.name === 'Arc') };
+report.borrow = {
+  provider: 'Circle App Kit Borrow',
+  supported: kit.getSupportedChains('borrow').some((c) => c.name === 'Arc'),
+};
+report.borrowMarkets = [];
+try {
+  for await (const market of kit.borrow.exploreMarketsIterator({ chain: 'Arc', pageSize: 100 })) {
+    report.borrowMarkets.push(market);
+    if (report.borrowMarkets.length >= 500) throw new Error('Discovery exceeded 500 market limit');
+  }
+} catch (e) {
+  fail(`App Kit Borrow discovery: ${e.message}`);
+}
+report.notes.push(
+  'Swap support is declared by the SDK. Token rates and deployed code do not prove a route exists for any given amount; the UI requires a live quote.',
+);
 
 // Uniswap V2: not listed in Arc docs or the Uniswap Arc playbook. Graduation needs a V2-style
 // pair factory, so a mainnet launch must either deploy the canonical V2 factory (as on testnet)
 // or switch graduation to Uniswap v4 (PoolManager above).
-report.notes.push('No Uniswap V2 deployment is listed by Arc or Uniswap for chain 5042 (checked 2026-10-02).');
+report.notes.push(
+  'No Uniswap V2 deployment is listed by Arc or Uniswap for chain 5042 (checked 2026-10-02).',
+);
 const sanity = parseAbi(['function owner() view returns (address)']);
-await rpc.readContract({ address: expected.protocols.UniswapV4PoolManager, abi: sanity, functionName: 'owner' })
+await rpc
+  .readContract({
+    address: expected.protocols.UniswapV4PoolManager,
+    abi: sanity,
+    functionName: 'owner',
+  })
   .then((o) => report.notes.push(`Uniswap v4 PoolManager owner ${o}`))
   .catch(() => undefined);
 
 fs.writeFileSync('deployments/arc-mainnet.json', JSON.stringify(report, null, 2) + '\n');
-console.log(`\nWrote deployments/arc-mainnet.json: ${Object.keys(report.contracts).length} contracts, ${report.earnVaults.length} vaults, ${report.missing.length} missing.`);
+fs.writeFileSync('public/arc-mainnet-deployment.json', JSON.stringify(report, null, 2) + '\n');
+console.log(
+  `\nWrote deployments/arc-mainnet.json: ${Object.keys(report.contracts).length} contracts, ${report.earnVaults.length} vaults, ${report.missing.length} missing.`,
+);
 if (report.missing.length) process.exitCode = 1;
