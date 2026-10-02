@@ -93,10 +93,7 @@ export default function Profile({ address: target }: { address?: Address }) {
                 onChange={(e) => setWebsite(e.target.value)}
               />
             </div>
-            <p className="faint">
-              Your profile is public. Wallet signatures authorize publishing; they do not send a
-              transaction. Old IPFS versions may remain accessible.
-            </p>
+            <p className="faint">Your profile is public.</p>
             <button
               className="btn btn-primary"
               disabled={busy || uploading || profile.loading}

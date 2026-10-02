@@ -62,11 +62,7 @@ export default function CreateLaunch() {
         <section className="card card-pad" style={{ display: 'grid', gap: 18 }}>
           <div>
             <h1 style={{ fontSize: 28 }}>Launch a token</h1>
-            <p className="muted" style={{ marginTop: 6 }}>
-              1 billion tokens. 793.1 million are sold on the curve; the rest are paired with the
-              USDC raised and locked on Uniswap when the curve sells out. You get no free
-              allocation, and neither does anyone else.
-            </p>
+
           </div>
           <div className="field">
             <label htmlFor="name">Name</label>
@@ -168,10 +164,6 @@ export default function CreateLaunch() {
               window.location.hash = '#/';
             }}
           />
-          <p className="faint" style={{ fontSize: 12 }}>
-            Launch contract is unaudited. Tokens are locked to the curve until graduation, so they
-            can't be sent or paired elsewhere early. 1% trading fee.
-          </p>
         </section>
         <aside style={{ display: 'grid', gap: 14 }}>
           <h2 style={{ fontSize: 15 }}>Token preview</h2>

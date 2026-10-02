@@ -106,12 +106,9 @@ export default function SmartSwap() {
 
       {input > 0n && (
         <div role="radiogroup" aria-label="Venue" style={{ display: 'grid', gap: 6 }}>
-          {quotes.loading && <p className="muted" style={{ fontSize: 13.5 }}>Asking every venue on Arc for a price…</p>}
+          {quotes.loading && <p className="muted" style={{ fontSize: 13.5 }}>Finding the best price…</p>}
           {!quotes.loading && !list.length && (
-            <Notice tone="warn">
-              No venue on Arc can fill this right now.{' '}
-              {!address && from.kind === 'circle' && to.kind === 'circle' ? 'Connect a wallet to include Circle’s quote.' : 'Try a smaller amount or another pair.'}
-            </Notice>
+            <Notice tone="warn">No route for this pair or amount.</Notice>
           )}
           {list.map((q, i) => (
             <VenueRow key={q.venue} q={q} to={to} selected={q === best} best={i === 0} onSelect={() => setChosen(q.venue)} />
@@ -147,7 +144,6 @@ export default function SmartSwap() {
       )}
 
       <Execute quote={best} disabledReason={!input ? 'Enter an amount' : balance !== undefined && input > balance ? `Insufficient ${from.symbol}` : undefined} onDone={() => setAmount('')} />
-      {!address && <p className="faint">Connect a wallet to see every venue, including Circle’s quote.</p>}
 
       {picker && (
         <Dialog title="Select a token" close={() => setPicker(undefined)}>

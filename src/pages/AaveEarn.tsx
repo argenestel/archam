@@ -4,7 +4,7 @@ import Dialog from '../components/Dialog';
 import { ActionButton, AddressLink, AmountBox, Notice, Skeleton } from '../components/ui';
 import { isTestnet } from '../lib/arc';
 import { signingEnabled } from '../lib/appkit';
-import { AAVE_V4, aaveRequests, useAaveVaults, type AaveVault } from '../lib/adapters/aave';
+import { aaveRequests, useAaveVaults, type AaveVault } from '../lib/adapters/aave';
 import { useBalances } from '../lib/data';
 import { compact, formatAmount, pct, tryParse } from '../lib/format';
 import { invalidate } from '../lib/query';
@@ -19,14 +19,7 @@ export default function AaveEarn() {
   return (
     <section className="card" aria-label="Aave V4 vaults">
       <div className="card-head">
-        <div>
-          <h2>Aave V4</h2>
-          <p className="muted" style={{ fontSize: 13.5, marginTop: 2 }}>
-            Supply to Aave’s Arc Core Hub through its standard ERC-4626 vaults. APY is the realized share-price growth
-            over the last day, not a promise.
-          </p>
-        </div>
-        <AddressLink address={AAVE_V4.coreHub}>Core Hub</AddressLink>
+        <h2>Aave V4</h2>
       </div>
       {vaults.loading ? (
         <div style={{ padding: 20 }}>
@@ -42,8 +35,8 @@ export default function AaveEarn() {
             <thead>
               <tr>
                 <th>Asset</th>
-                <th className="r">APY (24h)</th>
-                <th className="r">Supplied via vault</th>
+                <th className="r">APY</th>
+                <th className="r">Supplied</th>
                 <th className="r">Yours</th>
                 <th className="r">
                   <span className="sr-only">Actions</span>
@@ -51,13 +44,10 @@ export default function AaveEarn() {
               </tr>
             </thead>
             <tbody>
-              {(vaults.data ?? []).map((v) => (
+              {(vaults.data ?? []).filter((v) => (v.apy ?? 0) > 0.0001 || v.shares > 0n).map((v) => (
                 <tr key={v.vault}>
                   <td>
-                    <AddressLink address={v.vault}>{`waCore${v.symbol}`}</AddressLink>{' '}
-                    <span className="muted" style={{ fontSize: 12.5 }}>
-                      {v.symbol}
-                    </span>
+                    <AddressLink address={v.vault}>{v.symbol}</AddressLink>
                   </td>
                   <td className="r up">{v.apy === undefined ? '—' : pct(v.apy, 2)}</td>
                   <td className="r">
@@ -86,10 +76,6 @@ export default function AaveEarn() {
           </table>
         </div>
       )}
-      <p className="faint" style={{ padding: '10px 20px 16px' }}>
-        Addresses from Aave’s official address book, checked on-chain. The vaults are upgradeable proxies controlled by
-        Aave governance.
-      </p>
       {open && <AaveDialog v={open.v} mode={open.mode} close={() => setOpen(undefined)} />}
     </section>
   );
@@ -128,7 +114,7 @@ function AaveDialog({ v, mode, close }: { v: AaveVault; mode: 'deposit' | 'withd
         />
         <dl className="kv">
           <div>
-            <dt>Realized APY (24h)</dt>
+            <dt>APY</dt>
             <dd className="up">{v.apy === undefined ? '—' : pct(v.apy, 2)}</dd>
           </div>
           <div>

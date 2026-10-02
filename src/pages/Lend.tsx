@@ -51,10 +51,6 @@ export default function Lend() {
         <div className="page-head">
           <div>
             <h1>Earn</h1>
-            <p>
-              Discover USDC and EURC Morpho vaults on {activeChain.name}. Variable yield, real
-              protocol risk.
-            </p>
           </div>
         </div>
         <Earn />
@@ -145,20 +141,12 @@ export default function Lend() {
       <div className="page-head">
         <div>
           <h1>Lend</h1>
-          <p>
-            Earn on USDC in curated Morpho vaults, or borrow against collateral in Mofu’s test
-            market.
-          </p>
         </div>
       </div>
       <div style={{ marginBottom: 32 }}>
         <Earn />
       </div>
-      <h2 style={{ fontSize: 20, marginBottom: 6 }}>Borrow: Mofu test market</h2>
-      <p className="muted" style={{ marginBottom: 16, maxWidth: '60ch' }}>
-        An isolated Morpho Blue market for test assets. Supply {loan.symbol} to earn, or borrow it
-        against {coll.symbol}. Rates move with utilization.
-      </p>
+      <h2 style={{ fontSize: 20, marginBottom: 16 }}>Borrow</h2>
       <div className="lend">
         <div style={{ display: 'grid', gap: 20, minWidth: 0 }}>
           <section className="card">
@@ -196,20 +184,8 @@ export default function Lend() {
             </div>
           </section>
           <section className="card card-pad" style={{ display: 'grid', gap: 14 }}>
-            <h3 style={{ fontSize: 15 }}>How this market works</h3>
+            <h3 style={{ fontSize: 15 }}>Market</h3>
             <dl className="kv">
-              <div>
-                <dt>Protocol</dt>
-                <dd>Morpho Blue (canonical source)</dd>
-              </div>
-              <div>
-                <dt>Morpho contract</dt>
-                <dd>
-                  <AddressLink address={deployments.morpho}>
-                    {shortAddress(deployments.morpho)}
-                  </AddressLink>
-                </dd>
-              </div>
               <div>
                 <dt>Oracle price</dt>
                 <dd>
@@ -227,12 +203,7 @@ export default function Lend() {
                 <dd>When debt exceeds {pct(Number(lltv) / 1e18, 0)} of collateral value</dd>
               </div>
             </dl>
-            <Notice tone="warn">
-              <b>Liquidation risk.</b> If {coll.symbol}'s price falls far enough that your health
-              factor drops below 1.0, anyone can repay your debt and seize collateral plus an
-              incentive. The testnet oracle is posted by the Mofu deployer; mainnet markets must
-              use an independent price feed.
-            </Notice>
+            <Notice tone="warn">Below a health factor of 1.0, your collateral can be liquidated.</Notice>
           </section>
         </div>
         <aside className="side">

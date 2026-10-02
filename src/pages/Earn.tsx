@@ -65,9 +65,6 @@ export default function Earn() {
       <div className="card-head wrap">
         <div>
           <h2>Earn on {asset}</h2>
-          <p className="muted" style={{ fontSize: 13 }}>
-            Live Morpho vault discovery via Circle App Kit. APYs are variable, not guaranteed.
-          </p>
         </div>
         <div className="tabs" role="group" aria-label="Vault asset">
           {['USDC', 'EURC'].map((a) => (
@@ -77,17 +74,9 @@ export default function Earn() {
           ))}
         </div>
       </div>
-      <div className="row wrap" style={{ padding: '12px 20px' }}>
-        <button className="btn btn-quiet" aria-pressed={all} onClick={() => setAll(!all)}>
-          {all ? 'Show filtered vaults' : 'Show all discovered vaults'}
-        </button>
-        <span className="faint">
-          Filtered ≠ audited or risk-free. Your known positions remain visible.
-        </span>
-      </div>
       {!signingEnabled && (
         <div className="card-pad">
-          <Notice tone="warn">Transactions disabled in this build.</Notice>
+          <Notice tone="warn">Deposits are paused.</Notice>
         </div>
       )}
       {vaults.loading ? (
@@ -127,10 +116,7 @@ export default function Earn() {
                       >
                         {v.name || 'Unnamed vault'}
                       </a>
-                      <p className="faint">
-                        {v.protocol} · {v.status}
-                        {v.warnings.length ? ` · ${v.warnings.join(', ')}` : ''}
-                      </p>
+                      {v.warnings.length > 0 && <p className="down" style={{ fontSize: 12.5 }}>{v.warnings.join(', ')}</p>}
                     </td>
                     <td className="r">{pct(v.apy, 2)}</td>
                     <td className="r">{compact(v.tvl)}</td>
@@ -334,19 +320,14 @@ function EarnDialog({
           ))}
         </dl>
         {quote.error && <Notice tone="error">{quote.error}</Notice>}
-        <Notice tone="warn">
-          {isTestnet
-            ? 'Testnet funds.'
-            : 'Real funds. Vaults may lose money or restrict withdrawals.'}{' '}
-          {vault.warnings.length ? vault.warnings.join(', ') : 'Filtering is not an audit.'}
-        </Notice>
+        {vault.warnings.length > 0 && <Notice tone="warn">{vault.warnings.join(', ')}</Notice>}
         {review && (
           <p>
             Review {mode} of{' '}
             <b>
               {exact} {token.symbol}
             </b>
-            . Your wallet may request an approval followed by the vault transaction.
+            .
           </p>
         )}
         <button

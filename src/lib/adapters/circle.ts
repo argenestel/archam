@@ -39,9 +39,10 @@ export const circleSwap: SwapAdapter = {
       execution: () => ({
         kind: 'sdk',
         label: `Swap ${exact} ${tokenIn.symbol} to ${tokenOut.symbol}`,
-        run: async () =>
+        run: async (guarded) =>
           kit.swap({
-            from: { adapter, chain: kitChain as never },
+            // Sign through the runner's journaling provider, never the quote-time adapter.
+            from: { adapter: await adapterFor(guarded), chain: kitChain as never },
             tokenIn: tokenIn.symbol as never,
             tokenOut: tokenOut.symbol as never,
             amountIn: exact,

@@ -76,24 +76,13 @@ export default function Borrow() {
       <div className="page-head">
         <div>
           <h1>Borrow</h1>
-          <p>Compare collateralized markets and manage your loans on {activeChain.name}.</p>
         </div>
       </div>
       <section className="card">
         <div className="card-head">
           <div>
             <h2>Borrowing markets</h2>
-            <p className="faint">
-              Live Circle Borrow Kit discovery on {activeChain.name}. cirBTC-backed USDC/EURC flows
-              are integrated; other markets are discovery-only.
-            </p>
           </div>
-        </div>
-        <div className="card-pad">
-          <Notice tone="warn">
-            Borrowing creates debt and liquidation risk. These are third-party Morpho markets, not
-            Mofu’s test market. Batch-capable wallet support may be required.
-          </Notice>
         </div>
         {markets.loading ? (
           <div className="card-pad">
@@ -140,9 +129,6 @@ export default function Borrow() {
                         >
                           {m.loanAsset.symbol}
                         </a>
-                        <p className="faint">
-                          {m.protocol} · {m.marketId.slice(0, 10)}…
-                        </p>
                       </td>
                       <td className="r">
                         {m.borrowApy === null ? 'Unavailable' : pct(m.borrowApy, 2)}
@@ -442,11 +428,7 @@ function BorrowDialog({
           </dl>
         )}
         {quote.error && <Notice tone="error">{quote.error}</Notice>}
-        <Notice tone="warn">
-          {isTestnet ? 'Testnet.' : 'Arc mainnet: real collateral and debt.'} Liquidation can seize
-          collateral. Withdrawal may also pull a repayment from your wallet. Execution obtains a
-          fresh quote with 0.5% slippage; inspect every wallet request.
-        </Notice>
+        <Notice tone="warn">Liquidation can seize your collateral.</Notice>
         {review && (
           <label className="row">
             <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} />I

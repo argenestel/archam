@@ -38,10 +38,6 @@ export default function Leaders() {
       <div className="page-head">
         <div>
           <h1>Leaderboard</h1>
-          <p>
-            Every number here is recomputed from launch-contract state: no off-chain database,
-            nothing to edit. P&amp;L marks open positions to the current curve or pool price.
-          </p>
         </div>
         <div className="tabs" role="group" aria-label="Rank by">
           {(
@@ -142,11 +138,6 @@ export default function Leaders() {
           />
         )}
       </section>
-      <p className="faint" style={{ fontSize: 12, marginTop: 14 }}>
-        Points: 1 per USDC traded. Trade count and launch count earn nothing, so splitting, spamming
-        launches or wash-trading only costs fees. Points have no monetary value and are not a
-        promise of any reward. Following is a private watchlist stored in this browser.
-      </p>
     </>
   );
 }

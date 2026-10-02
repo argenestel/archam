@@ -25,13 +25,13 @@ Mofu is the front door to Arc. A user, or the AI fund manager, should be able to
 
 | # | Step | Status | Notes |
 | --- | --- | --- | --- |
-| 1 | Mainnet launch wiring | **Done** | Mainnet reads the live `mofu` record (MofuLaunch `0xB583…5cb4`, V2 router/factory); Launches is the home page; Create respects live `launchesPaused`; protocol hub moved to **Arc apps**; market cap uses the real minted supply. |
-| 2 | Adapter layer + smart router | **Done (swap)** | Adapters: Mofu curve, Mofu V2, **Uniswap v4**, Circle. **Best price** is the default Swap mode on both networks. |
+| 1 | Mainnet launch wiring | **Done** | Mainnet reads the live `mofu` record (MofuLaunch `0xB583…5cb4`, V2 router/factory); Launches is the home page; Create respects live `launchesPaused`; the separate protocol hub page was later removed (owner request: no contract-detail pages); market cap uses the real minted supply. |
+| 2 | Adapter layer + smart router | **Done (swap)** | Adapters: Mofu curve, Mofu V2, **Uniswap v4**, Circle. Swap is a single **Best price** form on both networks (the separate Circle-only and pools tabs were removed). |
 | 3 | Bridge in (CCTP via App Kit Bridge) | **Done (EVM sources)** | **Add funds** page: USDC/EURC from ~25 EVM chains; Circle's Forwarding Service mints on Arc, so no Arc gas is needed. Fast or Standard speed, fee estimate before signing, journaled transfers with explorer links, retry, and an explicit resolve for uncertain submissions. Measured fees: Base→Arc mainnet 100 USDC Fast ≈ 0.0036 transfer + 0.016 forwarding. Solana source needs the Solana adapter (not added). **No real bridge transfer has been run yet.** |
 | 4 | Aave V4 | **Done (earn)** | Addresses from Aave's generated address book (bgd-labs `AaveV4Arc.ts` @ f648e5dd), verified by `verify:mainnet` (28 contracts). Earn page lists the four ERC-4626 tokenization vaults (waCoreUSDC/EURC/cirBTC/WETH) with **realized 24h APY** from share-price growth (USDC ≈ 0.9%), TVL and your position; supply and withdraw/redeem through the checked tx runner. Deposit → redeem round trip simulated on mainnet state (0.1 USDC → 0.099999 back). Borrowing on Aave's Main Spoke (position managers) is not integrated. |
 | 5 | Unified portfolio over adapters | Planned | Positions from every adapter; oracle prices (Chainlink/Pyth/RedStone/Stork/Chronicle). |
 | 6 | Agent on adapters + ERC-8004 identity | **Partly** | Agent tools `quote_best_swap` / `swap_best` run the app's router (testnet-verified: 10 tUSDC → 0.00371 tETH via Mofu pool). ERC-8004 identity not done. |
-| 7 | Arc app directory | Partly | "Arc apps" lists verified protocol contracts; extend to more apps with read/execute levels. |
+| 7 | Arc app directory | Dropped | Removed by owner request: the UI shows products (swap, earn, borrow, add funds), not contract directories. Verified addresses stay in `deployments/arc-mainnet.json`. |
 
 ## Uniswap v4 on Arc: what was verified
 

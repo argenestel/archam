@@ -54,10 +54,6 @@ export default function Discover() {
         <div className="page-head" style={{ marginBottom: 0 }}>
           <div>
             <h1>Launches</h1>
-            <p>
-              Every token starts on the same price curve, paid in USDC. When {usd(GRAD, 0)} has gone
-              in, the curve closes and its liquidity moves to Uniswap, locked for good.
-            </p>
           </div>
           <a className="btn btn-primary mobile-launch" href="#/create">
             Launch a token

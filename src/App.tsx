@@ -34,7 +34,6 @@ const Leaders = lazy(() => import('./pages/Leaders'));
 const Portfolio = lazy(() => import('./pages/Portfolio'));
 const Risks = lazy(() => import('./pages/Risks'));
 const Profile = lazy(() => import('./pages/Profile'));
-const Mainnet = lazy(() => import('./pages/Mainnet'));
 const Borrow = lazy(() => import('./pages/Borrow'));
 const Bridge = lazy(() => import('./pages/Bridge'));
 
@@ -53,7 +52,6 @@ const nav: { route: Route; label: string; icon: typeof Compass; mobile?: boolean
       { route: { page: 'lend' }, label: 'Earn', icon: Landmark },
       { route: { page: 'borrow' }, label: 'Borrow', icon: Landmark },
       ...(deployments.launch ? [{ route: { page: 'leaders' } as Route, label: 'Leaderboard', icon: Trophy, mobile: false }] : []),
-      { route: { page: deployments.launch ? 'apps' : 'discover' } as Route, label: 'Arc apps', icon: Compass, mobile: !deployments.launch },
       { route: { page: 'bridge' }, label: 'Add funds', icon: Wallet, mobile: false },
       { route: { page: 'portfolio' }, label: 'Portfolio', icon: Wallet },
     ];
@@ -123,8 +121,8 @@ function Shell() {
             </div>
           }
         >
-          {route.page === 'discover' && (isTestnet || deployments.launch ? <Discover /> : <Mainnet />)}
-          {route.page === 'apps' && <Mainnet />}
+          {route.page === 'discover' && <Discover />}
+          {route.page === 'apps' && <Discover />}
           {route.page === 'bridge' && <Bridge />}
           {route.page === 'token' && <TokenPage address={route.address} />}
           {route.page === 'create' && <CreateLaunch />}
@@ -139,11 +137,7 @@ function Shell() {
       </main>
       <footer className="footer">
         <div className="footer-inner">
-          <span>
-            {isTestnet
-              ? 'Testnet: assets here have no value. Mofu’s launch contract is unaudited.'
-              : 'Mainnet beta: real funds. Mofu’s launch contract is unaudited, and Swap, Earn and Borrow use third-party protocols.'}
-          </span>
+          <span>{isTestnet ? 'Mofu on Arc Testnet' : 'Mofu on Arc'}</span>
           <nav aria-label="Resources">
             {isTestnet && (
               <a href="https://faucet.circle.com" target="_blank" rel="noreferrer">
@@ -151,13 +145,6 @@ function Shell() {
               </a>
             )}
             <a href="#/risks">Risks</a>
-            <a
-              href={isTestnet ? '/arc-testnet-deployment.json' : '/arc-mainnet-deployment.json'}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Deployment manifest
-            </a>
             <a href="https://docs.arc.io" target="_blank" rel="noreferrer">
               Arc docs
             </a>
@@ -197,10 +184,6 @@ function UnresolvedTransactions() {
         )}
         {externalPending && (
           <>
-            <p>
-              Wallet batch: {externalPending.batchId}. Reconnect the original wallet on its original
-              network to check status.
-            </p>
             <button
               className="btn btn-ghost btn-sm"
               disabled={externalPending.account.toLowerCase() !== address?.toLowerCase()}
@@ -327,9 +310,6 @@ function ConnectDialog({ close }: { close: () => void }) {
             {error}
           </p>
         )}
-        <p className="faint" style={{ fontSize: 12 }}>
-          Mofu never holds your keys. Every transaction is signed in your wallet.
-        </p>
       </div>
     </Dialog>
   );

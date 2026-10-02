@@ -75,10 +75,6 @@ export default function Bridge() {
     <div className="center-col">
       <div>
         <h1 style={{ font: '600 32px/1.1 var(--cond)' }}>Add funds</h1>
-        <p className="muted" style={{ marginTop: 6 }}>
-          Move USDC or EURC to {activeChain.name} from another chain. Circle burns it there and mints it here for you,
-          so you don’t need any {activeChain.name} gas to receive it.
-        </p>
       </div>
       <section className="card trade-panel" aria-label="Bridge to Arc">
         <div className="field">
@@ -174,10 +170,6 @@ export default function Bridge() {
             )}
           </button>
         )}
-        <p className="faint">
-          Your wallet switches to {source?.name ?? 'the source chain'} to sign. Fast transfers usually land in minutes;
-          Standard can take 15+ minutes on Ethereum.
-        </p>
         {address && !onArc && step === 'idle' && (
           <button className="btn btn-ghost" onClick={switchNetwork}>
             Switch back to {activeChain.name}

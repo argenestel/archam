@@ -19,7 +19,9 @@ export type Execution =
       prep?: PrepStep[];
     }
   /** An SDK flow that signs through the wallet itself (Circle App Kit). */
-  | { kind: 'sdk'; label: string; run: () => Promise<unknown> };
+  /** An SDK flow (Circle App Kit). It must sign through the provider the tx runner passes in:
+   * that provider journals every submission so an ambiguous failure locks against resubmits. */
+  | { kind: 'sdk'; label: string; run: (provider: import('viem').EIP1193Provider) => Promise<unknown> };
 
 export type SwapQuote = {
   venue: string;

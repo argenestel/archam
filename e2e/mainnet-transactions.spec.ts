@@ -89,12 +89,10 @@ async function setup(page: import('@playwright/test').Page, rejected: boolean | 
   await page.goto('/#/swap');
   await page.getByRole('button', { name: 'Connect', exact: true }).click();
   await page.getByRole('button', { name: 'Batch Fixture', exact: true }).click();
-  // These tests cover the Circle (App Kit) flow, now a tab beside the default "Best price" router.
-  await page.getByRole('button', { name: 'USDC and EURC', exact: true }).click();
+  // The Circle (App Kit) venue inside the unified swap; the SDK and wallet are fixtures.
   await page.getByLabel('You pay').fill('0.1');
-  await page.getByRole('button', { name: 'Review swap', exact: true }).click();
-  await expect(page.getByRole('dialog')).toBeVisible();
-  await page.getByRole('button', { name: 'Confirm swap', exact: true }).click();
+  await page.getByRole('radio').filter({ hasText: 'Circle' }).click();
+  await page.getByRole('button', { name: 'Swap with Circle', exact: true }).click();
 }
 test('submitted SDK batch is persisted, never reported as confirmed, and blocks duplicates after reload', async ({
   page,

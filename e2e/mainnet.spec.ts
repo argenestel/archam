@@ -7,7 +7,7 @@ test('mainnet hub, swap, earn and borrow render across viewport sizes', async ({
   page.on('pageerror', (e) => errors.push(e.message));
   for (const width of [360, 390, 768, 1280, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    for (const route of ['', 'swap', 'lend', 'borrow', 'portfolio', 'risks', 'bridge', 'apps']) {
+    for (const route of ['', 'swap', 'lend', 'borrow', 'portfolio', 'risks', 'bridge']) {
       await page.goto(`/#/${route}`);
       await expect(page.getByRole('link', { name: 'Mofu home', exact: true })).toBeVisible();
       await expect(page.locator('main :is(h1,h3)').first()).toBeVisible();
@@ -20,14 +20,11 @@ test('mainnet hub, swap, earn and borrow render across viewport sizes', async ({
   }
   expect(errors).toEqual([]);
 });
-test('mainnet opens on live Mofu launches and keeps the verified protocol hub', async ({ page }) => {
+test('mainnet opens on live Mofu launches', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Launches' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Launch a token' }).first()).toBeVisible();
-  await page.goto('/#/apps');
-  await expect(page.getByRole('heading', { name: 'Arc mainnet' })).toBeVisible();
-  await expect(page.getByText('UniswapUniversalRouter212', { exact: true })).toBeVisible();
-  await expect(page.getByText('Wallet execution enabled', { exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Arc apps' })).toHaveCount(0);
   await page.goto('/#/create');
   await expect(page.getByRole('heading', { name: 'Launch a token' })).toBeVisible();
   // The live contract's graduation threshold (5,000 USDC virtual reserve) comes from the manifest.
@@ -44,7 +41,6 @@ test('mainnet discovers live vaults and collateralized markets without a signer'
 }) => {
   await page.goto('/#/lend');
   await expect(page.locator('table tbody tr').first()).toBeVisible({ timeout: 30_000 });
-  await page.getByRole('button', { name: 'Show all discovered vaults' }).click();
   await page.getByRole('button', { name: 'EURC', exact: true }).click();
   await expect(page.getByText('Deposits (EURC)', { exact: true })).toBeVisible();
   await page.goto('/#/borrow');
@@ -127,10 +123,7 @@ test('wrong network asks to switch, never tries to transact', async ({ page }) =
   await page.getByRole('button', { name: 'Connect', exact: true }).click();
   await page.getByRole('button', { name: 'Test Wallet', exact: true }).click();
   await expect(page.locator('main .btn-block')).toHaveText('Switch to Arc');
-  await page.getByRole('button', { name: 'USDC and EURC', exact: true }).click();
-  await expect(page.locator('main .btn-block')).toHaveText('Switch to Arc');
-  await expect(page.getByLabel('Pay token')).toHaveValue('USDC');
-  await expect(page.getByLabel('Receive token')).toHaveValue('EURC');
+
 });
 
 test('add funds lists Circle bridge source chains for Arc mainnet', async ({ page }) => {
@@ -145,7 +138,6 @@ test('add funds lists Circle bridge source chains for Arc mainnet', async ({ pag
 test('earn lists Aave V4 vaults with a realized APY read from chain', async ({ page }) => {
   await page.goto('/#/lend');
   const aave = page.getByRole('region', { name: 'Aave V4 vaults' });
-  await expect(aave.getByRole('link', { name: 'waCoreUSDC' })).toBeVisible({ timeout: 30_000 });
-  await expect(aave.locator('tbody tr')).toHaveCount(4);
+  await expect(aave.getByRole('link', { name: 'USDC', exact: true })).toBeVisible({ timeout: 30_000 });
   await expect(aave.locator('tbody tr').first().locator('td').nth(1)).toHaveText(/%$/);
 });

@@ -4,7 +4,7 @@ import { erc20Abi, formatUnits, type Address } from 'viem';
 import { Curve } from '../components/Curve';
 import { TokenLogo } from '../components/Media';
 import { ActionButton, AddressLink, AmountBox, Avatar, Empty, Notice, Skeleton } from '../components/ui';
-import { addressUrl, client } from '../lib/arc';
+import { addressUrl, client, isTestnet } from '../lib/arc';
 import { USDC, deployments, graduationQuote, launchAbi, type Token } from '../lib/contracts';
 import { useBalances, useFeed, useLaunch, usePositions, type FeedTrade } from '../lib/data';
 import { compact, deadline, formatAmount, pct, price, shortAddress, timeAgo, tryParse, usd } from '../lib/format';
@@ -93,16 +93,9 @@ export default function TokenPage({ address }: { address: Address }) {
         <div className="side">
           {l.graduated ? (
             <div className="card card-pad" style={{ display: 'grid', gap: 12 }}>
-              <h3>Trading moved to Uniswap V2</h3>
-              <p className="muted" style={{ fontSize: 13.5 }}>
-                The curve sold out. Its USDC and reserved tokens were added to a Uniswap V2 pool and the LP tokens
-                were burned, so the liquidity cannot be withdrawn.
-              </p>
+              <h3>Graduated</h3>
               <a className="btn btn-primary" href="#/swap">
                 Swap ${l.symbol}
-              </a>
-              <a className="link" href={addressUrl(l.pair)} target="_blank" rel="noreferrer">
-                Pool contract <ExternalLink size={11} />
               </a>
             </div>
           ) : (
@@ -115,9 +108,7 @@ export default function TokenPage({ address }: { address: Address }) {
             </div>
             <Curve variant="hero" progress={l.progress} graduated={l.graduated} label={`${pct(l.progress)} of the curve sold`} />
             <p className="muted" style={{ fontSize: 13 }}>
-              {l.graduated
-                ? 'Graduated. Liquidity is locked in Uniswap V2.'
-                : `${usd(Number(remaining) / 1e6)} more USDC into the curve graduates ${l.symbol} to Uniswap V2.`}
+              {l.graduated ? 'Liquidity locked on Uniswap.' : `${usd(Number(remaining) / 1e6)} to graduation`}
             </p>
             <dl className="kv">
               <div>
@@ -293,13 +284,9 @@ function TradePanel({ token }: { token: Token }) {
         onDone={() => setAmount('')}
       />
       {side === 'buy' && usdcBalance === 0n && (
-        <p className="muted" style={{ fontSize: 12.5 }}>
-          Need test USDC?{' '}
-          <a className="link" href="https://faucet.circle.com" target="_blank" rel="noreferrer">
-            Circle faucet
-          </a>{' '}
-          — on Arc it also pays your gas.
-        </p>
+        <a className="link" style={{ fontSize: 13 }} href={isTestnet ? 'https://faucet.circle.com' : '#/bridge'} {...(isTestnet ? { target: '_blank', rel: 'noreferrer' } : {})}>
+          {isTestnet ? 'Get test USDC' : 'Add USDC'}
+        </a>
       )}
     </section>
   );

@@ -94,14 +94,14 @@ export const baseTokens: Token[] = [
     ? ([
         {
           symbol: 'tUSDC',
-          name: 'Orbit test dollar',
+          name: 'Test dollar',
           address: m.contracts.TestUSDC.address as Address,
           decimals: 6,
           kind: 'test',
         },
         {
           symbol: 'tETH',
-          name: 'Orbit test ether',
+          name: 'Test ether',
           address: m.contracts.TestETH.address as Address,
           decimals: 18,
           kind: 'test',
