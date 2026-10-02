@@ -38,7 +38,7 @@ export const arcMainnet = defineChain({
 
 /** Build-time network. Mainnet builds only enable features with a mainnet deployment record. */
 export const networkName: 'testnet' | 'mainnet' =
-  import.meta.env.VITE_ARC_NETWORK === 'mainnet' ? 'mainnet' : 'testnet';
+  import.meta.env?.VITE_ARC_NETWORK === 'mainnet' ? 'mainnet' : 'testnet';
 export const activeChain = networkName === 'mainnet' ? arcMainnet : arcTestnet;
 export const isTestnet = networkName === 'testnet';
 

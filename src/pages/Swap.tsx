@@ -21,6 +21,7 @@ import { useTx } from '../lib/tx';
 import { openConnect, useWallet } from '../lib/wallet';
 import { UsdcMark } from './TokenPage';
 import StableSwap from './StableSwap';
+import SmartSwap from './SmartSwap';
 
 const TokenIcon = ({ token, size = 24 }: { token: Token; size?: number }) =>
   token.kind === 'circle' && token.symbol === 'USDC' ? (
@@ -64,7 +65,7 @@ export default function Swap() {
   const [slippage, setSlippage] = useState(50);
   const [picker, setPicker] = useState<'from' | 'to'>();
   const [settings, setSettings] = useState(false);
-  const [mode, setMode] = useState<'stable' | 'pools'>('pools');
+  const [mode, setMode] = useState<'best' | 'stable' | 'pools'>('best');
   const balances = useBalances(address, tokens);
   const input = tryParse(amount, from.decimals);
   const router = deployments.router;
@@ -101,7 +102,7 @@ export default function Swap() {
     return (
       <div className="center-col">
         <h1 style={{ font: '600 32px/1.1 var(--cond)' }}>Swap</h1>
-        <StableSwap />
+        <SmartSwap />
       </div>
     );
   return (
@@ -115,6 +116,9 @@ export default function Swap() {
         )}
       </div>
       <div className="tabs" role="group" aria-label="Swap venue" style={{ width: 'fit-content' }}>
+        <button aria-pressed={mode === 'best'} onClick={() => setMode('best')}>
+          Best price
+        </button>
         <button aria-pressed={mode === 'stable'} onClick={() => setMode('stable')}>
           USDC and EURC
         </button>
@@ -122,7 +126,9 @@ export default function Swap() {
           Mofu pools
         </button>
       </div>
-      {mode === 'stable' ? (
+      {mode === 'best' ? (
+        <SmartSwap />
+      ) : mode === 'stable' ? (
         <StableSwap />
       ) : (
         <>

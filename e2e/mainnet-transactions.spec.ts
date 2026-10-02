@@ -89,6 +89,8 @@ async function setup(page: import('@playwright/test').Page, rejected: boolean | 
   await page.goto('/#/swap');
   await page.getByRole('button', { name: 'Connect', exact: true }).click();
   await page.getByRole('button', { name: 'Batch Fixture', exact: true }).click();
+  // These tests cover the Circle (App Kit) flow, now a tab beside the default "Best price" router.
+  await page.getByRole('button', { name: 'USDC and EURC', exact: true }).click();
   await page.getByLabel('You pay').fill('0.1');
   await page.getByRole('button', { name: 'Review swap', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();

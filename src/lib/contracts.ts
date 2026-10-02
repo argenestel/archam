@@ -20,18 +20,27 @@ export type MarketParams = {
 
 /**
  * Deployment registry. Only addresses recorded in a committed manifest are used; there is
- * no runtime override. Mainnet has no Mofu deployment yet, so mainnet builds disable
- * every Mofu-operated feature instead of pointing at testnet contracts.
+ * no runtime override. Testnet: everything in arc-testnet.json. Mainnet: only Mofu's own
+ * hackathon release (`mofu` + `launch` in arc-mainnet.json); test assets and the testnet
+ * Morpho market never appear on mainnet.
  */
 const m = networkName === 'testnet' ? testnet : undefined;
+type MofuRecord = { contracts: Record<string, { address: string; runtimeCodeHash: string }> };
+const mofuMainnet =
+  networkName === 'mainnet' ? (mainnet as unknown as { mofu?: MofuRecord }).mofu : undefined;
 type ContractName = keyof typeof testnet.contracts | 'MofuTestnetOracle';
 const registry: Partial<Record<ContractName, { address: string }>> | undefined = m?.contracts;
 const at = (name: ContractName) => registry?.[name]?.address as Address | undefined;
+const mainAt = (name: string) => mofuMainnet?.contracts[name]?.address as Address | undefined;
+type LaunchRecord = { contract: string; virtualQuote: string; feeBps: number; totalSupply?: string };
+const launchRecord = (networkName === 'mainnet'
+  ? (mainnet as unknown as { launch?: LaunchRecord }).launch
+  : m?.launch) as LaunchRecord | undefined;
 
 export const deployments = {
-  router: at('UniswapV2Router02'),
-  factory: at('UniswapV2Factory'),
-  launch: m?.launch?.contract as Address | undefined,
+  router: m ? at('UniswapV2Router02') : mainAt('UniswapV2Router02'),
+  factory: m ? at('UniswapV2Factory') : mainAt('UniswapV2Factory'),
+  launch: (m ? m.launch?.contract : mofuMainnet && launchRecord?.contract) as Address | undefined,
 
   morpho: m?.lending?.morpho as Address | undefined,
   oracle: at('MofuTestnetOracle') ?? at('OrbitTestnetOracle'),
@@ -48,11 +57,12 @@ export const lendingMarkets = (m?.lending?.markets ?? []).map((market) => ({
   } satisfies MarketParams,
 }));
 export const launchConfig = {
-  feeBps: BigInt(m?.launch?.feeBps ?? 100),
-  virtualQuote: BigInt(m?.launch?.virtualQuote ?? 0),
+  feeBps: BigInt(launchRecord?.feeBps ?? 100),
+  virtualQuote: BigInt(launchRecord?.virtualQuote ?? 0),
   saleSupply: 793_100_000n * 10n ** 18n,
   virtualToken: 1_073_000_000n * 10n ** 18n,
-  totalSupply: 1_000_000_000n * 10n ** 18n,
+  // Deployed contracts mint SALE + LP supply (≈999,986,011.18); fall back for legacy records.
+  totalSupply: BigInt(launchRecord?.totalSupply ?? 1_000_000_000n * 10n ** 18n),
 };
 /** Quote raised (net of fees) when the curve sells out: V0 * S / (T0 - S). */
 export const graduationQuote =
@@ -113,6 +123,7 @@ export const launchAbi = parseAbi([
   'function quoteSell(address token, uint256 tokensIn) view returns (uint256)',
   'function curves(address) view returns (address creator, uint40 createdAt, uint40 lastTradeAt, bool graduated, uint256 virtualQuote, uint256 virtualToken, uint256 realQuote, uint256 tokensLeft, uint256 volume, uint32 trades, address pair, string image, string description)',
   'function tokenCount() view returns (uint256)',
+  'function launchesPaused() view returns (bool)',
   'function tradeCount() view returns (uint256)',
   'function traderCount() view returns (uint256)',
   'function tokensPage(uint256 offset, uint256 limit) view returns (address[])',
@@ -157,6 +168,15 @@ export const faucetAbi = parseAbi([
 ]);
 
 /** Runtime bytecode hashes from the committed manifest, keyed by lowercase address. */
+type Recorded = { address: string; runtimeCodeHash?: string };
+/** Runtime bytecode hashes the tx runner checks before signing: Mofu's own contracts plus, on
+ * mainnet, every ecosystem contract verified by `verify:mainnet` (Uniswap, Permit2, Safe…). */
 export const codeHashes = new Map<string, string>(
-  Object.values(m?.contracts ?? {}).map((c) => [c.address.toLowerCase(), c.runtimeCodeHash]),
+  [
+    ...Object.values((m?.contracts ?? {}) as Record<string, Recorded>),
+    ...Object.values((mofuMainnet?.contracts ?? {}) as Record<string, Recorded>),
+    ...(networkName === 'mainnet' ? Object.values(mainnet.contracts as Record<string, Recorded>) : []),
+  ]
+    .filter((c): c is Required<Recorded> => !!c.runtimeCodeHash)
+    .map((c) => [c.address.toLowerCase(), c.runtimeCodeHash]),
 );

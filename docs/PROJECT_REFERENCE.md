@@ -78,6 +78,7 @@ Do not silently resolve a material disagreement between code, chain data, and do
 - [RPC.md](RPC.md): proxy architecture and troubleshooting.
 - [MAINNET_PLAN.md](MAINNET_PLAN.md): mainnet rollout status per phase and the gates only the owner can close.
 - [AGENT.md](AGENT.md): fund-manager MCP server for Claude Code / Codex.
+- [SUPERAPP.md](SUPERAPP.md): Arc superapp architecture (adapters, smart router) and build status.
 - [MAINNET_APP.md](MAINNET_APP.md): separate mainnet build, supported protocol flows, router directory, confirmation guards, and limits.
 - [IPFS.md](IPFS.md): Pinata logos, signed public profiles, persistent profile index, and media sidecar deployment.
 

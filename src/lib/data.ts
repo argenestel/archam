@@ -96,7 +96,7 @@ async function fetchLaunch(address: Address): Promise<Launch> {
     image,
     description,
     price,
-    marketCap: price * 1e9,
+    marketCap: price * (Number(launchConfig.totalSupply) / 1e18),
     progress: graduated ? 1 : curveProgress(tokensLeft, launchConfig.saleSupply),
   };
 }

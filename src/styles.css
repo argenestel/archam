@@ -1253,7 +1253,8 @@ a.launch-tile:hover {
   }
   .mobile-nav {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     position: fixed;
     bottom: 0;
     left: 0;

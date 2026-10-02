@@ -46,10 +46,12 @@ const nav: { route: Route; label: string; icon: typeof Compass }[] = isTestnet
       { route: { page: 'portfolio' }, label: 'Portfolio', icon: Wallet },
     ]
   : [
-      { route: { page: 'discover' }, label: 'Overview', icon: Compass },
+      ...(deployments.launch ? [{ route: { page: 'discover' } as Route, label: 'Launches', icon: Compass }] : []),
       { route: { page: 'swap' }, label: 'Swap', icon: ArrowLeftRight },
       { route: { page: 'lend' }, label: 'Earn', icon: Landmark },
       { route: { page: 'borrow' }, label: 'Borrow', icon: Landmark },
+      ...(deployments.launch ? [{ route: { page: 'leaders' } as Route, label: 'Leaderboard', icon: Trophy }] : []),
+      { route: { page: deployments.launch ? 'apps' : 'discover' } as Route, label: 'Arc apps', icon: Compass },
       { route: { page: 'portfolio' }, label: 'Portfolio', icon: Wallet },
     ];
 
@@ -118,7 +120,8 @@ function Shell() {
             </div>
           }
         >
-          {route.page === 'discover' && (isTestnet ? <Discover /> : <Mainnet />)}
+          {route.page === 'discover' && (isTestnet || deployments.launch ? <Discover /> : <Mainnet />)}
+          {route.page === 'apps' && <Mainnet />}
           {route.page === 'token' && <TokenPage address={route.address} />}
           {route.page === 'create' && <CreateLaunch />}
           {route.page === 'swap' && <Swap />}
@@ -135,7 +138,7 @@ function Shell() {
           <span>
             {isTestnet
               ? 'Testnet: assets here have no value. Mofu’s launch contract is unaudited.'
-              : 'Mainnet beta: real funds and third-party protocol risk. Mofu launches are disabled.'}
+              : 'Mainnet beta: real funds. Mofu’s launch contract is unaudited, and Swap, Earn and Borrow use third-party protocols.'}
           </span>
           <nav aria-label="Resources">
             {isTestnet && (

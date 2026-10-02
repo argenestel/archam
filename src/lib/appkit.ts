@@ -8,7 +8,7 @@ import { useQuery } from './query';
 // vault) integrations on Arc mainnet and testnet. Loaded lazily; no API key in the browser.
 export const kitChain: 'Arc' | 'Arc_Testnet' = isTestnet ? 'Arc_Testnet' : 'Arc';
 /** Mainnet writes stay off until a build sets VITE_MAINNET_SIGNING=1 (Phase 1 gate). */
-export const signingEnabled = isTestnet || import.meta.env.VITE_MAINNET_SIGNING === '1';
+export const signingEnabled = isTestnet || import.meta.env?.VITE_MAINNET_SIGNING === '1';
 
 let kitPromise: Promise<import('@circle-fin/app-kit').AppKit> | undefined;
 export const getKit = () =>

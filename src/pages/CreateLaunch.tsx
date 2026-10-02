@@ -35,7 +35,14 @@ export default function CreateLaunch() {
       functionName: 'tokenCount',
     }),
   );
+  // Live admin state: the owner can pause new launches (trading is never paused).
+  const paused = useQuery(deployments.launch ? 'launch-paused' : null, () =>
+    client
+      .readContract({ address: deployments.launch!, abi: launchAbi, functionName: 'launchesPaused' })
+      .catch(() => false),
+  );
   const problems = [
+    paused.data && 'New launches are paused right now',
     !name.trim() && 'Enter a name',
     bytes(name) > 32 && 'Name is too long',
     !symbol.trim() && 'Enter a ticker',

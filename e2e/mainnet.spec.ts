@@ -20,14 +20,24 @@ test('mainnet hub, swap, earn and borrow render across viewport sizes', async ({
   }
   expect(errors).toEqual([]);
 });
-test('mainnet shows verified routers and disables custom launches', async ({ page }) => {
+test('mainnet opens on live Mofu launches and keeps the verified protocol hub', async ({ page }) => {
   await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Launches' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Launch a token' }).first()).toBeVisible();
+  await page.goto('/#/apps');
   await expect(page.getByRole('heading', { name: 'Arc mainnet' })).toBeVisible();
   await expect(page.getByText('UniswapUniversalRouter212', { exact: true })).toBeVisible();
   await expect(page.getByText('Wallet execution enabled', { exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Launch a token' })).toHaveCount(0);
   await page.goto('/#/create');
-  await expect(page.getByText('Launches are not available on this network yet.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Launch a token' })).toBeVisible();
+  // The live contract's graduation threshold (5,000 USDC virtual reserve) comes from the manifest.
+  await expect(page.getByText('$14.2K raised')).toBeVisible();
+});
+
+test('best-price swap quotes Uniswap v4 on mainnet without a wallet', async ({ page }) => {
+  await page.goto('/#/swap');
+  await page.getByLabel('You pay').fill('1');
+  await expect(page.getByRole('radio').filter({ hasText: 'Uniswap v4' })).toBeVisible({ timeout: 30_000 });
 });
 test('mainnet discovers live vaults and collateralized markets without a signer', async ({
   page,
@@ -116,6 +126,8 @@ test('wrong network asks to switch, never tries to transact', async ({ page }) =
   await page.goto('/#/swap');
   await page.getByRole('button', { name: 'Connect', exact: true }).click();
   await page.getByRole('button', { name: 'Test Wallet', exact: true }).click();
+  await expect(page.locator('main .btn-block')).toHaveText('Switch to Arc');
+  await page.getByRole('button', { name: 'USDC and EURC', exact: true }).click();
   await expect(page.locator('main .btn-block')).toHaveText('Switch to Arc');
   await expect(page.getByLabel('Pay token')).toHaveValue('USDC');
   await expect(page.getByLabel('Receive token')).toHaveValue('EURC');
