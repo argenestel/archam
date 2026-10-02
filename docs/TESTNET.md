@@ -58,3 +58,18 @@ docker run --rm -p 8080:8080 orbit-terminal
 The container uses an unprivileged Nginx server with CSP, anti-framing, MIME and referrer headers. Put it behind an HTTPS reverse proxy, set a domain, configure TLS/HSTS at the proxy, and monitor RPC/contract health. No hosting account/domain/TLS credentials have been supplied, so no public deployment is claimed. The Docker package still requires an actual build/runtime test on a Docker-capable host.
 
 Production readiness still requires the checklist in `DEPLOYMENT.md`: independent audit, real protocol integration, key management, backend-verified XP, market/indexer data, adversarial transaction/risk tests and external monitoring.
+
+## Phase 2 (2026-10-02): launches and lending
+
+```sh
+pnpm deploy:orbit                 # plan
+pnpm deploy:orbit --broadcast     # idempotent; steps recorded in the manifest; 5 USDC cumulative gas cap
+pnpm oracle:refresh --broadcast   # keep the Morpho oracle fresh (max age 30 days)
+```
+
+This phase deployed Morpho Blue, AdaptiveCurveIrm, OrbitTestnetOracle and the tETH→tUSDC market (250k tUSDC supply, 80 tETH / 110k tUSDC seed borrow). It also deployed OrbitLaunch on Arc USDC, with three seed launches (ROCKET, FROG, SUBSEC) of 0.5 USDC each. The signer comes from `.env` (`ARC_TESTNET_DEPLOYER_PRIVATE_KEY`) or falls back to the keystore.
+
+Users need **testnet USDC from https://faucet.circle.com**. It pays gas and is the launch-curve quote asset through its ERC-20 interface at `0x3600…`. tUSDC/tETH faucets on the Swap page fund the swap pool and the lending market.
+
+Live UI e2e: create a throwaway key, fund it with ~1.5 testnet USDC, then run
+`ORBIT_LIVE_E2E=1 ORBIT_E2E_PRIVATE_KEY=0x… pnpm exec playwright test e2e/live.spec.ts`.

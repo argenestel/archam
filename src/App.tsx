@@ -1,247 +1,326 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { ArrowUpRight, Check, Copy, ExternalLink, Wallet } from 'lucide-react';
-import LiveTerminal from './LiveTerminal';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import {
+  ArrowLeftRight,
+  CheckCircle2,
+  Compass,
+  Landmark,
+  Loader2,
+  LogOut,
+  Plus,
+  Trophy,
+  Wallet,
+  X,
+  XCircle,
+  Bell,
+} from 'lucide-react';
+import { formatUnits, type Address } from 'viem';
 import Dialog from './components/Dialog';
-import { useWallet } from './lib/useWallet';
-import { arcTestnet, client } from './lib/arc';
-import { readTransactions, saveTransaction, type LocalTransaction } from './lib/transactions';
-import { userFacingError } from './lib/errors';
-const DemoWorkspace = lazy(() => import('./DemoWorkspace'));
-function Activity({ address }: { address?: string }) {
-  const [transactions, setTransactions] = useState(readTransactions);
-  const [checking, setChecking] = useState('');
-  const [error, setError] = useState('');
-  useEffect(() => {
-    const refresh = () => setTransactions(readTransactions());
-    window.addEventListener('orbit:transactions', refresh);
-    return () => window.removeEventListener('orbit:transactions', refresh);
-  }, []);
-  async function check(item: LocalTransaction) {
-    setChecking(item.hash);
-    setError('');
-    try {
-      const receipt = await client.getTransactionReceipt({ hash: item.hash });
-      saveTransaction({ ...item, status: receipt.status === 'success' ? 'confirmed' : 'reverted' });
-    } catch (e) {
-      setError(userFacingError(e, 'Confirmation is not available yet. Check the explorer.'));
-    } finally {
-      setChecking('');
-    }
-  }
-  const items = transactions.filter(
-    (item) => item.account.toLowerCase() === address?.toLowerCase(),
-  );
+import { Avatar, TxLink } from './components/ui';
+import { activeChain, addressUrl, isTestnet } from './lib/arc';
+import { deployments } from './lib/contracts';
+import { useFeed, useLaunches } from './lib/data';
+import { compact, shortAddress, usd } from './lib/format';
+import { href, useRoute, type Route } from './lib/router';
+import { useFollowAlerts, useFollows } from './lib/social';
+import { TxProvider, useTx } from './lib/tx';
+import { openConnect, useWallet, WalletProvider } from './lib/wallet';
+import Discover from './pages/Discover';
+
+const TokenPage = lazy(() => import('./pages/TokenPage'));
+const CreateLaunch = lazy(() => import('./pages/CreateLaunch'));
+const Swap = lazy(() => import('./pages/Swap'));
+const Lend = lazy(() => import('./pages/Lend'));
+const Leaders = lazy(() => import('./pages/Leaders'));
+const Portfolio = lazy(() => import('./pages/Portfolio'));
+
+const nav: { route: Route; label: string; icon: typeof Compass }[] = [
+  { route: { page: 'discover' }, label: 'Discover', icon: Compass },
+  { route: { page: 'swap' }, label: 'Swap', icon: ArrowLeftRight },
+  { route: { page: 'lend' }, label: 'Lend', icon: Landmark },
+  { route: { page: 'leaders' }, label: 'Leaders', icon: Trophy },
+  { route: { page: 'portfolio' }, label: 'Portfolio', icon: Wallet },
+];
+
+export default function App() {
   return (
-    <section className="activity-panel">
-      <div className="panel-heading">
-        <h1>Activity</h1>
-        <span>Arc testnet</span>
-      </div>
-      <p className="panel-description">
-        Transactions submitted here, saved in this browser. This is not a full wallet history.
-      </p>
-      {!items.length ? (
-        <div className="empty-activity">
-          <Wallet size={26} />
-          <h2>{address ? 'No transactions yet' : 'Connect to view activity'}</h2>
-          <p>Your testnet swaps, approvals, and contributions will appear here.</p>
-        </div>
-      ) : (
-        items.map((item) => (
-          <div className="history-row" key={item.hash}>
-            <div>
-              <strong>{item.label}</strong>
-              <span>{new Date(item.time).toLocaleString()}</span>
-            </div>
-            <span className={`history-status ${item.status}`}>{item.status}</span>
-            <a
-              aria-label={`View ${item.label} transaction`}
-              href={`${arcTestnet.blockExplorers.default.url}/tx/${item.hash}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <ExternalLink size={16} />
-            </a>
-            {(item.status === 'pending' || item.status === 'unknown') && (
-              <button className="quiet-button" disabled={!!checking} onClick={() => check(item)}>
-                {checking === item.hash ? 'Checking…' : 'Check'}
-              </button>
-            )}
-          </div>
-        ))
-      )}
-      {error && (
-        <p className="inline-error" role="alert">
-          {error}
-        </p>
-      )}
-    </section>
+    <WalletProvider>
+      <TxProvider>
+        <Shell />
+      </TxProvider>
+    </WalletProvider>
   );
 }
-export default function App() {
-  const [mode, setMode] = useState<'live' | 'demo'>('live');
-  const [page, setPage] = useState('Trade');
-  const [walletOpen, setWalletOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const wallet = useWallet();
-  if (mode === 'demo')
-    return (
-      <Suspense fallback={<div className="app-loading">Loading demo…</div>}>
-        <DemoWorkspace onExit={() => setMode('live')} />
-      </Suspense>
-    );
+
+function Shell() {
+  const route = useRoute();
+  const [connectOpen, setConnectOpen] = useState(false);
+  useEffect(() => {
+    const open = () => setConnectOpen(true);
+    window.addEventListener('orbit:connect', open);
+    return () => window.removeEventListener('orbit:connect', open);
+  }, []);
+  const active = (r: Route) =>
+    r.page === route.page || (r.page === 'discover' && (route.page === 'token' || route.page === 'create'));
   return (
-    <div className="product-shell">
-      <header className="product-header">
-        <a
-          className="product-brand"
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            setPage('Trade');
-          }}
-        >
-          <img src="/orbit.svg" alt="" />
-          orbit
-        </a>
-        <nav aria-label="Main navigation">
-          {[
-            { id: 'Trade', label: 'Swap' },
-            { id: 'Discover', label: 'Launchpad' },
-            { id: 'Portfolio', label: 'Activity' },
-          ].map((item) => (
-            <button
-              key={item.id}
-              aria-current={page === item.id ? 'page' : undefined}
-              onClick={() => setPage(item.id)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
-        <div className="header-wallet">
-          <span className="network-chip">
-            <i />
-            Arc testnet
-          </span>
-          <button className="wallet-button" onClick={() => setWalletOpen(true)}>
-            <Wallet size={16} />
-            {wallet.address
-              ? `${wallet.address.slice(0, 6)}…${wallet.address.slice(-4)}`
-              : 'Connect wallet'}
-          </button>
+    <div className="shell">
+      <a className="sr-only" href="#main">
+        Skip to content
+      </a>
+      <header className="topbar">
+        <div className="topbar-inner">
+          <a className="brand" href="#/" aria-label="Orbit home">
+            <img className="brand-mark" src="/orbit-mark.svg" alt="" />
+            <span>Orbit</span>
+          </a>
+          <nav className="nav" aria-label="Primary">
+            {nav.map((n) => (
+              <a key={n.label} href={href(n.route)} aria-current={active(n.route) ? 'page' : undefined}>
+                {n.label}
+              </a>
+            ))}
+          </nav>
+          <div className="top-actions">
+            {deployments.launch && (
+              <a className="btn btn-primary launch-cta" href="#/create">
+                <Plus size={16} /> Launch
+              </a>
+            )}
+            <span className={`net-pill${isTestnet ? ' warn' : ''}`} title={activeChain.name}>
+              <i />
+              <span>{activeChain.name}</span>
+            </span>
+            <WalletButton />
+          </div>
         </div>
       </header>
-      <main className="product-main">
-        {page === 'Portfolio' ? (
-          <Activity address={wallet.address} />
-        ) : (
-          <LiveTerminal
-            key={page}
-            address={wallet.address}
-            chainId={wallet.chainId}
-            page={page}
-            openWallet={() => setWalletOpen(true)}
-          />
-        )}
+      {deployments.launch && <Ticker />}
+      <main className="page" id="main">
+        <Suspense fallback={<div className="empty"><Loader2 className="spin" /></div>}>
+          {route.page === 'discover' && <Discover />}
+          {route.page === 'token' && <TokenPage address={route.address} />}
+          {route.page === 'create' && <CreateLaunch />}
+          {route.page === 'swap' && <Swap />}
+          {route.page === 'lend' && <Lend />}
+          {route.page === 'leaders' && <Leaders />}
+          {route.page === 'portfolio' && <Portfolio />}
+        </Suspense>
       </main>
-      <footer className="product-footer">
-        <span>Testnet preview</span>
-        <div>
-          <button onClick={() => setMode('demo')}>Demo</button>
-          <a href="https://docs.arc.io" target="_blank" rel="noreferrer">
-            Arc docs <ArrowUpRight size={12} />
-          </a>
-          <a href="https://github.com/Uniswap/v2-periphery" target="_blank" rel="noreferrer">
-            Router source <ArrowUpRight size={12} />
-          </a>
+      <footer className="footer">
+        <div className="footer-inner">
+          <span>
+            Orbit on {activeChain.name}
+            {isTestnet && ' · test assets have no value'} · contracts unaudited
+          </span>
+          <nav aria-label="Resources">
+            {isTestnet && (
+              <a href="https://faucet.circle.com" target="_blank" rel="noreferrer">
+                USDC faucet
+              </a>
+            )}
+            <a href="/arc-testnet-deployment.json" target="_blank" rel="noreferrer">
+              Deployment manifest
+            </a>
+            <a href="https://docs.arc.io" target="_blank" rel="noreferrer">
+              Arc docs
+            </a>
+          </nav>
         </div>
       </footer>
-      {walletOpen && (
-        <Dialog
-          title={wallet.address ? 'Your wallet' : 'Connect wallet'}
-          close={() => setWalletOpen(false)}
-        >
-          {wallet.address ? (
-            <>
-              <div className="wallet-address">
-                <code>
-                  {wallet.address.slice(0, 12)}…{wallet.address.slice(-8)}
-                </code>
-                <button
-                  className="quiet-button"
-                  aria-label="Copy wallet address"
-                  onClick={() => {
-                    navigator.clipboard
-                      .writeText(wallet.address!)
-                      .then(() => {
-                        setCopied(true);
-                        setTimeout(() => setCopied(false), 2000);
-                      })
-                      .catch(() => setCopied(false));
-                  }}
-                >
-                  {copied ? <Check size={16} /> : <Copy size={16} />}
-                </button>
-              </div>
-              <dl className="modal-facts">
-                <div>
-                  <dt>Network</dt>
-                  <dd>{wallet.chainId === arcTestnet.id ? 'Arc testnet' : 'Wrong network'}</dd>
-                </div>
-                <div>
-                  <dt>Native USDC for gas</dt>
-                  <dd>{wallet.balance ? Number(wallet.balance).toFixed(4) : 'Unavailable'}</dd>
-                </div>
-              </dl>
-              {wallet.chainId !== arcTestnet.id && (
-                <button
-                  className="primary-action"
-                  disabled={wallet.pending}
-                  onClick={wallet.switchNetwork}
-                >
-                  Switch to Arc testnet
-                </button>
-              )}
-              <a
-                className="text-link"
-                href={`${arcTestnet.blockExplorers.default.url}/address/${wallet.address}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                View on explorer <ExternalLink size={14} />
-              </a>
-              <button
-                className="secondary-action full-width"
-                onClick={() => {
-                  wallet.disconnect();
-                  setWalletOpen(false);
-                }}
-              >
-                Disconnect locally
-              </button>
-            </>
-          ) : (
-            <>
-              <p className="dialog-note">
-                Use an Ethereum-compatible browser wallet. Connecting does not grant spending
-                permission.
-              </p>
-              <button className="primary-action" disabled={wallet.pending} onClick={wallet.connect}>
-                {wallet.pending ? 'Waiting for wallet…' : 'Connect browser wallet'}
-              </button>
-            </>
-          )}
-          {wallet.error && (
-            <p className="inline-error" role="alert">
-              {wallet.error}
-            </p>
-          )}
-          <p className="dialog-note">
-            Never share your seed phrase. Only use Arc testnet funds with this preview.
-          </p>
-        </Dialog>
-      )}
+      <nav className="mobile-nav" aria-label="Primary mobile">
+        {nav.map((n) => (
+          <a key={n.label} href={href(n.route)} aria-current={active(n.route) ? 'page' : undefined}>
+            <n.icon size={19} />
+            {n.label}
+          </a>
+        ))}
+      </nav>
+      {connectOpen && <ConnectDialog close={() => setConnectOpen(false)} />}
+      <Toasts />
+      <FollowAlerts />
     </div>
   );
+}
+
+function WalletButton() {
+  const { address, gas, onArc, switchNetwork, disconnect } = useWallet();
+  const [open, setOpen] = useState(false);
+  if (!address)
+    return (
+      <button className="btn btn-ghost" onClick={openConnect}>
+        Connect
+      </button>
+    );
+  if (!onArc)
+    return (
+      <button className="btn btn-ghost" onClick={switchNetwork} style={{ color: 'var(--gold)' }}>
+        Switch to Arc
+      </button>
+    );
+  return (
+    <>
+      <button className="btn btn-ghost" onClick={() => setOpen(true)} aria-label={`Wallet ${address}`}>
+        <Avatar seed={address} size={22} round />
+        <span className="mono" style={{ fontSize: 13 }}>
+          {shortAddress(address)}
+        </span>
+      </button>
+      {open && (
+        <Dialog title="Wallet" close={() => setOpen(false)}>
+          <div className="dialog-body">
+            <div className="row">
+              <Avatar seed={address} size={44} round />
+              <div className="grow">
+                <a className="link mono" href={addressUrl(address)} target="_blank" rel="noreferrer">
+                  {shortAddress(address)}
+                </a>
+                <p className="muted" style={{ fontSize: 13 }}>
+                  Gas balance{' '}
+                  <span className="mono">{gas === undefined ? '…' : compact(Number(formatUnits(gas, 18)), 4)} USDC</span>
+                </p>
+              </div>
+            </div>
+            <a className="btn btn-ghost" href="#/portfolio" onClick={() => setOpen(false)}>
+              <Wallet size={16} /> Portfolio
+            </a>
+            <button
+              className="btn btn-ghost"
+              onClick={() => {
+                disconnect();
+                setOpen(false);
+              }}
+            >
+              <LogOut size={16} /> Disconnect
+            </button>
+          </div>
+        </Dialog>
+      )}
+    </>
+  );
+}
+
+function ConnectDialog({ close }: { close: () => void }) {
+  const { wallets, connect, pending, error, address } = useWallet();
+  useEffect(() => {
+    if (address) close();
+  }, [address, close]);
+  return (
+    <Dialog title="Connect a wallet" close={close}>
+      <div className="dialog-body">
+        {wallets.length === 0 ? (
+          <p className="muted">
+            No browser wallet detected. Install{' '}
+            <a className="link" href="https://metamask.io" target="_blank" rel="noreferrer">
+              MetaMask
+            </a>{' '}
+            or{' '}
+            <a className="link" href="https://rabby.io" target="_blank" rel="noreferrer">
+              Rabby
+            </a>
+            , then reload.
+          </p>
+        ) : (
+          <div style={{ display: 'grid', gap: 4 }}>
+            {wallets.map((w) => (
+              <button key={w.id} className="option" disabled={pending} onClick={() => connect(w)}>
+                {w.icon ? <img src={w.icon} alt="" /> : <Wallet size={28} />}
+                <span className="grow" style={{ fontWeight: 600 }}>
+                  {w.name}
+                </span>
+                {pending && <Loader2 size={16} className="spin" />}
+              </button>
+            ))}
+          </div>
+        )}
+        {error && <p className="down" style={{ fontSize: 13 }}>{error}</p>}
+        <p className="faint" style={{ fontSize: 12 }}>
+          Orbit never holds your keys. Every transaction is signed in your wallet.
+        </p>
+      </div>
+    </Dialog>
+  );
+}
+
+function Ticker() {
+  const feed = useFeed(undefined, 24);
+  const launches = useLaunches();
+  const bySymbol = useMemo(
+    () => new Map(launches.data?.map((l) => [l.address.toLowerCase(), l]) ?? []),
+    [launches.data],
+  );
+  const items = feed.data ?? [];
+  if (!items.length) return null;
+  const row = (dup: boolean) =>
+    items.map((t) => {
+      const token = bySymbol.get(t.token.toLowerCase());
+      return (
+        <a
+          key={`${t.id}${dup ? '-dup' : ''}`}
+          className="ticker-item"
+          href={`#/token/${t.token}`}
+          aria-hidden={dup || undefined}
+          tabIndex={dup ? -1 : undefined}
+        >
+          <Avatar seed={t.trader} size={16} round />
+          <span className="mono">{shortAddress(t.trader)}</span>
+          <span className={t.isBuy ? 'up' : 'down'}>{t.isBuy ? 'bought' : 'sold'}</span>
+          <span className="mono">{usd(Number(t.quoteAmount) / 1e6)}</span>
+          <span>of</span>
+          <b>${token?.symbol ?? '…'}</b>
+        </a>
+      );
+    });
+  return (
+    <div className="ticker" aria-label="Live trades">
+      <div className="ticker-track">
+        {row(false)}
+        {row(true)}
+      </div>
+    </div>
+  );
+}
+
+function Toasts() {
+  const { toasts, dismiss } = useTx();
+  return (
+    <div className="toasts" aria-live="polite">
+      {toasts.map((t) => {
+        const Icon = t.tone === 'success' ? CheckCircle2 : t.tone === 'error' ? XCircle : t.tone === 'pending' ? Loader2 : Bell;
+        return (
+          <div key={t.id} className={`toast ${t.tone}`}>
+            <Icon size={18} className={`tone${t.tone === 'pending' ? ' spin' : ''}`} />
+            <div>
+              <b>{t.title}</b>
+              {t.body && <span className="muted">{t.body} </span>}
+              {t.hash && <TxLink hash={t.hash} />}
+              {t.action && (
+                <a className="link" href={t.action.href} style={{ marginLeft: 8 }}>
+                  {t.action.label}
+                </a>
+              )}
+            </div>
+            <button className="icon-btn" style={{ width: 24, height: 24 }} onClick={() => dismiss(t.id)} aria-label="Dismiss">
+              <X size={14} />
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function FollowAlerts() {
+  const feed = useFeed(undefined, 24);
+  const launches = useLaunches();
+  const { follows } = useFollows();
+  const { notify } = useTx();
+  useFollowAlerts(feed.data, follows, (t) => {
+    const token = launches.data?.find((l) => l.address.toLowerCase() === t.token.toLowerCase());
+    notify({
+      tone: 'info',
+      title: `${shortAddress(t.trader as Address)} ${t.isBuy ? 'bought' : 'sold'} $${token?.symbol ?? 'token'}`,
+      body: usd(Number(t.quoteAmount) / 1e6),
+      action: { label: t.isBuy ? 'Copy trade' : 'View', href: `#/token/${t.token}` },
+    });
+  });
+  return null;
 }

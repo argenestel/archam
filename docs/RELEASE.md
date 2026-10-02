@@ -1,4 +1,4 @@
-# Release status: testnet preview, not production-ready
+# Release status: Arc testnet beta, not approved for mainnet funds
 
 This is a deployed testnet prototype with a cleaner user interface. Neither a passing build nor a larger test count establishes that it is safe for real funds.
 
@@ -20,9 +20,11 @@ This is a deployed testnet prototype with a cleaner user interface. Neither a pa
 | ---------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Contract security      | Blocked | Independent review/audit of the sale, adversarial token tests and appropriate deployment ownership. Existing tests are not an audit.                                                         |
 | Source verification    | Blocked | Verify deployed source, constructor parameters and canonical artifact provenance on the explorer.                                                                                            |
+| Mainnet deployment     | Blocked | Arc mainnet (chain 5042) has been live since 2026-09-16. Orbit has no mainnet deployment; mainnet builds show disabled states. Deploying needs the gates above plus owner sign-off and a funded multisig, never the testnet key. |
 | Real trading assets    | Blocked | Verified Circle/bridged token registry, actual third-party liquidity and market/route discovery; all current t* assets are freely minted and valueless.                                      |
-| Lending                | Blocked | Integrate an existing verified market, oracle, reserve/risk configuration and health-factor/liquidation UI. No Aave deployment is enabled.                                                   |
-| Rewards                | Blocked | Wallet-authenticated backend, successful-receipt indexing, replay protection, activity caps and wash-trade filtering. Browser XP remains demo-only.                                          |
+| Lending                | Testnet | Canonical Morpho Blue + AdaptiveCurveIrm deployed by Orbit on testnet, with health-factor UI and a stale-price guard. Mainnet must integrate the protocol-operated Morpho/Aave V4 deployments and an independent oracle, not this instance. |
+| Launch curves          | Testnet | `OrbitLaunch` is new, unaudited code. Local-EVM tests cover fees, slippage, transfer lock, graduation and the pair-donation grief. Mainnet requires an independent audit, a multisig owner/fee recipient, and explorer source verification. |
+| Rewards                | Partial | Points are now a pure function of on-chain launch stats: trustless and non-editable. They are not wash-trade resistant (self-trading pays 2% fees but still earns points). Do not attach value to them before anti-abuse policy exists. |
 | Transaction edge cases | Partial | Full replacement/cancellation detection, multiple outstanding transactions, provider failure after broadcast without returning a hash, and cross-tab coordination need adversarial coverage. |
 | Public hosting         | Blocked | Deploy to a supplied domain/host, validate the Nginx container and RPC routes, configure HTTPS/TLS/HSTS at the reverse proxy. No public hosting target has been supplied.                    |
 | Operations             | Blocked | RPC/indexer monitoring, contract alerts, privacy-conscious error telemetry, support/recovery process and incident response.                                                                  |

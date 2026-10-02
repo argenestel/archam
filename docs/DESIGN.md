@@ -1,23 +1,15 @@
-# Interface direction
+# Interface direction (2026-10 redesign)
 
-The previous dashboard accumulated too many competing elements: greetings, repeated risk banners, faucet cards, a pool illustration, fake/demo metrics, and several simultaneous primary actions. The user's feedback was that this was neither clean nor production-ready.
+**Concept: a dark launch terminal.** It should have the energy of a live trading floor (ticker, flashing cards, live feed) while every action stays one obvious button.
 
-## Current live interface
+- **Palette:** near-black ink surfaces (`--bg #07080a`, raised `--surface`), a faint orbital grid and two soft glows. There is one signal accent, lime `#c6f55c`, used for buys, primary actions and "live". Coral `#ff7a6b` marks sells and errors, and gold `#f6c75a` marks graduation and King of the Orbit. Nothing else gets color.
+- **Type:** Space Grotesk (display), DM Sans (UI) and JetBrains Mono (every number, tabular). All three are self-hosted.
+- **Identity without remote images:** tokens and wallets get deterministic "orbital" SVG avatars derived from their address. The strict CSP (`img-src 'self' data:`) stays intact, and nobody can inject imagery.
+- **Prices:** sub-cent launch prices use subscript-zero notation (`$0.0₇196`).
+- **One action at a time:** `ActionButton` walks connect → switch network → exact approval → action. Each step is its own click; an approval never auto-continues.
+- **Motion:** ticker marquee, feed-row entry, card flash on new trades, button press scale. All of it is disabled under `prefers-reduced-motion`.
+- **Mobile:** bottom tab bar, single-column grids, and no horizontal overflow at 360/390/768/1280/1440 (enforced by `e2e/app.spec.ts`).
 
-- One centered swap card, with a quiet horizontal navigation bar.
-- One primary action matching the next step: connect, approve, review, or check an uncertain transaction.
-- Empty inputs by default; no prefilled trade suggesting a recommended amount.
-- Token balances next to the inputs. Token selection, slippage settings and review use native dialogs.
-- Faucet controls live behind **Get test tokens**.
-- Real pool reserves and contract links live behind **Pool & contract details**.
-- A concise testnet label stays visible; the full risk explanation is available on demand.
-- Only implemented live workflows appear in navigation: swap, test sale, and local activity.
-- The old lending/rewards/demo dashboard is explicitly separate, lazy-loaded and CSS-scoped. It cannot style the live interface after switching modes.
+There is a single stylesheet (`src/styles.css`). The legacy demo workspace and its four override stylesheets were removed.
 
-Typography: self-hosted DM Sans Variable for controls, Space Grotesk Variable for amounts. Neutral near-white surfaces and a single muted purple action color. No decorative charts, gradients, or onboarding illustration on the primary screen.
-
-The public [Anthropic frontend-design skill](https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md) was consulted in the earlier pass. The latest revision follows the user's feedback by removing unnecessary material rather than adding another dashboard treatment.
-
-## What this does not establish
-
-A cleaner interface is not a production-readiness claim. Independent security review, real-asset integrations, a verified lending market, backend-verified rewards, public HTTPS hosting and operational monitoring remain unresolved. See `RELEASE.md`.
+The owner has not yet approved this direction (see UX-01).

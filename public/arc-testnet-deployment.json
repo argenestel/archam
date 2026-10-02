@@ -42,7 +42,9 @@
       "address": "0x9c074d5f07ab2ad10bb00dfecbf22c14cd1de611",
       "transaction": "0xe8a7e26ab8f5755b9f9f58b43c20b847c7c34d9a70544139ffaa7461d08b3269",
       "runtimeCodeHash": "0xbab145d02e7005f0d84c6c1639d39b799b0ea16df99ebbdaf5a14d9da820b4e0",
-      "constructorArgs": ["0x1A86d3148df478a1071e9D3D4825C99FB75ec964"]
+      "constructorArgs": [
+        "0x1A86d3148df478a1071e9D3D4825C99FB75ec964"
+      ]
     },
     "WrappedNativeUSDC": {
       "address": "0x2c86de6dc916d593d4f029e9243ca24c82e13f82",
@@ -72,6 +74,48 @@
         "1000000000",
         "200000000000",
         "2000000000000000000000000000000"
+      ]
+    },
+    "MorphoBlue": {
+      "address": "0xb152667fc9c805edd704feecba373e65cabb109d",
+      "transaction": "0x63c3bd30e77ab278a11e695d5f27b59b014e4a3be67dd590f54a1df0ef7bc4b0",
+      "block": "65072890",
+      "runtimeCodeHash": "0xcc6b02d3830d2c92a57856cad7e1ef1f2321452e081c4651d0d49aa000d9e511",
+      "constructorArgs": [
+        "0x1A86d3148df478a1071e9D3D4825C99FB75ec964"
+      ]
+    },
+    "AdaptiveCurveIrm": {
+      "address": "0x83652fc0887288283f9bc07e8b00292b600e2ca8",
+      "transaction": "0x63a1673423c667226dff451f722cbdf2769f88417d3959b0c8b1840f401c6c78",
+      "block": "65072894",
+      "runtimeCodeHash": "0x81b6567409c8bceb03ec107b2bf0963545282c3704caab90a579962b76f94006",
+      "constructorArgs": [
+        "0xb152667fc9c805edd704feecba373e65cabb109d"
+      ]
+    },
+    "OrbitTestnetOracle": {
+      "address": "0x15f6c41e138e5f7ddb71324b0c77db31c16a7d5b",
+      "transaction": "0x1468e64279bb174dec80dcca0458807f45e2b2adb527e2c27f4151e65baec8a3",
+      "block": "65072906",
+      "runtimeCodeHash": "0xd63718082e00153600a8f54fbb238918732656fbd476e5579e6c16f71dfea8ff",
+      "constructorArgs": [
+        "2684339970037141622437319783",
+        "2592000",
+        "tETH / tUSDC (testnet, owner-posted)"
+      ]
+    },
+    "OrbitLaunch": {
+      "address": "0xa4915305bee76157e4d64a09d946d4a7349db6fe",
+      "transaction": "0x492c4e07d27ded60e7025e63e190262cf016f8e384ce985bc14a0b79fface887",
+      "block": "65072939",
+      "runtimeCodeHash": "0x3e3de4ac5dd94c7f7b7626f7cc798fbecdb7a038d8f62de8f807b36daf79ea69",
+      "constructorArgs": [
+        "0x3600000000000000000000000000000000000000",
+        "0xa1ae04767893d81bed19272fee30746132e339de",
+        "20000000",
+        "100",
+        "0x1A86d3148df478a1071e9D3D4825C99FB75ec964"
       ]
     }
   },
@@ -163,14 +207,154 @@
       "block": "64965890",
       "gasUsed": "51610",
       "gasCost": "1290250000000000"
+    },
+    {
+      "label": "Deploy MorphoBlue",
+      "hash": "0x63c3bd30e77ab278a11e695d5f27b59b014e4a3be67dd590f54a1df0ef7bc4b0",
+      "status": "success",
+      "block": "65072890",
+      "gasUsed": "3437694",
+      "gasCost": "85942350000000000"
+    },
+    {
+      "label": "Deploy AdaptiveCurveIrm",
+      "hash": "0x63a1673423c667226dff451f722cbdf2769f88417d3959b0c8b1840f401c6c78",
+      "status": "success",
+      "block": "65072894",
+      "gasUsed": "546624",
+      "gasCost": "13665600000000000"
+    },
+    {
+      "label": "Deploy OrbitTestnetOracle",
+      "hash": "0x1468e64279bb174dec80dcca0458807f45e2b2adb527e2c27f4151e65baec8a3",
+      "status": "success",
+      "block": "65072906",
+      "gasUsed": "486209",
+      "gasCost": "12155225000000000"
+    },
+    {
+      "label": "Morpho enable AdaptiveCurveIrm",
+      "hash": "0x6ab074fc59cc6bd24122c602b072658fd3683dd0d4a6d164bddf0f682139e1b9",
+      "status": "success",
+      "block": "65072909",
+      "gasUsed": "47816",
+      "gasCost": "1195400000000000"
+    },
+    {
+      "label": "Morpho enable 86% LLTV",
+      "hash": "0x26c7c7f58f4336c89788976b3c64d91979e4224a917c820a47781325927c7d62",
+      "status": "success",
+      "block": "65072914",
+      "gasUsed": "47611",
+      "gasCost": "1190275000000000"
+    },
+    {
+      "label": "Morpho create tUSDC/tETH market",
+      "hash": "0x5fc3af7d0d34d688d66cc562e952713a6185fcadea2f7339a0432c8da08437be",
+      "status": "success",
+      "block": "65072920",
+      "gasUsed": "197577",
+      "gasCost": "4939425000000000"
+    },
+    {
+      "label": "Approve Morpho seed supply",
+      "hash": "0x65d863bb270302b8082ef9f740a0e71fd0fd14c1cb13c94333b5a2b025fa95e1",
+      "status": "success",
+      "block": "65072924",
+      "gasUsed": "46347",
+      "gasCost": "1158675000000000"
+    },
+    {
+      "label": "Seed Morpho tUSDC supply",
+      "hash": "0xa270e1218902a6b4f42fe58dd38690d188a06cb891e30f728a0f59cd18023a88",
+      "status": "success",
+      "block": "65072935",
+      "gasUsed": "134102",
+      "gasCost": "3352550000000000"
+    },
+    {
+      "label": "Deploy OrbitLaunch",
+      "hash": "0x492c4e07d27ded60e7025e63e190262cf016f8e384ce985bc14a0b79fface887",
+      "status": "success",
+      "block": "65072939",
+      "gasUsed": "3740364",
+      "gasCost": "93509100000000000"
+    },
+    {
+      "label": "Approve seed launch buys",
+      "hash": "0x508f1776d908dc9413763a76eec2a83c7096cf8be53a5c5653a3e7af4f33f873",
+      "status": "success",
+      "block": "65072943",
+      "gasUsed": "55438",
+      "gasCost": "1385950000000000"
+    },
+    {
+      "label": "Launch ROCKET",
+      "hash": "0xd1afb6b66efad892c6f374becfc7c13dba3633bd18cd20886f0ece29a22160a8",
+      "status": "success",
+      "block": "65072946",
+      "gasUsed": "1290825",
+      "gasCost": "32270625000000000"
+    },
+    {
+      "label": "Launch FROG",
+      "hash": "0xbaa72672f11c25e2dbc7e6e4174ed36de63efda78a00149eea4450c425435959",
+      "status": "success",
+      "block": "65072949",
+      "gasUsed": "1163478",
+      "gasCost": "29086950000000000"
+    },
+    {
+      "label": "Launch SUBSEC",
+      "hash": "0xd70ac45fbc7ebfb7058dad0413e962dff6f852511f124f5b6698a7b095f708d0",
+      "status": "success",
+      "block": "65072953",
+      "gasUsed": "1158666",
+      "gasCost": "28966650000000000"
+    },
+    {
+      "label": "Approve Morpho seed collateral",
+      "hash": "0x142a8fdad186d62c3ee625a9c9fe15e50cc2baba18f2c094eb5f27a37b53bf0e",
+      "status": "success",
+      "block": "65074690",
+      "gasUsed": "46383",
+      "gasCost": "1159575000000000"
+    },
+    {
+      "label": "Seed Morpho tETH collateral",
+      "hash": "0x3e94ae82535ff8ad53892c1d586d203927dca3ead02ba8d3e8f98d4ffa5626a1",
+      "status": "success",
+      "block": "65074701",
+      "gasUsed": "86784",
+      "gasCost": "2169600000000000"
+    },
+    {
+      "label": "Seed Morpho tUSDC borrow",
+      "hash": "0x293d959cb5a9ff8872db3099e781c3988e2e3be11e06bc7bccfb69d3a492e631",
+      "status": "success",
+      "block": "65074711",
+      "gasUsed": "109508",
+      "gasCost": "2737700000000000"
     }
   ],
-  "gasSpent": "358737675000000000",
+  "gasSpent": "673623325000000000",
   "steps": {
     "Approve initial tUSDC liquidity": "0x766d7586c369b0bb5f6d2c25c3dfc52b820024ce4cde85751a45f945d7e80730",
     "Approve initial tETH liquidity": "0x21d55e8d6a681edcdecf1c61b5a4ea65123c3f1ecf17f5be3819a41cf5fd9f49",
     "Seed tUSDC-tETH pool": "0xea168c03941fea7c393efa2dbc409bfb327041f8931b67fc48d101bdaada80a9",
-    "Fund full launchpad inventory": "0x657de446b6288801ff68d1f3049f75b89713aa7a7d7f8d527d1e12e7ef56b209"
+    "Fund full launchpad inventory": "0x657de446b6288801ff68d1f3049f75b89713aa7a7d7f8d527d1e12e7ef56b209",
+    "Morpho enable AdaptiveCurveIrm": "0x6ab074fc59cc6bd24122c602b072658fd3683dd0d4a6d164bddf0f682139e1b9",
+    "Morpho enable 86% LLTV": "0x26c7c7f58f4336c89788976b3c64d91979e4224a917c820a47781325927c7d62",
+    "Morpho create tUSDC/tETH market": "0x5fc3af7d0d34d688d66cc562e952713a6185fcadea2f7339a0432c8da08437be",
+    "Approve Morpho seed supply": "0x65d863bb270302b8082ef9f740a0e71fd0fd14c1cb13c94333b5a2b025fa95e1",
+    "Seed Morpho tUSDC supply": "0xa270e1218902a6b4f42fe58dd38690d188a06cb891e30f728a0f59cd18023a88",
+    "Approve seed launch buys": "0x508f1776d908dc9413763a76eec2a83c7096cf8be53a5c5653a3e7af4f33f873",
+    "Launch ROCKET": "0xd1afb6b66efad892c6f374becfc7c13dba3633bd18cd20886f0ece29a22160a8",
+    "Launch FROG": "0xbaa72672f11c25e2dbc7e6e4174ed36de63efda78a00149eea4450c425435959",
+    "Launch SUBSEC": "0xd70ac45fbc7ebfb7058dad0413e962dff6f852511f124f5b6698a7b095f708d0",
+    "Approve Morpho seed collateral": "0x142a8fdad186d62c3ee625a9c9fe15e50cc2baba18f2c094eb5f27a37b53bf0e",
+    "Seed Morpho tETH collateral": "0x3e94ae82535ff8ad53892c1d586d203927dca3ead02ba8d3e8f98d4ffa5626a1",
+    "Seed Morpho tUSDC borrow": "0x293d959cb5a9ff8872db3099e781c3988e2e3be11e06bc7bccfb69d3a492e631"
   },
   "deployer": "0x1A86d3148df478a1071e9D3D4825C99FB75ec964",
   "pool": {
@@ -218,5 +402,34 @@
     "swapReceivedETH": "371414845098197",
     "saleAllocation": "20000000000000000000",
     "gasSpent": "9580750000000000"
-  }
+  },
+  "lending": {
+    "protocol": "Morpho Blue (canonical source, project-deployed on testnet)",
+    "morpho": "0xb152667fc9c805edd704feecba373e65cabb109d",
+    "markets": [
+      {
+        "id": "0x12a7f36527343c328a938570419ef57996818a50ba6eeb3b487c6129804a9f46",
+        "label": "tETH → tUSDC",
+        "loanToken": "0x995ac9f68d8fb92d240064692fa63af7cc02663c",
+        "collateralToken": "0x461124bf2a8677df03b9f7560060d81442551124",
+        "oracle": "0x15f6c41e138e5f7ddb71324b0c77db31c16a7d5b",
+        "irm": "0x83652fc0887288283f9bc07e8b00292b600e2ca8",
+        "lltv": "860000000000000000"
+      }
+    ],
+    "note": "Morpho has no official Arc testnet deployment; this instance is deployed by Orbit from vendored upstream source. Oracle is owner-posted and testnet-only."
+  },
+  "launch": {
+    "contract": "0xa4915305bee76157e4d64a09d946d4a7349db6fe",
+    "quote": "0x3600000000000000000000000000000000000000",
+    "quoteSymbol": "USDC",
+    "virtualQuote": "20000000",
+    "feeBps": 100,
+    "graduation": "Uniswap V2 pair via project factory, LP burned to 0xdEaD"
+  },
+  "capabilities": {
+    "lending": true,
+    "launches": true
+  },
+  "phase2CompletedAt": "2026-10-02T06:40:12.916Z"
 }

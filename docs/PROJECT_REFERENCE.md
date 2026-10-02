@@ -2,10 +2,10 @@
 
 > **Start here for every future update.** This document records what the product is supposed to become, what actually exists, what must not be assumed, and how changes should be requested and accepted.
 >
-> **Current release: Arc testnet preview. Not production-ready.** A clean interface, successful transactions, and passing tests do not establish safety for real funds.
+> **Current release: Arc testnet beta (launch curves, social feed, Morpho lending). Not approved for mainnet funds.** A clean interface, successful transactions, and passing tests do not establish safety for real funds.
 
 - Last reviewed: **2026-10-02 UTC**.
-- Implementation baseline: **`76779d5`**.
+- Implementation baseline: **2026-10-02 FOMO/Morpho release** (see decision log).
 - Product name: **Orbit**; package name: `arc-terminal`.
 - Default development URL: **http://localhost:5191**.
 - Intended audience: traders who want simple swaps, launch discovery, lending, portfolio tracking, and regular-trader progression on Arc.
@@ -119,39 +119,24 @@ These priorities are a proposed implementation order, not permission to discard 
 - Treating browser-local points as verified rewards or financial entitlements.
 - Calling the custom sale contract audited because it imports OpenZeppelin.
 
-## 3. Current scope: live versus demo
+## 3. Current scope (testnet)
 
-### Live testnet preview
+| Area | Implemented | Important limitation |
+| --- | --- | --- |
+| Launches | `OrbitLaunch`: one-tx token launch, virtual-reserve curve priced in real Arc USDC (`0x3600…`), 1% fee, slippage + deadline, sells without approval, graduation into Uniswap V2 with LP burned | New, unaudited contract. Testnet virtual reserve is 20 USDC (graduates at ~57 USDC) |
+| Social / FOMO | Live ticker and feed, King of the Orbit, follow (browser watchlist), Following feed, followed-trade alerts, copy-trade prefill | Follows are local; alerts only while the app is open |
+| Leaderboard / points | P&L, volume and points recomputed from on-chain `tradersPage`/`positionsOf` views | Points are not wash-trade resistant and carry no value |
+| Swap | Uniswap V2 router; best of direct and hub (USDC/tUSDC/tETH) paths; graduated launches become swappable | One seeded test pool plus graduated pairs; not an aggregator |
+| Lending | Morpho Blue market (tETH → tUSDC, 86% LLTV, AdaptiveCurveIrm); supply, withdraw (by shares for max), collateral, borrow, repay (by shares for full), health factor | Orbit-deployed instance + owner-posted testnet oracle |
+| Portfolio | Balances, launch positions with P&L, lending summary, points level, local tx history | Activity list is browser-local |
+| Wallet / tx | EIP-6963 discovery, silent session restore, chain switch/add, runtime-bytecode check before signing, simulate + 25% gas buffer, hash recorded before receipt, unknown vs reverted outcomes, reload recovery | Replacement/cancellation detection still incomplete (TX-01) |
+| Network | `VITE_ARC_NETWORK=testnet\|mainnet`; mainnet chain 5042 config, RPC proxies and Circle asset addresses | No Orbit mainnet deployment; mainnet builds disable Orbit features |
 
-| Area         | Implemented                                                                                                         | Important limitation                                                              |
-| ------------ | ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Swap         | tUSDC/tETH pair, onchain V2 quotes, exact approval, reversal, slippage settings, review, submission, receipt checks | One seeded testing pool; no real-asset routing or aggregation                     |
-| Wallet       | Injected EIP-1193 wallet, authorized-account restoration, chain/account events, Arc switch/add, native gas balance  | Full multi-wallet discovery, mobile handoff, and provider matrix are not complete |
-| Faucet       | Once-per-wallet tUSDC/tETH claim, balance/claim status                                                              | User still needs native testnet USDC for gas                                      |
-| Launchpad    | Deployed test sale, payment approval, contribution, settlement-dependent claim/refund controls                      | Experimental fixed-price escrow, not a complete production launch platform        |
-| Activity     | Submitted hashes and pending/confirmed/reverted/unknown records, explorer links, status checks                      | Local to this browser; not a complete wallet indexer                              |
-| Connectivity | Same-origin RPC proxy, backup RPCs, friendly errors, retry/recovery, runtime-hash checks                            | Public RPC availability/trust remains an operational dependency                   |
-| Presentation | Single swap card, horizontal navigation, native dialogs, mobile layout, self-hosted fonts                           | Independent design/accessibility approval is still outstanding                    |
+The old virtual demo workspace was removed in this release.
 
-### Separate demo workspace
+### Live navigation
 
-The footer **Demo** action opens a lazy-loaded virtual dashboard:
-
-- Illustrative swap/chart/pool screens.
-- Three fictional sales.
-- Virtual USDC supply/withdraw, without interest accrual.
-- Virtual portfolio and local activity.
-- Browser-local XP: swap +25, supply +15, fictional sale +50; levels every 500 XP.
-
-These are demo mechanics, not live protocol positions. Demo styles are scoped to `.demo-workspace` and must not leak into live mode.
-
-### Current live navigation
-
-- **Swap** — implemented testnet swap workflow.
-- **Launchpad** — deployed experimental sale.
-- **Activity** — locally recorded submissions.
-
-Lending, a full portfolio, and rewards should join live navigation only when their actual integrations are ready. They remain product requirements, not completed live features.
+Discover (launches), Swap, Lend, Leaders, Portfolio, plus the **Launch** button.
 
 ## 4. UX direction and acceptance criteria
 
@@ -224,7 +209,13 @@ The server does not sign browser-user transactions. A funded deployment wallet i
 
 | Area                                                    | Files                                                                     |
 | ------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Live shell, navigation, wallet dialog, local activity   | `src/App.tsx`                                                             |
+| Shell, nav, ticker, wallet picker, toasts, alerts       | `src/App.tsx`                                                             |
+| Pages                                                   | `src/pages/{Discover,TokenPage,CreateLaunch,Swap,Lend,Leaders,Portfolio}.tsx` |
+| Wallet (EIP-6963) / tx runner                           | `src/lib/wallet.tsx`, `src/lib/tx.tsx`                                    |
+| Chain reads, polling cache, registry                    | `src/lib/data.ts`, `src/lib/query.ts`, `src/lib/contracts.ts`             |
+| Curve/Morpho/points math                                | `src/lib/math.ts`                                                         |
+| Launch + oracle contracts                               | `contracts/src/OrbitLaunch.sol`, `OrbitToken.sol`, `OrbitTestnetOracle.sol` |
+| Vendored Morpho                                         | `contracts/vendor/` (see its README)                                      |
 | Live visual system                                      | `src/app.css`                                                             |
 | Swap/sale forms and dialogs                             | `src/LiveTerminal.tsx`                                                    |
 | Reads, quotes, form state, transaction lifecycle        | `src/lib/useLiveTerminal.ts`                                              |
@@ -279,7 +270,13 @@ Source reference: [official Arc connection documentation](https://docs.arc.io/ar
 | Uniswap V2 Router02   | `0xa1ae04767893d81bed19272fee30746132e339de` |
 | Wrapped native USDC   | `0x2c86de6dc916d593d4f029e9243ca24c82e13f82` |
 | tUSDC/tETH pair       | `0xD2b4A96E2a39e66A33f4B0eC86150b48eB9a61aF` |
-| Fixed-price launchpad | `0x3fed4122a1a924dcd0fd7ede9afd2dbba964b0c1` |
+| Fixed-price launchpad | `0x3fed4122a1a924dcd0fd7ede9afd2dbba964b0c1` (legacy, no longer in UI) |
+| Morpho Blue           | `0xb152667fc9c805edd704feecba373e65cabb109d` |
+| AdaptiveCurveIrm      | `0x83652fc0887288283f9bc07e8b00292b600e2ca8` |
+| OrbitTestnetOracle    | `0x15f6c41e138e5f7ddb71324b0c77db31c16a7d5b` |
+| Morpho market id      | `0x12a7f36527343c328a938570419ef57996818a50ba6eeb3b487c6129804a9f46` |
+| OrbitLaunch           | `0xa4915305bee76157e4d64a09d946d4a7349db6fe` |
+| Arc USDC (ERC-20)     | `0x3600000000000000000000000000000000000000` (Circle; 6 decimals; same balance as gas) |
 
 The factory/router use canonical published artifacts from `@uniswap/v2-core@1.0.1` and `@uniswap/v2-periphery@1.1.0-beta.0`. This is a project-deployed test stack, not evidence of an independently operated Arc marketplace.
 
@@ -415,7 +412,9 @@ A future “launchpad pool” requirement must explicitly distinguish **sale esc
 
 ### Current status
 
-An Aave-style ABI/adapter exists. No verified Aave or other lending market is enabled on Arc. The demo supply/withdraw screen is virtual and accrues no interest.
+Morpho has **no official Arc testnet deployment** (as of 2026-10-02). Orbit therefore deployed the canonical Morpho Blue and AdaptiveCurveIrm from vendored upstream source (pinned commits, upstream compiler settings) and created one market: loan tUSDC, collateral tETH, LLTV 86%. It is seeded with 250k tUSDC supply and a 110k borrow, so the rates are live. The oracle is `OrbitTestnetOracle`: owner-posted from the test pool and reverting when older than 30 days (`pnpm oracle:refresh`).
+
+On **Arc mainnet**, Aave V4 and Morpho operate their own markets. A mainnet integration must target those protocol-owned deployments and oracles. It must not reuse this testnet instance or oracle design.
 
 ### Before implementing live lending
 
@@ -765,6 +764,7 @@ Next recommended update:
 | Owner feedback       | Earlier pages were not clean enough and were not production-ready                                                                |
 | `76779d5`            | Compact live swap, separate scoped demo, better pending/unknown confirmation handling, local activity and explicit release gates |
 | Current handoff      | This document is the central reference for future updates; no production approval or public hosting approval recorded            |
+| 2026-10-02 release   | Owner asked for a FOMO-style app, working router/lending and testnet deployments from the env wallet. Added OrbitLaunch, deployed Morpho Blue/IRM/oracle/market, rebuilt the UI (dark launch terminal), removed the demo workspace, added mainnet network config (no mainnet deploy). Testnet gas for this phase: ~0.31 USDC. Live UI e2e signed launch/buy/sell, faucet/swap and the full Morpho borrow cycle on testnet. |
 
 ### Decisions still needed from the owner
 

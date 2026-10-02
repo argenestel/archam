@@ -14,10 +14,13 @@
     "wallet:status": "node scripts/testnet-wallet.mjs status",
     "deploy:testnet": "node scripts/deploy-testnet.mjs",
     "smoke:testnet": "node scripts/smoke-testnet.mjs",
-    "format": "prettier --write src e2e scripts *.ts *.json *.md *.yaml docs"
+    "format": "prettier --write src e2e scripts *.ts *.json *.md *.yaml docs",
+    "deploy:orbit": "node scripts/deploy-orbit.mjs",
+    "oracle:refresh": "node scripts/oracle-refresh.mjs"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@fontsource-variable/space-grotesk": "^5.3.0",
     "@openzeppelin/contracts": "^5.4.0",
     "lucide-react": "^0.468.0",
@@ -37,6 +40,7 @@
     "ganache": "^7.9.2",
     "prettier": "^3.9.9",
     "solc": "^0.8.30",
+    "solc-0.8.19": "npm:solc@0.8.19",
     "typescript": "~5.7.2",
     "vite": "^6.0.5",
     "vitest": "^3.0.0"
