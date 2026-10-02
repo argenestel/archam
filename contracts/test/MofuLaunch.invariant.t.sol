@@ -4,8 +4,8 @@ pragma solidity ^0.8.24;
 import {Test} from "forge-std/Test.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {OrbitLaunch, IUniswapV2Router02} from "../src/OrbitLaunch.sol";
-import {OrbitToken} from "../src/OrbitToken.sol";
+import {MofuLaunch, IUniswapV2Router02} from "../src/MofuLaunch.sol";
+import {MofuToken} from "../src/MofuToken.sol";
 
 contract MockUSDC is ERC20 {
     constructor() ERC20("USD Coin", "USDC") {}
@@ -40,7 +40,7 @@ abstract contract UniswapV2Fixture is Test {
 
 /// Random buys and sells by several actors across several curves.
 contract Handler is Test {
-    OrbitLaunch public launch;
+    MofuLaunch public launch;
     MockUSDC public usdc;
     address[] public actors;
     address[] public tokens;
@@ -48,7 +48,7 @@ contract Handler is Test {
     uint256 public sells;
     uint256 public graduations;
 
-    constructor(OrbitLaunch launch_, MockUSDC usdc_, address[] memory tokens_) {
+    constructor(MofuLaunch launch_, MockUSDC usdc_, address[] memory tokens_) {
         launch = launch_;
         usdc = usdc_;
         tokens = tokens_;
@@ -94,8 +94,8 @@ contract Handler is Test {
     }
 }
 
-contract OrbitLaunchInvariantTest is UniswapV2Fixture {
-    OrbitLaunch launch;
+contract MofuLaunchInvariantTest is UniswapV2Fixture {
+    MofuLaunch launch;
     MockUSDC usdc;
     Handler handler;
     address[] tokens;
@@ -104,11 +104,11 @@ contract OrbitLaunchInvariantTest is UniswapV2Fixture {
     function setUp() public {
         (, address router) = deployV2();
         usdc = new MockUSDC();
-        launch = new OrbitLaunch(IERC20(address(usdc)), IUniswapV2Router02(router), 20e6, 100, address(0xFEE));
+        launch = new MofuLaunch(IERC20(address(usdc)), IUniswapV2Router02(router), 20e6, 100, address(0xFEE));
         for (uint256 i; i < 3; ++i) {
             address t = launch.launch("Fuzz", "FZZ", "", "", 0, 0);
             tokens.push(t);
-            OrbitLaunch.CurveState memory c = launch.curveState(t);
+            MofuLaunch.CurveState memory c = launch.curveState(t);
             initialK[t] = c.virtualQuote * c.virtualToken;
         }
         handler = new Handler(launch, usdc, tokens);
@@ -128,7 +128,7 @@ contract OrbitLaunchInvariantTest is UniswapV2Fixture {
     /// graduated curves leave nothing behind.
     function invariant_tokenInventory() public view {
         for (uint256 i; i < tokens.length; ++i) {
-            OrbitLaunch.CurveState memory c = launch.curveState(tokens[i]);
+            MofuLaunch.CurveState memory c = launch.curveState(tokens[i]);
             uint256 held = IERC20(tokens[i]).balanceOf(address(launch));
             if (c.graduated) assertEq(held, 0, "graduated curve kept tokens");
             else assertEq(held, c.tokensLeft + launch.lpSupply(), "inventory mismatch");
@@ -138,7 +138,7 @@ contract OrbitLaunchInvariantTest is UniswapV2Fixture {
     /// Rounding always favors the pool: virtual k never decreases.
     function invariant_kNeverDecreases() public view {
         for (uint256 i; i < tokens.length; ++i) {
-            OrbitLaunch.CurveState memory c = launch.curveState(tokens[i]);
+            MofuLaunch.CurveState memory c = launch.curveState(tokens[i]);
             if (!c.graduated) assertGe(c.virtualQuote * c.virtualToken, initialK[tokens[i]], "k decreased");
         }
     }
@@ -146,7 +146,7 @@ contract OrbitLaunchInvariantTest is UniswapV2Fixture {
     /// Real quote never exceeds what the curve math allows: vq == V0 + realQuote while live.
     function invariant_virtualMatchesReal() public view {
         for (uint256 i; i < tokens.length; ++i) {
-            OrbitLaunch.CurveState memory c = launch.curveState(tokens[i]);
+            MofuLaunch.CurveState memory c = launch.curveState(tokens[i]);
             if (!c.graduated) assertEq(c.virtualQuote, launch.initialVirtualQuote() + c.realQuote, "virtual/real drift");
         }
     }
@@ -156,8 +156,8 @@ contract OrbitLaunchInvariantTest is UniswapV2Fixture {
     }
 }
 
-contract OrbitLaunchUnitTest is UniswapV2Fixture {
-    OrbitLaunch launch;
+contract MofuLaunchUnitTest is UniswapV2Fixture {
+    MofuLaunch launch;
     MockUSDC usdc;
     address owner = address(this);
     address multisig = address(0x5AFE);
@@ -165,7 +165,7 @@ contract OrbitLaunchUnitTest is UniswapV2Fixture {
     function setUp() public {
         (, address router) = deployV2();
         usdc = new MockUSDC();
-        launch = new OrbitLaunch(IERC20(address(usdc)), IUniswapV2Router02(router), 20e6, 100, address(0xFEE));
+        launch = new MofuLaunch(IERC20(address(usdc)), IUniswapV2Router02(router), 20e6, 100, address(0xFEE));
         usdc.mint(address(this), 1_000e6);
         usdc.approve(address(launch), type(uint256).max);
     }
@@ -173,7 +173,7 @@ contract OrbitLaunchUnitTest is UniswapV2Fixture {
     function test_pauseBlocksOnlyLaunches() public {
         address t = launch.launch("A", "A", "", "", 1e6, 0);
         launch.setLaunchesPaused(true);
-        vm.expectRevert(OrbitLaunch.LaunchesPaused.selector);
+        vm.expectRevert(MofuLaunch.LaunchesPaused.selector);
         launch.launch("B", "B", "", "", 0, 0);
         // trading continues while paused
         launch.buy(t, 1e6, 0, block.timestamp);
@@ -184,23 +184,23 @@ contract OrbitLaunchUnitTest is UniswapV2Fixture {
     function test_twoStepOwnership() public {
         launch.transferOwnership(multisig);
         assertEq(launch.owner(), owner);
-        vm.expectRevert(OrbitLaunch.OnlyOwner.selector);
+        vm.expectRevert(MofuLaunch.OnlyOwner.selector);
         launch.acceptOwnership();
         vm.prank(multisig);
         launch.acceptOwnership();
         assertEq(launch.owner(), multisig);
-        vm.expectRevert(OrbitLaunch.OnlyOwner.selector);
+        vm.expectRevert(MofuLaunch.OnlyOwner.selector);
         launch.setLaunchesPaused(true);
     }
 
     function test_onlyOwnerAdmin(address stranger) public {
         vm.assume(stranger != owner);
         vm.startPrank(stranger);
-        vm.expectRevert(OrbitLaunch.OnlyOwner.selector);
+        vm.expectRevert(MofuLaunch.OnlyOwner.selector);
         launch.setLaunchesPaused(true);
-        vm.expectRevert(OrbitLaunch.OnlyOwner.selector);
+        vm.expectRevert(MofuLaunch.OnlyOwner.selector);
         launch.setFeeRecipient(stranger);
-        vm.expectRevert(OrbitLaunch.OnlyOwner.selector);
+        vm.expectRevert(MofuLaunch.OnlyOwner.selector);
         launch.transferOwnership(stranger);
     }
 
@@ -251,7 +251,7 @@ contract OrbitLaunchUnitTest is UniswapV2Fixture {
 
     function test_tokenLockedBeforeGraduation() public {
         address t = launch.launch("F", "F", "", "", 1e6, 0);
-        vm.expectRevert(OrbitToken.TransfersLocked.selector);
+        vm.expectRevert(MofuToken.TransfersLocked.selector);
         IERC20(t).transfer(address(0xBEEF), 1);
     }
 }

@@ -4,7 +4,7 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /// @notice Fixed-supply launch token. Until graduation it can only move to or from the
 /// launcher, so nobody can seed the AMM pair early or trade it off-curve.
-contract OrbitToken is ERC20 {
+contract MofuToken is ERC20 {
     address public immutable launcher;
     bool public graduated;
 

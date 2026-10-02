@@ -5,7 +5,7 @@ pragma solidity ^0.8.24;
 /// The owner posts a price; reads revert once it is older than `maxAge`, which pauses
 /// borrowing and liquidations instead of using a stale value. Mainnet markets must use a
 /// reviewed feed-backed oracle (e.g. Morpho's Chainlink oracle), never this contract.
-contract OrbitTestnetOracle {
+contract MofuTestnetOracle {
     /// @notice 1 collateral base unit priced in loan base units, scaled by 1e36 (Morpho convention).
     uint256 private _price;
     uint256 public updatedAt;

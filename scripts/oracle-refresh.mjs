@@ -12,7 +12,7 @@ const [r0, r1] = await rpc.readContract({ address: m.pool.address, abi: pairAbi,
 const token0 = await rpc.readContract({ address: m.pool.address, abi: pairAbi, functionName: 'token0' });
 const [usdc, eth] = token0.toLowerCase() === m.contracts.TestUSDC.address.toLowerCase() ? [r0, r1] : [r1, r0];
 const price = (usdc * 10n ** 36n) / eth;
-const oracle = m.contracts.OrbitTestnetOracle.address;
+const oracle = (m.contracts.MofuTestnetOracle || m.contracts.OrbitTestnetOracle).address;
 const [current, updatedAt] = await rpc.readContract({ address: oracle, abi: oracleAbi, functionName: 'latestPrice' });
 console.log(`Pool: 1 tETH = ${formatUnits((usdc * 10n ** 18n) / eth, 6)} tUSDC; oracle updated ${new Date(Number(updatedAt) * 1000).toISOString()}`);
 if (!process.argv.includes('--broadcast')) process.exit(0);

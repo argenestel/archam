@@ -4,8 +4,8 @@ import solc from 'solc';
 export function compile(extraSources = {}) {
   const own = [
     'contracts/src/FixedPriceLaunchpad.sol',
-    'contracts/src/OrbitLaunch.sol',
-    'contracts/src/OrbitTestnetOracle.sol',
+    'contracts/src/MofuLaunch.sol',
+    'contracts/src/MofuTestnetOracle.sol',
   ];
   const input = {
     language: 'Solidity',
@@ -87,9 +87,9 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const output = compile();
   const morpho = await compileMorpho();
   for (const [name, c] of [
-    ['OrbitLaunch', output['contracts/src/OrbitLaunch.sol'].OrbitLaunch],
-    ['OrbitToken', output['contracts/src/OrbitToken.sol'].OrbitToken],
-    ['OrbitTestnetOracle', output['contracts/src/OrbitTestnetOracle.sol'].OrbitTestnetOracle],
+    ['MofuLaunch', output['contracts/src/MofuLaunch.sol'].MofuLaunch],
+    ['MofuToken', output['contracts/src/MofuToken.sol'].MofuToken],
+    ['MofuTestnetOracle', output['contracts/src/MofuTestnetOracle.sol'].MofuTestnetOracle],
     ['Morpho', morpho.Morpho],
     ['AdaptiveCurveIrm', morpho.AdaptiveCurveIrm],
   ]) {

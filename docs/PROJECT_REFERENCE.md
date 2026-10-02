@@ -1,4 +1,6 @@
-# Orbit — product reference, implementation status, and update roadmap
+# Mofu — product reference, implementation status, and update roadmap
+
+Public brand changed from Orbit to **Mofu**, with intended domain **mofu.lol**. Historical notes and Solidity artifact names may still say Orbit; their deployment and storage identifiers are intentionally preserved. No mainnet contract transaction was sent during the branding update.
 
 > **Start here for every future update.** This document records what the product is supposed to become, what actually exists, what must not be assumed, and how changes should be requested and accepted.
 >
@@ -6,7 +8,7 @@
 
 - Last reviewed: **2026-10-02 UTC**.
 - Implementation baseline: **2026-10-02 FOMO/Morpho release** (see decision log).
-- Product name: **Orbit**; package name: `arc-terminal`.
+- Product name: **Mofu**; intended domain: `mofu.lol`; legacy package name: `arc-terminal`.
 - Default development URL: **http://localhost:5191**.
 - Intended audience: traders who want simple swaps, launch discovery, lending, portfolio tracking, and regular-trader progression on Arc.
 - Product/design approval: **pending**. The latest interface is a revised baseline, not a user-approved final design.
@@ -127,7 +129,7 @@ These priorities are a proposed implementation order, not permission to discard 
 
 | Area | Implemented | Important limitation |
 | --- | --- | --- |
-| Launches | `OrbitLaunch`: one-tx token launch, virtual-reserve curve priced in real Arc USDC (`0x3600…`), 1% fee, slippage + deadline, sells without approval, graduation into Uniswap V2 with LP burned | New, unaudited contract. Testnet virtual reserve is 20 USDC (graduates at ~57 USDC) |
+| Launches | `MofuLaunch` (formerly `OrbitLaunch`): one-tx token launch, virtual-reserve curve priced in real Arc USDC (`0x3600…`), 1% fee, slippage + deadline, sells without approval, graduation into Uniswap V2 with LP burned | New, unaudited contract. Testnet virtual reserve is 20 USDC (graduates at ~57 USDC) |
 | Social / FOMO | Live ticker and feed, King of the Orbit, follow (browser watchlist), Following feed, followed-trade alerts, copy-trade prefill | Follows are local; alerts only while the app is open |
 | Leaderboard / points | P&L, volume and points recomputed from on-chain `tradersPage`/`positionsOf` views | Points are not wash-trade resistant and carry no value |
 | Swap | Uniswap V2 router; best of direct and hub (USDC/tUSDC/tETH) paths; graduated launches become swappable | One seeded test pool plus graduated pairs; not an aggregator |
@@ -220,7 +222,7 @@ The server does not sign browser-user transactions. A funded deployment wallet i
 | Wallet (EIP-6963) / tx runner                           | `src/lib/wallet.tsx`, `src/lib/tx.tsx`                                    |
 | Chain reads, polling cache, registry                    | `src/lib/data.ts`, `src/lib/query.ts`, `src/lib/contracts.ts`             |
 | Curve/Morpho/points math                                | `src/lib/math.ts`                                                         |
-| Launch + oracle contracts                               | `contracts/src/OrbitLaunch.sol`, `OrbitToken.sol`, `OrbitTestnetOracle.sol` |
+| Launch + oracle contracts                               | `contracts/src/MofuLaunch.sol`, `MofuToken.sol`, `MofuTestnetOracle.sol` |
 | Vendored Morpho                                         | `contracts/vendor/` (see its README)                                      |
 | Live visual system                                      | `src/app.css`                                                             |
 | Swap/sale forms and dialogs                             | `src/LiveTerminal.tsx`                                                    |

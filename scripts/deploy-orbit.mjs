@@ -15,7 +15,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { compile, compileMorpho } from './check-contracts.mjs';
 import { chain, rpc, loadDeployer } from './testnet-wallet.mjs';
 
-// Phase 2 testnet deployment: canonical Morpho Blue lending + Orbit launch curves.
+// Phase 2 testnet deployment: canonical Morpho Blue lending + Mofu launch curves.
 // Testnet only. The key is read from the git-ignored .env (ARC_TESTNET_DEPLOYER_PRIVATE_KEY)
 // or the encrypted keystore, and is never printed, logged, or written to the manifest.
 const manifestPath = 'deployments/arc-testnet.json';
@@ -69,8 +69,10 @@ async function receipt(hash, label) {
   if (tx.status !== 'success') throw new Error(`${label} reverted`);
   return tx;
 }
-async function deploy(name, source, args = []) {
-  if (manifest.contracts[name]) return { address: manifest.contracts[name].address, abi: source.abi };
+async function deploy(name, source, args = [], legacyName) {
+  // Reuse historical deployments without relabeling their artifacts or sending a rename tx.
+  const existing = manifest.contracts[name] || (legacyName && manifest.contracts[legacyName]);
+  if (existing) return { address: existing.address, abi: source.abi };
   const bytecode = `0x${source.evm.bytecode.object}`;
   const data = encodeDeployData({ abi: source.abi, bytecode, args });
   const fees = await limits(data);
@@ -107,7 +109,7 @@ async function main() {
   console.log(
     'Plan: Morpho Blue + AdaptiveCurveIrm + testnet oracle, tUSDC/tETH 86% LLTV market seeded with 250k tUSDC;',
   );
-  console.log('      OrbitLaunch on Arc USDC (20 USDC virtual reserve, 1% fee) with three seed launches.');
+  console.log('      MofuLaunch on Arc USDC (20 USDC virtual reserve, 1% fee) with three seed launches.');
   if (!broadcast) return console.log('Run with --broadcast to send Arc testnet transactions.');
   account = await signer();
   if (account.address.toLowerCase() !== manifest.deployer.toLowerCase())
@@ -127,7 +129,7 @@ async function main() {
   // ---- Lending
   const morpho = await deploy('MorphoBlue', morphoArtifacts.Morpho, [account.address]);
   const irm = await deploy('AdaptiveCurveIrm', morphoArtifacts.AdaptiveCurveIrm, [morpho.address]);
-  if (!manifest.contracts.OrbitTestnetOracle) {
+  if (!manifest.contracts.MofuTestnetOracle && !manifest.contracts.OrbitTestnetOracle) {
     // Seed oracle from current pool spot. 1 tETH in tUSDC base units * 1e36 / 1e18.
     const [r0, r1] = await rpc.readContract({ address: manifest.pool.address, abi: pairAbi, functionName: 'getReserves' });
     const token0 = await rpc.readContract({ address: manifest.pool.address, abi: pairAbi, functionName: 'token0' });
@@ -135,13 +137,13 @@ async function main() {
       token0.toLowerCase() === c.TestUSDC.address.toLowerCase() ? [r0, r1] : [r1, r0];
     const price = (usdcReserve * 10n ** 36n) / ethReserve;
     console.log(`Oracle seed: 1 tETH = ${formatUnits((usdcReserve * 10n ** 18n) / ethReserve, 6)} tUSDC`);
-    await deploy('OrbitTestnetOracle', own['contracts/src/OrbitTestnetOracle.sol'].OrbitTestnetOracle, [
+    await deploy('MofuTestnetOracle', own['contracts/src/MofuTestnetOracle.sol'].MofuTestnetOracle, [
       price,
       30n * 86400n,
       'tETH / tUSDC (testnet, owner-posted)',
     ]);
   }
-  const oracle = { address: manifest.contracts.OrbitTestnetOracle.address };
+  const oracle = { address: (manifest.contracts.MofuTestnetOracle || manifest.contracts.OrbitTestnetOracle).address };
   await write('Morpho enable AdaptiveCurveIrm', morpho, 'enableIrm', [irm.address]);
   await write('Morpho enable 86% LLTV', morpho, 'enableLltv', [LLTV]);
   const params = {
@@ -189,13 +191,13 @@ async function main() {
   save();
 
   // ---- Launch curves on real Arc testnet USDC (ERC-20 interface of the native gas token).
-  const launch = await deploy('OrbitLaunch', own['contracts/src/OrbitLaunch.sol'].OrbitLaunch, [
+  const launch = await deploy('MofuLaunch', own['contracts/src/MofuLaunch.sol'].MofuLaunch, [
     USDC_ERC20,
     c.UniswapV2Router02.address,
     parseUnits('20', 6),
     100n,
     account.address,
-  ]);
+  ], 'OrbitLaunch');
   const usdc = { address: USDC_ERC20, abi: erc20Abi };
   const seeds = [
     ['Arc Rocket', 'ROCKET', 'First launch on Orbit. Pure curve, no presale.'],
@@ -216,18 +218,18 @@ async function main() {
   };
   // ---- Hardened launch contract (two-step owner, launch-only pause, capped pages).
   // Testnet uses a 3 USDC virtual reserve so a full graduation can be rehearsed for ~8.6 USDC.
-  const v3 = await deploy('OrbitLaunchV3', own['contracts/src/OrbitLaunch.sol'].OrbitLaunch, [
+  const v3 = await deploy('MofuLaunchV3', own['contracts/src/MofuLaunch.sol'].MofuLaunch, [
     USDC_ERC20,
     c.UniswapV2Router02.address,
     parseUnits('3', 6),
     100n,
     account.address,
-  ]);
+  ], 'OrbitLaunchV3');
   const seedBuy = parseUnits('0.3', 6);
   await write('V3: approve seed buys', usdc, 'approve', [v3.address, seedBuy * 3n]);
   for (const [name, symbol, description] of seeds)
     await write(`V3: launch ${symbol}`, v3, 'launch', [name, symbol, '', description, seedBuy, 0n]);
-  if (!manifest.legacyLaunch) manifest.legacyLaunch = { ...manifest.launch, note: 'superseded; see OrbitLaunchV3 (hardened, sell-out rounding fix)' };
+  if (!manifest.legacyLaunch) manifest.legacyLaunch = { ...manifest.launch, note: 'superseded; see active launch (hardened, sell-out rounding fix)' };
   manifest.launch = {
     contract: v3.address,
     quote: USDC_ERC20,

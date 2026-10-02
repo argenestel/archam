@@ -16,7 +16,7 @@ Updated 2026-10-02. Branch `main`. **No mainnet transaction has been sent by thi
 | **1. Swap and lending on mainnet** | **Opt-in beta; no real-fund execution tested** | Earn vaults + stablecoin swap through App Kit in `src/lib/appkit.ts`, `src/pages/Earn.tsx`, `src/pages/StableSwap.tsx`. Mainnet build shows live curated vaults (e.g. Bitwise Premium RWA USDC, 4.27%); writes need `VITE_MAINNET_SIGNING=1`. Testnet earn deposit/withdraw verified live via the agent. |
 | **2. Launch contract hardening** | **Done, except the audit** | Two-step ownership, launch-only pause, capped pages, `curveState` view. A testnet graduation rehearsal found a sell-out rounding bug; it's fixed and pinned by a regression fuzz test. Foundry suite: 4 invariants × 7,680 random calls, 8 unit/fuzz tests. Graduation verified on-chain (pool price = curve price to 8 significant figures, LP 100% burned). Independent second-opinion review: 2 hardening items adopted, 3 "critical" claims refuted. **Independent audit: not done.** |
 | **3. Operations** | **Partly done** | `pnpm monitor [testnet\|mainnet]`: RPC lag, launch solvency, owner type, oracle age, agent gas, webhook alerts. Points fixed (volume-only). Risks page live. Terms/privacy drafts in `docs/legal/`. Foundry and policy tests can be run manually; the unused GitHub Actions workflow was removed. **Open:** domain/TLS host, Docker validation (no Docker daemon here), legal review, Safe creation. |
-| **4. Staged launch** | **Prepared** | `pnpm deploy:mainnet` prints the plan (≈0.25 USDC gas) and refuses to broadcast until all gates pass. It deploys the V2 factory/router (router WETH = USDC per Arc guidance) and `OrbitLaunch` (5,000 USDC virtual reserve, graduates at ≈14.2k), **paused**, with ownership offered to the Safe. Testnet rehearsal done. |
+| **4. Staged launch** | **Prepared** | `pnpm deploy:mainnet` prints the plan (≈0.25 USDC gas) and refuses to broadcast until all gates pass. It deploys the V2 factory/router (router WETH = USDC per Arc guidance) and `MofuLaunch` (5,000 USDC virtual reserve, graduates at ≈14.2k), **paused**, with ownership offered to the Safe. Testnet rehearsal done. |
 
 ## Gates enforced by `scripts/deploy-mainnet.mjs`
 
@@ -28,7 +28,7 @@ Updated 2026-10-02. Branch `main`. **No mainnet transaction has been sent by thi
 
 ## What only you can do
 
-1. **Commission the audit** of `contracts/src/OrbitLaunch.sol` + `OrbitToken.sol` (source hash printed by `pnpm deploy:mainnet`).
+1. **Commission the audit** of `contracts/src/MofuLaunch.sol` + `MofuToken.sol` (source hash printed by `pnpm deploy:mainnet`).
 2. **Create the Safe** on Arc (app.safe.global, or the factory at `0x4e1D…ec67`), choose its signers and threshold, and fund a fresh deployer key with ~1 USDC.
 3. **Legal:** terms, privacy, and a geo/eligibility review for a token-launch product (drafts in `docs/legal/`).
 4. **Hosting:** a domain and host with Docker; set `ALERT_WEBHOOK_URL` and schedule `pnpm monitor mainnet`.

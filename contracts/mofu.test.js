@@ -44,7 +44,7 @@ beforeAll(async () => {
     artifact('node_modules/@uniswap/v2-periphery/build/UniswapV2Router02.json'),
     [factory.address, weth.address],
   );
-  launch = await deploy(compiled['contracts/src/OrbitLaunch.sol'].OrbitLaunch, [
+  launch = await deploy(compiled['contracts/src/MofuLaunch.sol'].MofuLaunch, [
     usdc.address,
     router.address,
     USDC(20),
@@ -79,14 +79,14 @@ async function write(contract, functionName, args = [], account = owner) {
 }
 const read = (contract, functionName, args = []) => pub.readContract({ ...contract, functionName, args });
 const deadline = () => BigInt(Math.floor(Date.now() / 1000) + 3600);
-const tokenAt = (address) => ({ address, abi: compiled['contracts/src/OrbitToken.sol'].OrbitToken.abi });
+const tokenAt = (address) => ({ address, abi: compiled['contracts/src/MofuToken.sol'].MofuToken.abi });
 
 async function newToken(symbol, by = alice) {
   const address = await write(launch, 'launch', [`${symbol} coin`, symbol, '', 'test', 0n, 0n], by);
   return tokenAt(address);
 }
 
-describe('OrbitLaunch curve', { timeout: 60000 }, () => {
+describe('MofuLaunch curve', { timeout: 60000 }, () => {
   it('launches, buys and sells with fees, onchain feed and positions', async () => {
     const t = await newToken('ONE');
     expect(await read(launch, 'tokenCount')).toBe(1n);
@@ -199,7 +199,7 @@ describe('Morpho Blue market with testnet oracle', { timeout: 120000 }, () => {
     const irm = await deploy(morphoArtifacts.AdaptiveCurveIrm, [morpho.address]);
     // 1 tETH = 2,500 USDC: 2500 * 1e36 * 1e6 / 1e18
     const oracle = await deploy(
-      compiled['contracts/src/OrbitTestnetOracle.sol'].OrbitTestnetOracle,
+      compiled['contracts/src/MofuTestnetOracle.sol'].MofuTestnetOracle,
       [2500n * 10n ** 24n, 86400n, 'tETH/USDC'],
     );
     const lltv = 860000000000000000n;

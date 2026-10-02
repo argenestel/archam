@@ -20,12 +20,13 @@ export type MarketParams = {
 
 /**
  * Deployment registry. Only addresses recorded in a committed manifest are used; there is
- * no runtime override. Mainnet has no Orbit deployment yet, so mainnet builds disable
- * every Orbit-operated feature instead of pointing at testnet contracts.
+ * no runtime override. Mainnet has no Mofu deployment yet, so mainnet builds disable
+ * every Mofu-operated feature instead of pointing at testnet contracts.
  */
 const m = networkName === 'testnet' ? testnet : undefined;
-const at = (name: keyof typeof testnet.contracts) =>
-  m?.contracts[name]?.address as Address | undefined;
+type ContractName = keyof typeof testnet.contracts | 'MofuTestnetOracle';
+const registry: Partial<Record<ContractName, { address: string }>> | undefined = m?.contracts;
+const at = (name: ContractName) => registry?.[name]?.address as Address | undefined;
 
 export const deployments = {
   router: at('UniswapV2Router02'),
@@ -33,7 +34,7 @@ export const deployments = {
   launch: m?.launch?.contract as Address | undefined,
 
   morpho: m?.lending?.morpho as Address | undefined,
-  oracle: at('OrbitTestnetOracle'),
+  oracle: at('MofuTestnetOracle') ?? at('OrbitTestnetOracle'),
 };
 export const lendingMarkets = (m?.lending?.markets ?? []).map((market) => ({
   id: market.id as Hex,

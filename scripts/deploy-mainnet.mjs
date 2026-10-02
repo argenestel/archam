@@ -12,10 +12,10 @@ import {
 import { privateKeyToAccount } from 'viem/accounts';
 import { compile } from './check-contracts.mjs';
 
-// Phase 4: Orbit's own mainnet contracts. PLAN ONLY unless every gate below passes.
-// Swap and lending on mainnet use Circle App Kit and protocol-operated vaults; Orbit
+// Phase 4: Mofu's own mainnet contracts. PLAN ONLY unless every gate below passes.
+// Swap and lending on mainnet use Circle App Kit and protocol-operated vaults; Mofu
 // deploys only what does not exist: a canonical Uniswap V2 factory/router for graduated
-// launches (none is listed for Arc) and OrbitLaunch, paused, owned by a multisig.
+// launches (none is listed for Arc) and MofuLaunch, paused, owned by a multisig.
 const USDC = '0x3600000000000000000000000000000000000000';
 const chain = defineChain({
   id: 5042,
@@ -31,7 +31,7 @@ const params = {
   feeBps: BigInt(env.MAINNET_FEE_BPS || '100'),
   maxGasUsdc: parseUnits(env.MAINNET_MAX_GAS_USDC || '3', 18),
 };
-const source = fs.readFileSync('contracts/src/OrbitLaunch.sol', 'utf8') + fs.readFileSync('contracts/src/OrbitToken.sol', 'utf8');
+const source = fs.readFileSync('contracts/src/MofuLaunch.sol', 'utf8') + fs.readFileSync('contracts/src/MofuToken.sol', 'utf8');
 const sourceHash = keccak256(toHex(source));
 
 const gates = [];
@@ -53,16 +53,16 @@ gate(process.argv.includes('--broadcast'), '--broadcast flag');
 
 // Gas estimate for the plan (deploy data only; does not need a funded key).
 const own = compile();
-const launchArtifact = own['contracts/src/OrbitLaunch.sol'].OrbitLaunch;
+const launchArtifact = own['contracts/src/MofuLaunch.sol'].MofuLaunch;
 const factoryArtifact = artifact('node_modules/@uniswap/v2-core/build/UniswapV2Factory.json');
 const routerArtifact = artifact('node_modules/@uniswap/v2-periphery/build/UniswapV2Router02.json');
 const gasPrice = await rpc.getGasPrice();
 const estimate = (bytecode) => BigInt(Math.ceil(bytecode.length / 2)) * 220n + 120_000n; // rough upper bound
 const planGas = estimate(factoryArtifact.bytecode) + estimate(routerArtifact.bytecode) + estimate(launchArtifact.evm.bytecode.object) + 200_000n;
-console.log('Orbit mainnet deployment plan');
+console.log('Mofu mainnet deployment plan');
 console.log(`  1. UniswapV2Factory (canonical @uniswap/v2-core 1.0.1), feeToSetter = multisig`);
 console.log(`  2. UniswapV2Router02 (canonical 1.1.0-beta.0) with WETH = USDC 0x3600… (Arc needs no wrapper; native-ETH router paths are unusable by design)`);
-console.log(`  3. OrbitLaunch(USDC, router, virtualQuote ${formatUnits(params.virtualQuote, 6)} USDC, fee ${params.feeBps} bps, feeRecipient = multisig)`);
+console.log(`  3. MofuLaunch(USDC, router, virtualQuote ${formatUnits(params.virtualQuote, 6)} USDC, fee ${params.feeBps} bps, feeRecipient = multisig)`);
 console.log(`     graduates at ≈ ${formatUnits((params.virtualQuote * 7931n) / 2799n, 6)} USDC raised`);
 console.log(`  4. setLaunchesPaused(true), then transferOwnership(multisig); multisig must call acceptOwnership()`);
 console.log(`  Estimated gas ≈ ${formatUnits(planGas * gasPrice, 18)} USDC at current price (cap ${formatUnits(params.maxGasUsdc, 18)})`);
@@ -97,7 +97,7 @@ const deploy = async (name, abi, bytecode, args) => {
 };
 const factory = await deploy('UniswapV2Factory', factoryArtifact.abi, factoryArtifact.bytecode, [multisig]);
 const router = await deploy('UniswapV2Router02', routerArtifact.abi, routerArtifact.bytecode, [factory, USDC]);
-const launch = await deploy('OrbitLaunch', launchArtifact.abi, launchArtifact.evm.bytecode.object, [USDC, router, params.virtualQuote, params.feeBps, multisig]);
+const launch = await deploy('MofuLaunch', launchArtifact.abi, launchArtifact.evm.bytecode.object, [USDC, router, params.virtualQuote, params.feeBps, multisig]);
 const call = (functionName, args) =>
   send(functionName, () => wallet.writeContract({ address: launch, abi: launchArtifact.abi, functionName, args }));
 await call('setLaunchesPaused', [true]);

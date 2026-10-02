@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {OrbitToken} from "./OrbitToken.sol";
+import {MofuToken} from "./MofuToken.sol";
 
 interface IUniswapV2Router02 {
     function factory() external view returns (address);
@@ -21,13 +21,13 @@ interface IUniswapV2Pair {
     function mint(address to) external returns (uint256 liquidity);
 }
 
-/// @title Orbit launch curves
+/// @title Mofu launch curves
 /// @notice Anyone can launch a fixed-supply token that trades against a quote stablecoin on a
 /// virtual-reserve constant-product curve. When the sale inventory sells out, the raised
 /// quote and the reserved LP inventory are added to Uniswap V2 and the LP tokens are burned.
 /// Trades, positions and trader totals are kept onchain so the app needs no indexer.
 /// @dev Unaudited. Supports only a standard, non-rebasing, non-fee quote token.
-contract OrbitLaunch is ReentrancyGuard {
+contract MofuLaunch is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     struct Curve {
@@ -158,7 +158,7 @@ contract OrbitLaunch is ReentrancyGuard {
     ) external nonReentrant returns (address token) {
         if (launchesPaused) revert LaunchesPaused();
         _validate(name, symbol, image, description);
-        token = address(new OrbitToken(name, symbol, SALE_SUPPLY + lpSupply));
+        token = address(new MofuToken(name, symbol, SALE_SUPPLY + lpSupply));
         _init(token, image, description);
         emit Launched(token, msg.sender, name, symbol);
         if (initialBuy > 0) _buy(token, initialBuy, minTokensOut);
@@ -192,7 +192,7 @@ contract OrbitLaunch is ReentrancyGuard {
         c.realQuote -= gross;
         c.tokensLeft += tokensIn;
         feesAccrued += fee;
-        OrbitToken(token).pull(msg.sender, tokensIn);
+        MofuToken(token).pull(msg.sender, tokensIn);
         quote.safeTransfer(msg.sender, quoteOut);
         _record(c, token, false, gross, tokensIn, quoteOut);
     }
@@ -251,7 +251,7 @@ contract OrbitLaunch is ReentrancyGuard {
 
     function _graduate(address token, Curve storage c) internal {
         c.graduated = true;
-        OrbitToken(token).graduate();
+        MofuToken(token).graduate();
         uint256 quoteAmount = c.realQuote;
         c.realQuote = 0;
         // Mint directly on the pair. Anyone may pre-create the pair and donate quote to it,
