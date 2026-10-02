@@ -19,6 +19,8 @@ pnpm wallet:status     # address and native testnet USDC balance only
 
 Secrets live at `~/.local/share/orbit/arc-testnet/` in files `deployer.keystore.json` and `deployer.password` (0600 files, 0700 directory). No private key or password is printed, committed, bundled, or passed as a CLI argument. The password is co-located for unattended testnet-only operations: this protects against accidental exposure, **not compromise of this OS account**. Never use this setup or wallet for real funds. Back up privately if needed; production requires hardware signing/multisig and proper secret management.
 
+At the owner's request, an additional plaintext copy is saved in the Git-ignored repository-root `.env` as `ARC_TESTNET_DEPLOYER_PRIVATE_KEY`, with the public address in `ARC_TESTNET_DEPLOYER_ADDRESS`. The file has mode 0600 and is excluded from Docker builds. These variables have no `VITE_` prefix and must never be exposed to the frontend. Existing deployment scripts still load the encrypted keystore; this copy does not change their signer configuration. Do not use this plaintext setup for real funds.
+
 Current public deployer address: `0x1a86d3148df478a1071e9d3d4825c99fb75ec964`.
 
 ## Deployment and checks

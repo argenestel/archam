@@ -343,6 +343,8 @@ Public deployer: `0x1a86d3148df478a1071e9d3d4825c99fb75ec964`.
 
 The encrypted testnet keystore/password are outside Git at `~/.local/share/orbit/arc-testnet/`, with owner-only file permissions. The password is co-located for unattended testing; this is **not a production secret-management design**.
 
+At the owner's request, a plaintext testnet key copy is also present in the Git-ignored root `.env` as `ARC_TESTNET_DEPLOYER_PRIVATE_KEY` (mode 0600); `ARC_TESTNET_DEPLOYER_ADDRESS` stores the public address. Docker excludes `.env*`. Deployment scripts continue to use the encrypted keystore. This local convenience is not a production custody design.
+
 Never print, copy into documentation, commit, bundle, or put a private key/password in `VITE_*`, CLI arguments, screenshots, or logs. Use hardware signing/multisig and properly managed secrets for any future production operations.
 
 ## 8. RPC and hosting requirements
