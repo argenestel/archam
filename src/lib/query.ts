@@ -8,6 +8,8 @@ type Entry = {
   error?: string;
   updatedAt?: number;
   promise?: Promise<void>;
+  /** A refresh arrived while a request was in flight; its result may predate the change. */
+  again?: boolean;
   listeners: Set<() => void>;
 };
 const cache = new Map<string, Entry>();
@@ -18,7 +20,10 @@ const entry = (key: string) => {
 };
 function load(key: string, fn: () => Promise<unknown>) {
   const e = entry(key);
-  if (e.promise) return e.promise;
+  if (e.promise) {
+    e.again = true;
+    return e.promise;
+  }
   e.promise = fn()
     .then((data) => {
       e.data = data;
@@ -31,6 +36,10 @@ function load(key: string, fn: () => Promise<unknown>) {
     .finally(() => {
       e.promise = undefined;
       e.listeners.forEach((l) => l());
+      if (e.again) {
+        e.again = false;
+        void load(key, fn);
+      }
     });
   return e.promise;
 }
@@ -73,3 +82,7 @@ export function useQuery<T>(
     refresh: () => key && void load(key, () => fnRef.current()),
   };
 }
+
+/** Test hooks. */
+export const __load = load;
+export const __peek = (key: string) => cache.get(key)?.data;
