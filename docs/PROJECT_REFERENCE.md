@@ -74,6 +74,7 @@ Do not silently resolve a material disagreement between code, chain data, and do
 - [DEPLOYMENT.md](DEPLOYMENT.md): protocol/deployment checks.
 - [TESTNET.md](TESTNET.md): wallet, deployment, smoke checks, and hosting commands.
 - [RPC.md](RPC.md): proxy architecture and troubleshooting.
+- [MAINNET_PLAN.md](MAINNET_PLAN.md): proposed mainnet rollout, integrations and open decisions.
 
 ## 2. Product brief and priorities
 
