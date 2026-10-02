@@ -18,7 +18,7 @@ const defaults = {
   minApyImprovementBps: 50,
   minMoveUsd: 1,
   allowedActions: ['swap', 'earn_deposit', 'earn_withdraw', 'morpho_supply', 'morpho_withdraw'],
-  allowedTokens: ['USDC', 'EURC'],
+  allowedTokens: ['USDC', 'EURC', 'tUSDC', 'tETH'],
   vaultAllowlist: [],
   mainnetEnabled: false,
 };

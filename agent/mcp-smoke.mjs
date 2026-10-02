@@ -7,7 +7,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 const live = process.argv.includes('--live');
 const client = new Client({ name: 'orbit-smoke', version: '1.0.0' });
 await client.connect(
-  new StdioClientTransport({ command: 'node', args: ['--env-file-if-exists=agent/.env', 'agent/server.mjs'] }),
+  new StdioClientTransport({ command: 'node', args: ['--import', 'tsx', '--env-file-if-exists=agent/.env', 'agent/server.mjs'] }),
 );
 const call = async (name, args = {}) => {
   const r = await client.callTool({ name, arguments: args });

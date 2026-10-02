@@ -2,7 +2,7 @@
   "mcpServers": {
     "orbit-fund-manager": {
       "command": "node",
-      "args": ["--env-file-if-exists=agent/.env", "agent/server.mjs"]
+      "args": ["--import", "tsx", "--env-file-if-exists=agent/.env", "agent/server.mjs"]
     }
   }
 }

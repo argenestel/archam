@@ -38,6 +38,14 @@ const expected = {
     // Official Uniswap v4 deployment registry, Arc chain 5042:
     // https://developers.uniswap.org/docs/protocols/v4/deployments
     UniswapV4PoolManager: '0x8366a39cc670b4001a1121b8f6a443a643e40951',
+    // Aave V4 (bgd-labs/aave-address-book src/ts/AaveV4Arc.ts @ f648e5dd).
+    AaveV4CoreHub: '0x17288dfc86205301064577b98B02b81017e6F79C',
+    AaveV4MainSpoke: '0xB843bdC3a87A05E77E07Df9FE48928b3A34b134d',
+    AaveV4ForexSpoke: '0x4164EBCAF74670aa74C8D4F59de6157c0780F1bB',
+    AaveV4WaCoreUSDC: '0x42EAB64310E1D1c66b4d8aF7C9C4ce253885eB83',
+    AaveV4WaCoreEURC: '0x5A10b1533C0f1f181DC8a428BF5Eb58B08fc8d2c',
+    AaveV4WaCoreCirBTC: '0x83D364DbAf4e7018E0b87dB3FaB3d1d8535a6F13',
+    AaveV4WaCoreWETH: '0xe8B890fea6e1E3915A337eD3136487F2f4f7e59D',
     UniswapUniversalRouter: '0x4fca4a51ab4f23a7447b3284fbd7d73289a89fb1',
     UniswapUniversalRouter212: '0x8702463e73f74d0b6765abceb314ef07acb92650',
     UniswapV4PositionManager: '0x6049c9a0e26405c0985f9e3685c87d0ae917f82b',

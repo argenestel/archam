@@ -38,7 +38,12 @@ export const arcMainnet = defineChain({
 
 /** Build-time network. Mainnet builds only enable features with a mainnet deployment record. */
 export const networkName: 'testnet' | 'mainnet' =
-  import.meta.env?.VITE_ARC_NETWORK === 'mainnet' ? 'mainnet' : 'testnet';
+  // Vite injects import.meta.env in the browser; Node tooling (the agent under tsx) uses process.env.
+  (import.meta.env?.VITE_ARC_NETWORK ??
+    (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.VITE_ARC_NETWORK) ===
+  'mainnet'
+    ? 'mainnet'
+    : 'testnet';
 export const activeChain = networkName === 'mainnet' ? arcMainnet : arcTestnet;
 export const isTestnet = networkName === 'testnet';
 

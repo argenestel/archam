@@ -13,6 +13,7 @@ import {
   quoteSwap,
   swap,
 } from './core.mjs';
+import { bestSwapQuotes, swapBest } from './router.mjs';
 import { ledger, loadPolicy } from './policy.mjs';
 
 // MCP server for the Orbit fund manager. Connect from Claude Code (.mcp.json in the repo),
@@ -30,6 +31,7 @@ const wrap = (fn) => async (args) => {
 };
 const amount = z.string().regex(/^\d+(\.\d{1,6})?$/, 'decimal string, e.g. "10.00"');
 const address = z.string().regex(/^0x[0-9a-fA-F]{40}$/);
+const tokenRef = z.string().describe('Token symbol (USDC, tUSDC, tETH, etc) or 0x address');
 const write = {
   confirm: z.boolean().default(false).describe('Must be true to broadcast. Otherwise the action is only simulated and logged.'),
   reason: z.string().max(280).describe('One sentence explaining why, recorded in the audit log.'),
@@ -69,6 +71,30 @@ tool(
     ...write,
   },
   wrap(async (a) => swap(context(), a)),
+);
+
+tool(
+  'quote_best_swap',
+  'Quote the best available swap across all venues using the smart router. Returns ranked quotes (contract-kind only). Testnet: tUSDC, tETH, and other baseTokens supported. No transaction.',
+  {
+    tokenIn: tokenRef,
+    tokenOut: tokenRef,
+    amountIn: amount,
+  },
+  wrap(async (a) => bestSwapQuotes(context(), a)),
+);
+
+tool(
+  'swap_best',
+  'Execute the best (or named) swap via the smart router. Simulates all prep/approval/execution steps, then broadcasts if confirm=true and policy dryRun=false. Policy-capped.',
+  {
+    tokenIn: tokenRef,
+    tokenOut: tokenRef,
+    amountIn: amount,
+    venue: z.string().optional().describe('Optional: pick a specific venue (else best quote)'),
+    ...write,
+  },
+  wrap(async (a) => swapBest(context(), a)),
 );
 
 tool(

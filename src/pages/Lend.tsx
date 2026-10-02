@@ -17,6 +17,7 @@ import { compact, formatAmount, pct, shortAddress, timeAgo, tryParse } from '../
 import { healthFactor, maxBorrow } from '../lib/math';
 import { openConnect, useWallet } from '../lib/wallet';
 import Earn from './Earn';
+import AaveEarn from './AaveEarn';
 
 type Action = 'supply' | 'withdraw' | 'collateral' | 'uncollateral' | 'borrow' | 'repay';
 const earnActions: [Action, string][] = [
@@ -57,6 +58,9 @@ export default function Lend() {
           </div>
         </div>
         <Earn />
+        <div style={{ marginTop: 24 }}>
+          <AaveEarn />
+        </div>
       </>
     );
   const d = m.data;

@@ -21,8 +21,8 @@
     "format": "prettier --write src e2e scripts *.ts *.json *.md *.yaml docs",
     "deploy:orbit": "node scripts/deploy-orbit.mjs",
     "oracle:refresh": "node scripts/oracle-refresh.mjs",
-    "agent": "node --env-file-if-exists=agent/.env agent/run.mjs",
-    "agent:mcp": "node --env-file-if-exists=agent/.env agent/server.mjs",
+    "agent": "node --import tsx --env-file-if-exists=agent/.env agent/run.mjs",
+    "agent:mcp": "node --import tsx --env-file-if-exists=agent/.env agent/server.mjs",
     "verify:mainnet": "node scripts/verify-mainnet.mjs",
     "monitor": "node scripts/monitor.mjs",
     "deploy:mainnet": "node --env-file-if-exists=.env scripts/deploy-mainnet.mjs"
@@ -53,6 +53,7 @@
     "prettier": "^3.9.9",
     "solc": "^0.8.30",
     "solc-0.8.19": "npm:solc@0.8.19",
+    "tsx": "^4.23.15",
     "typescript": "~5.7.2",
     "vite": "^6.0.5",
     "vitest": "^3.0.0"

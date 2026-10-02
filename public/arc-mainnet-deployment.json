@@ -1,7 +1,131 @@
 {
+  "mofu": {
+    "chainId": 5042,
+    "deployedAt": "2026-10-02T11:55:07.312Z",
+    "deployer": "0x9dF0F47ce262930a0370945A78596d3F6957f822",
+    "owner": "0x9dF0F47ce262930a0370945A78596d3F6957f822",
+    "feeRecipient": "0x9dF0F47ce262930a0370945A78596d3F6957f822",
+    "mode": "hackathon",
+    "auditStatus": "unaudited",
+    "phase": "active",
+    "sourceHash": "0x4bc104c7db4535408bbacaa6d0706e5e6e0be725ef7442b91ee573625482000d",
+    "release": {
+      "chainId": 5042,
+      "deployer": "0x9dF0F47ce262930a0370945A78596d3F6957f822",
+      "virtualQuote": "5000000000",
+      "feeBps": "100",
+      "budget": "750000000000000000",
+      "sourceHash": "0x4bc104c7db4535408bbacaa6d0706e5e6e0be725ef7442b91ee573625482000d",
+      "compiler": "0.8.30+commit.73712a01.Emscripten.clang",
+      "optimizerRuns": 200,
+      "evmVersion": "paris",
+      "lockfileSha256": "391fc78f91186c7e935d172d24585240b0216a632c1edf42121359739d56054a",
+      "initCodeHashes": [
+        "0x6fcf2fff89676353f1f40336d0b92ffb3809e5dc26e3b253b9edf607e296560a",
+        "0x42b4e907f5977345b65dc89759d3dbd5548c6eb64e84b69bf95c9fabdbc4cf7c",
+        "0x8010735e38abeaeb1f3fbffe119ae4f8e196765724e056b261e308556be61a14"
+      ]
+    },
+    "contracts": {
+      "UniswapV2Factory": {
+        "address": "0x58498B4267D7479d6A5E14a8342ce18e08997378",
+        "transaction": "0xfea50294de8ff83fb4ec118757f4b6a77ea4f97c362b5755f01ca40f8dbc0118",
+        "block": "23875539",
+        "runtimeCodeHash": "0xbab145d02e7005f0d84c6c1639d39b799b0ea16df99ebbdaf5a14d9da820b4e0",
+        "constructorArgs": [
+          "0x9dF0F47ce262930a0370945A78596d3F6957f822"
+        ]
+      },
+      "UniswapV2Router02": {
+        "address": "0xe7a42B28f488543a11A75194D44ddC54859D1779",
+        "transaction": "0xe40fba6b4305300784768155ad62f6216da8b3a5fe6b6e9f6301c517ba48ba14",
+        "block": "23875554",
+        "runtimeCodeHash": "0xd385e107f71a8451061cb1c5bd96d8992bc5407a29f668cb5df3e258695a7c45",
+        "constructorArgs": [
+          "0x58498B4267D7479d6A5E14a8342ce18e08997378",
+          "0x3600000000000000000000000000000000000000"
+        ]
+      },
+      "MofuLaunch": {
+        "address": "0xB583aD345d9261F267D6966f2D965C40E25e5cb4",
+        "transaction": "0xad6604e455fa9668ae93a14634b2546f447318a2ff01fd2c4c62c2cd4bacc3c7",
+        "block": "23875566",
+        "runtimeCodeHash": "0x90770451dba3621d296a59848bc1cbf35002b3b1be57b43865cc5f9c01586eaa",
+        "constructorArgs": [
+          "0x3600000000000000000000000000000000000000",
+          "0xe7a42B28f488543a11A75194D44ddC54859D1779",
+          "5000000000",
+          "100",
+          "0x9dF0F47ce262930a0370945A78596d3F6957f822"
+        ]
+      }
+    },
+    "transactions": [
+      {
+        "label": "Deploy UniswapV2Factory",
+        "nonce": 0,
+        "hash": "0xfea50294de8ff83fb4ec118757f4b6a77ea4f97c362b5755f01ca40f8dbc0118",
+        "status": "success",
+        "gas": "3999967",
+        "gasPrice": "40000000000",
+        "block": "23875539",
+        "gasCost": "122060440000000000",
+        "gasUsed": "3051511",
+        "contractAddress": "0x58498b4267d7479d6a5e14a8342ce18e08997378"
+      },
+      {
+        "label": "Deploy UniswapV2Router02",
+        "nonce": 1,
+        "hash": "0xe40fba6b4305300784768155ad62f6216da8b3a5fe6b6e9f6301c517ba48ba14",
+        "status": "success",
+        "gas": "6235354",
+        "gasPrice": "40000000000",
+        "block": "23875554",
+        "gasCost": "190300040000000000",
+        "gasUsed": "4757501",
+        "contractAddress": "0xe7a42b28f488543a11a75194d44ddc54859d1779"
+      },
+      {
+        "label": "Deploy MofuLaunch",
+        "nonce": 2,
+        "hash": "0xad6604e455fa9668ae93a14634b2546f447318a2ff01fd2c4c62c2cd4bacc3c7",
+        "status": "success",
+        "gas": "5198483",
+        "gasPrice": "40000000000",
+        "block": "23875566",
+        "gasCost": "158647520000000000",
+        "gasUsed": "3966188",
+        "contractAddress": "0xb583ad345d9261f267d6966f2d965c40e25e5cb4"
+      },
+      {
+        "label": "Enable launches",
+        "nonce": 3,
+        "hash": "0x6ea1d3bd6fc488d39ab838d38147d3725f1453a8142af16b8ee767521ac119fe",
+        "status": "success",
+        "gas": "38981",
+        "gasPrice": "40000000000",
+        "block": "23875636",
+        "gasCost": "999720000000000",
+        "gasUsed": "24993",
+        "contractAddress": null
+      }
+    ],
+    "gasSpent": "472007720000000000",
+    "verifiedAt": "2026-10-02T11:56:02.484Z"
+  },
+  "launch": {
+    "contract": "0xB583aD345d9261F267D6966f2D965C40E25e5cb4",
+    "quote": "0x3600000000000000000000000000000000000000",
+    "quoteSymbol": "USDC",
+    "virtualQuote": "5000000000",
+    "feeBps": 100,
+    "paused": false,
+    "auditStatus": "unaudited",
+    "totalSupply": "999986011183597390493942218"
+  },
   "chainId": 5042,
   "network": "Arc",
-  "verifiedAt": "2026-10-02T09:35:20.235Z",
+  "verifiedAt": "2026-10-02T13:01:31.711Z",
   "sources": [
     "https://docs.arc.io/arc/references/contract-addresses",
     "https://developers.uniswap.org/docs/protocols/v4/deployments",
@@ -84,6 +208,41 @@
       "runtimeCodeHash": "0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626",
       "bytes": 24009
     },
+    "AaveV4CoreHub": {
+      "address": "0x17288dfc86205301064577b98B02b81017e6F79C",
+      "runtimeCodeHash": "0x50ed228b05e762d0ff2b0dcdc183b718a88ade5cd0f3221fe07dfa708d6f7491",
+      "bytes": 1419
+    },
+    "AaveV4MainSpoke": {
+      "address": "0xB843bdC3a87A05E77E07Df9FE48928b3A34b134d",
+      "runtimeCodeHash": "0x30c4aa9d26a3d31343d0fb86973ff52574d0d018d1c6095c0563eb994549af99",
+      "bytes": 1419
+    },
+    "AaveV4ForexSpoke": {
+      "address": "0x4164EBCAF74670aa74C8D4F59de6157c0780F1bB",
+      "runtimeCodeHash": "0xd9c05ba19410dd0a414cb42f8867eb90462c63250ae3cf86fbb4be7b1818c797",
+      "bytes": 1419
+    },
+    "AaveV4WaCoreUSDC": {
+      "address": "0x42EAB64310E1D1c66b4d8aF7C9C4ce253885eB83",
+      "runtimeCodeHash": "0x016361d415ea75468da5e6ddd89f6b03dc0ebabfcdc54f628cc243eb6809ac3e",
+      "bytes": 1419
+    },
+    "AaveV4WaCoreEURC": {
+      "address": "0x5A10b1533C0f1f181DC8a428BF5Eb58B08fc8d2c",
+      "runtimeCodeHash": "0x8690d22062aabd0e81c8176ff790178735b9004e97ce173b58d98200cc3fb9e7",
+      "bytes": 1419
+    },
+    "AaveV4WaCoreCirBTC": {
+      "address": "0x83D364DbAf4e7018E0b87dB3FaB3d1d8535a6F13",
+      "runtimeCodeHash": "0xf63ae0c76e85c2ba9b5303cb4108263081debc4432fc39736ac47faa6ae10196",
+      "bytes": 1419
+    },
+    "AaveV4WaCoreWETH": {
+      "address": "0xe8B890fea6e1E3915A337eD3136487F2f4f7e59D",
+      "runtimeCodeHash": "0xf9e3508b1a0832d69de47ba49a3d80648fd8a713ebf783b993c0a6d2339d35a8",
+      "bytes": 1419
+    },
     "UniswapUniversalRouter": {
       "address": "0x4fca4a51ab4f23a7447b3284fbd7d73289a89fb1",
       "runtimeCodeHash": "0x7f949fe75d3483670e17a9ab398a3dc71f285026bba755b48fffd1e42aefad71",
@@ -123,8 +282,8 @@
       "address": "0x7610094b846657dcf166d59e42973db52c7015f9",
       "protocol": "MORPHO",
       "asset": "USDC",
-      "apy": 0.04270745875562485,
-      "tvl": "484098.029375",
+      "apy": 0.04383656172840381,
+      "tvl": "472991.597054",
       "warnings": [],
       "runtimeCodeHash": "0xac3d89c4bed30ede74f4e94e9c0e124a13ed24d0e011181515996362879bae57"
     },
@@ -133,8 +292,8 @@
       "address": "0xbeef00be37bde921bae06fad223125bab16c41d1",
       "protocol": "MORPHO",
       "asset": "EURC",
-      "apy": 0.026771956554401344,
-      "tvl": "9195.867597",
+      "apy": 0.027296193930718346,
+      "tvl": "9195.970284",
       "warnings": [],
       "runtimeCodeHash": "0x0d9a18645e4c23fd5698069edd84ca001b630b0aeff6dd64863debaa2f2dc511"
     },
@@ -143,8 +302,8 @@
       "address": "0x05863f54b05e96092069ef30c9ca6060336e50b9",
       "protocol": "MORPHO",
       "asset": "EURC",
-      "apy": 0.02675219374880095,
-      "tvl": "8878.218462",
+      "apy": 0.0272642554673189,
+      "tvl": "8878.315294",
       "warnings": [],
       "runtimeCodeHash": "0x0d9a18645e4c23fd5698069edd84ca001b630b0aeff6dd64863debaa2f2dc511"
     },
@@ -153,8 +312,8 @@
       "address": "0xabb75dcdac72ff9a4a3603119b1e6d060f212eca",
       "protocol": "MORPHO",
       "asset": "USDC",
-      "apy": 0.023352445402420253,
-      "tvl": "1.190375",
+      "apy": 0.023262946072583956,
+      "tvl": "1.190389",
       "warnings": [
         {
           "type": "not_whitelisted",
@@ -168,8 +327,8 @@
       "address": "0x39330031471120a8181506942868905d41d7835e",
       "protocol": "MORPHO",
       "asset": "EURC",
-      "apy": 0.02273342238617486,
-      "tvl": "2.431486",
+      "apy": 0.02316235954330499,
+      "tvl": "2.431512",
       "warnings": [
         {
           "type": "timelock",
@@ -187,8 +346,8 @@
       "address": "0x85894c0b83e564bb44854bda5991b05ccf88831e",
       "protocol": "MORPHO",
       "asset": "EURC",
-      "apy": 0.02272043751606319,
-      "tvl": "1.500267",
+      "apy": 0.023136193843083245,
+      "tvl": "1.500283",
       "warnings": [
         {
           "type": "timelock",
@@ -206,8 +365,8 @@
       "address": "0xb5176617de85d995c11d6e24985be99f7ab04bb3",
       "protocol": "MORPHO",
       "asset": "EURC",
-      "apy": 0.01601363446352252,
-      "tvl": "1.000127",
+      "apy": 0.01654520541520136,
+      "tvl": "1.000139",
       "warnings": [
         {
           "type": "timelock",
@@ -221,23 +380,38 @@
       "runtimeCodeHash": "0x0d9a18645e4c23fd5698069edd84ca001b630b0aeff6dd64863debaa2f2dc511"
     },
     {
-      "name": "Galaxy EURC",
-      "address": "0x389abdf4355e0cf4f19298179991705a98f21c18",
-      "protocol": "MORPHO",
-      "asset": "EURC",
-      "apy": 0.010649003230807565,
-      "tvl": "502436.490473",
-      "warnings": [],
-      "runtimeCodeHash": "0x0d9a18645e4c23fd5698069edd84ca001b630b0aeff6dd64863debaa2f2dc511"
-    },
-    {
       "name": "Dialectic RWA USDC",
       "address": "0x6bdfe1165d5165808d02de05969c9a19e9b7cf30",
       "protocol": "MORPHO",
       "asset": "USDC",
-      "apy": 0.010554453471992197,
-      "tvl": "14.496365",
+      "apy": 0.010996013906377135,
+      "tvl": "14.496434",
       "warnings": [],
+      "runtimeCodeHash": "0xac3d89c4bed30ede74f4e94e9c0e124a13ed24d0e011181515996362879bae57"
+    },
+    {
+      "name": "Galaxy EURC",
+      "address": "0x389abdf4355e0cf4f19298179991705a98f21c18",
+      "protocol": "MORPHO",
+      "asset": "EURC",
+      "apy": 0.01084929761175312,
+      "tvl": "502438.667867",
+      "warnings": [],
+      "runtimeCodeHash": "0x0d9a18645e4c23fd5698069edd84ca001b630b0aeff6dd64863debaa2f2dc511"
+    },
+    {
+      "name": "Keyrock Prime USDC",
+      "address": "0x5befab92a5a3d60f578cb51eeb4e4fd50a1e3123",
+      "protocol": "MORPHO",
+      "asset": "USDC",
+      "apy": 0.007972588948384454,
+      "tvl": "75011630.396434",
+      "warnings": [
+        {
+          "type": "low_liquidity",
+          "level": "YELLOW"
+        }
+      ],
       "runtimeCodeHash": "0xac3d89c4bed30ede74f4e94e9c0e124a13ed24d0e011181515996362879bae57"
     },
     {
@@ -245,19 +419,29 @@
       "address": "0x8e357432cc12ff425c36432f312968aeb16112af",
       "protocol": "MORPHO",
       "asset": "USDC",
-      "apy": 0.007435156114116847,
-      "tvl": "89709735.804605",
-      "warnings": [],
+      "apy": 0.007972588946599966,
+      "tvl": "89709701.413366",
+      "warnings": [
+        {
+          "type": "low_liquidity",
+          "level": "YELLOW"
+        }
+      ],
       "runtimeCodeHash": "0xac3d89c4bed30ede74f4e94e9c0e124a13ed24d0e011181515996362879bae57"
     },
     {
-      "name": "Keyrock Prime USDC",
-      "address": "0x5befab92a5a3d60f578cb51eeb4e4fd50a1e3123",
+      "name": "Steakhouse Prime USDC",
+      "address": "0xbeef0016cb2fd5c352ea7ca08a9f54739dfa7298",
       "protocol": "MORPHO",
       "asset": "USDC",
-      "apy": 0.007428384291278217,
-      "tvl": "75011397.073789",
-      "warnings": [],
+      "apy": 0.007968297481214253,
+      "tvl": "88943.756468",
+      "warnings": [
+        {
+          "type": "low_liquidity",
+          "level": "YELLOW"
+        }
+      ],
       "runtimeCodeHash": "0xac3d89c4bed30ede74f4e94e9c0e124a13ed24d0e011181515996362879bae57"
     },
     {
@@ -265,9 +449,14 @@
       "address": "0xdeccd53be5453215821184824b519e04c7e00bc7",
       "protocol": "MORPHO",
       "asset": "USDC",
-      "apy": 0.007412051086877047,
-      "tvl": "95478.689901",
-      "warnings": [],
+      "apy": 0.007965577174557955,
+      "tvl": "95479.036321",
+      "warnings": [
+        {
+          "type": "low_liquidity",
+          "level": "YELLOW"
+        }
+      ],
       "runtimeCodeHash": "0xac3d89c4bed30ede74f4e94e9c0e124a13ed24d0e011181515996362879bae57"
     },
     {
@@ -275,9 +464,28 @@
       "address": "0x10af7238c6355aa8ddb5ed60e2e9b55a72827b51",
       "protocol": "MORPHO",
       "asset": "USDC",
-      "apy": 0.007311997167717304,
-      "tvl": "11.023923",
+      "apy": 0.00795218920152279,
+      "tvl": "11.023957",
       "warnings": [],
+      "runtimeCodeHash": "0xac3d89c4bed30ede74f4e94e9c0e124a13ed24d0e011181515996362879bae57"
+    },
+    {
+      "name": "Steakhouse Prime USDC",
+      "address": "0xa8fd51b78370c7ca948566d7ba97d252bc325124",
+      "protocol": "MORPHO",
+      "asset": "USDC",
+      "apy": 0.006774123532570924,
+      "tvl": "1.000014",
+      "warnings": [
+        {
+          "type": "timelock",
+          "level": "RED"
+        },
+        {
+          "type": "not_whitelisted",
+          "level": "YELLOW"
+        }
+      ],
       "runtimeCodeHash": "0xac3d89c4bed30ede74f4e94e9c0e124a13ed24d0e011181515996362879bae57"
     },
     {
@@ -285,8 +493,8 @@
       "address": "0xd392d1dee50a37cf3303aad0acbbc066a8462ec5",
       "protocol": "MORPHO",
       "asset": "USDC",
-      "apy": 0.0062965153260273665,
-      "tvl": "2.66927",
+      "apy": 0.006763394603699635,
+      "tvl": "2.669278",
       "warnings": [
         {
           "type": "timelock",
@@ -304,8 +512,8 @@
       "address": "0xbeef0007d5a04246f5382957035df34f7e82102e",
       "protocol": "MORPHO",
       "asset": "USDC",
-      "apy": 0.0030169214198098784,
-      "tvl": "29691.21254",
+      "apy": 0.003083487856678541,
+      "tvl": "29691.25213",
       "warnings": [
         {
           "type": "not_whitelisted",
@@ -319,8 +527,8 @@
       "address": "0x9503d4eccee1046610ec1467f58b6bc23fce157e",
       "protocol": "MORPHO",
       "asset": "USDC",
-      "apy": 0.002043531349224919,
-      "tvl": "12.412",
+      "apy": 0.0020834847820570645,
+      "tvl": "12.41201",
       "warnings": [],
       "runtimeCodeHash": "0xac3d89c4bed30ede74f4e94e9c0e124a13ed24d0e011181515996362879bae57"
     },
@@ -329,8 +537,8 @@
       "address": "0xbd69ce1b1027e932158aa96a873a91c41cb729f9",
       "protocol": "MORPHO",
       "asset": "USDC",
-      "apy": 0.0013921957443186438,
-      "tvl": "1.231888",
+      "apy": 0.0014965684134852348,
+      "tvl": "1.231889",
       "warnings": [],
       "runtimeCodeHash": "0xac3d89c4bed30ede74f4e94e9c0e124a13ed24d0e011181515996362879bae57"
     },
@@ -476,6 +684,10 @@
       "tvl": "1.0",
       "warnings": [
         {
+          "type": "low_liquidity",
+          "level": "YELLOW"
+        },
+        {
           "type": "not_whitelisted",
           "level": "YELLOW"
         }
@@ -506,25 +718,6 @@
       "runtimeCodeHash": "0xac3d89c4bed30ede74f4e94e9c0e124a13ed24d0e011181515996362879bae57"
     },
     {
-      "name": "Steakhouse Prime USDC",
-      "address": "0xa8fd51b78370c7ca948566d7ba97d252bc325124",
-      "protocol": "MORPHO",
-      "asset": "USDC",
-      "apy": 0,
-      "tvl": "1.000012",
-      "warnings": [
-        {
-          "type": "timelock",
-          "level": "RED"
-        },
-        {
-          "type": "not_whitelisted",
-          "level": "YELLOW"
-        }
-      ],
-      "runtimeCodeHash": "0xac3d89c4bed30ede74f4e94e9c0e124a13ed24d0e011181515996362879bae57"
-    },
-    {
       "name": "",
       "address": "0xb6fcf5bb0f5b73fd9c727fe7cee1590953e254f1",
       "protocol": "MORPHO",
@@ -544,22 +737,12 @@
       "runtimeCodeHash": "0xac3d89c4bed30ede74f4e94e9c0e124a13ed24d0e011181515996362879bae57"
     },
     {
-      "name": "Steakhouse Prime USDC",
-      "address": "0xbeef0016cb2fd5c352ea7ca08a9f54739dfa7298",
-      "protocol": "MORPHO",
-      "asset": "USDC",
-      "apy": 0,
-      "tvl": "88943.541389",
-      "warnings": [],
-      "runtimeCodeHash": "0xac3d89c4bed30ede74f4e94e9c0e124a13ed24d0e011181515996362879bae57"
-    },
-    {
       "name": "SteakUSDC",
       "address": "0x260e8a443470909b41ff023f5a6498acbfe61bda",
       "protocol": "MORPHO",
       "asset": "USDC",
-      "apy": -0.009950166224678791,
-      "tvl": "1.000044",
+      "apy": -0.0022171003187102865,
+      "tvl": "1.000046",
       "warnings": [
         {
           "type": "timelock",
@@ -615,38 +798,7 @@
       },
       "borrowApy": 0.001136,
       "utilization": 0,
-      "refreshedAt": "2026-10-02T09:34:43.554889Z"
-    },
-    {
-      "marketId": "0xc2db905f174e5defcce01d321b09f15f78856a36a21b90cc7e1abbc29225815d",
-      "protocol": "morpho",
-      "chain": "Arc",
-      "loanAsset": {
-        "symbol": "USDC",
-        "address": "0x3600000000000000000000000000000000000000",
-        "decimals": 6
-      },
-      "collateralAsset": {
-        "symbol": "cirBTC",
-        "address": "0x171a4217b86a807a64eb94757db6849fb4bdbaa0",
-        "decimals": 8
-      },
-      "lltv": 0.86,
-      "borrowAssets": {
-        "token": "USDC",
-        "tokenAddress": "0x3600000000000000000000000000000000000000",
-        "amount": "188709439.098588",
-        "decimals": 6
-      },
-      "liquidity": {
-        "token": "USDC",
-        "tokenAddress": "0x3600000000000000000000000000000000000000",
-        "amount": "1109490.851562",
-        "decimals": 6
-      },
-      "borrowApy": 0.007464,
-      "utilization": 0.994155,
-      "refreshedAt": "2026-10-02T09:34:43.571043Z"
+      "refreshedAt": "2026-10-02T13:01:36.992659Z"
     },
     {
       "marketId": "0x126759c350bb65bf782cf9fbfe09fb9cbd32c5a39d26c2194994049ddb3b7e5c",
@@ -666,7 +818,7 @@
       "borrowAssets": {
         "token": "USDC",
         "tokenAddress": "0x3600000000000000000000000000000000000000",
-        "amount": "218528.384241",
+        "amount": "218532.761052",
         "decimals": 6
       },
       "liquidity": {
@@ -675,9 +827,9 @@
         "amount": "23340.807069",
         "decimals": 6
       },
-      "borrowApy": 0.06011,
-      "utilization": 0.903498,
-      "refreshedAt": "2026-10-02T09:34:43.52509Z"
+      "borrowApy": 0.060129,
+      "utilization": 0.9035,
+      "refreshedAt": "2026-10-02T13:01:36.962811Z"
     },
     {
       "marketId": "0x9bd953647610205cd0869118035ca1b021ed5d7654b8a9a013032b549d0abe12",
@@ -697,18 +849,18 @@
       "borrowAssets": {
         "token": "USDC",
         "tokenAddress": "0x3600000000000000000000000000000000000000",
-        "amount": "174522.626743",
+        "amount": "174525.868563",
         "decimals": 6
       },
       "liquidity": {
         "token": "USDC",
         "tokenAddress": "0x3600000000000000000000000000000000000000",
-        "amount": "20026.787785",
+        "amount": "20181.997785",
         "decimals": 6
       },
-      "borrowApy": 0.055872,
-      "utilization": 0.897061,
-      "refreshedAt": "2026-10-02T09:34:43.558943Z"
+      "borrowApy": 0.055834,
+      "utilization": 0.896347,
+      "refreshedAt": "2026-10-02T13:01:36.996453Z"
     },
     {
       "marketId": "0x6ea1ea96a1cc671615f3a3bdf51481c5b79e362a8b634396e680d1070137daf4",
@@ -728,7 +880,7 @@
       "borrowAssets": {
         "token": "EURC",
         "tokenAddress": "0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1",
-        "amount": "1068299.561879",
+        "amount": "1068309.383993",
         "decimals": 6
       },
       "liquidity": {
@@ -737,9 +889,9 @@
         "amount": "9195.071856",
         "decimals": 6
       },
-      "borrowApy": 0.026718,
+      "borrowApy": 0.026933,
       "utilization": 0.991466,
-      "refreshedAt": "2026-10-02T09:34:43.550985Z"
+      "refreshedAt": "2026-10-02T13:01:36.988373Z"
     },
     {
       "marketId": "0x28b684e2283b59170abacad24b15484c2606339183fe37d8fd7cf96478c9b684",
@@ -759,18 +911,18 @@
       "borrowAssets": {
         "token": "USDC",
         "tokenAddress": "0x3600000000000000000000000000000000000000",
-        "amount": "0.902482",
+        "amount": "0.902486",
         "decimals": 6
       },
       "liquidity": {
         "token": "USDC",
         "tokenAddress": "0x3600000000000000000000000000000000000000",
-        "amount": "0.949281",
+        "amount": "0.77842",
         "decimals": 6
       },
-      "borrowApy": 0.014097,
-      "utilization": 0.487364,
-      "refreshedAt": "2026-10-02T09:34:43.534109Z"
+      "borrowApy": 0.014712,
+      "utilization": 0.536905,
+      "refreshedAt": "2026-10-02T13:01:36.971998Z"
     },
     {
       "marketId": "0x9c3c36180cb6d1e95305edc11de986717732009a39f349db19cde95eaf693239",
@@ -790,7 +942,7 @@
       "borrowAssets": {
         "token": "USDC",
         "tokenAddress": "0x3600000000000000000000000000000000000000",
-        "amount": "0.90028",
+        "amount": "0.900291",
         "decimals": 6
       },
       "liquidity": {
@@ -799,9 +951,9 @@
         "amount": "0.3",
         "decimals": 6
       },
-      "borrowApy": 0.035189,
-      "utilization": 0.750058,
-      "refreshedAt": "2026-10-02T09:34:43.563064Z"
+      "borrowApy": 0.035139,
+      "utilization": 0.750061,
+      "refreshedAt": "2026-10-02T13:01:37.000272Z"
     },
     {
       "marketId": "0xd1c277b24f103a508543b06f87acc76d1350b83dfd43d35f6d65098c178705f1",
@@ -821,7 +973,7 @@
       "borrowAssets": {
         "token": "EURC",
         "tokenAddress": "0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1",
-        "amount": "0.900621",
+        "amount": "0.900622",
         "decimals": 6
       },
       "liquidity": {
@@ -832,7 +984,7 @@
       },
       "borrowApy": 0.00293,
       "utilization": 0.900062,
-      "refreshedAt": "2026-10-02T09:34:43.574604Z"
+      "refreshedAt": "2026-10-02T13:01:37.01186Z"
     },
     {
       "marketId": "0x2f192dcd77943c7771aea0aedacb957844cf53a4a5218da4b04037bd2c759b75",
@@ -852,7 +1004,7 @@
       "borrowAssets": {
         "token": "USDC",
         "tokenAddress": "0x3600000000000000000000000000000000000000",
-        "amount": "2.610992",
+        "amount": "2.611005",
         "decimals": 6
       },
       "liquidity": {
@@ -861,9 +1013,40 @@
         "amount": "0.026371",
         "decimals": 6
       },
-      "borrowApy": 0.011892,
+      "borrowApy": 0.01199,
       "utilization": 0.990001,
-      "refreshedAt": "2026-10-02T09:34:43.538524Z"
+      "refreshedAt": "2026-10-02T13:01:36.976053Z"
+    },
+    {
+      "marketId": "0xc2db905f174e5defcce01d321b09f15f78856a36a21b90cc7e1abbc29225815d",
+      "protocol": "morpho",
+      "chain": "Arc",
+      "loanAsset": {
+        "symbol": "USDC",
+        "address": "0x3600000000000000000000000000000000000000",
+        "decimals": 6
+      },
+      "collateralAsset": {
+        "symbol": "cirBTC",
+        "address": "0x171a4217b86a807a64eb94757db6849fb4bdbaa0",
+        "decimals": 8
+      },
+      "lltv": 0.86,
+      "borrowAssets": {
+        "token": "USDC",
+        "tokenAddress": "0x3600000000000000000000000000000000000000",
+        "amount": "189908391.161591",
+        "decimals": 6
+      },
+      "liquidity": {
+        "token": "USDC",
+        "tokenAddress": "0x3600000000000000000000000000000000000000",
+        "amount": "0.00075",
+        "decimals": 6
+      },
+      "borrowApy": 0.007966,
+      "utilization": 1,
+      "refreshedAt": "2026-10-02T13:01:37.00793Z"
     },
     {
       "marketId": "0x20f431a88b5e1d9e3cd83c50ff26612d100359a41f32787f6c6bf7a1ad5ed9ab",
@@ -892,9 +1075,9 @@
         "amount": "0",
         "decimals": 6
       },
-      "borrowApy": 0.000682,
+      "borrowApy": 0.000677,
       "utilization": 0,
-      "refreshedAt": "2026-10-02T09:34:43.529534Z"
+      "refreshedAt": "2026-10-02T13:01:36.967752Z"
     },
     {
       "marketId": "0x43b04ce1e2fb3120a792515af1c1271175343512deeb4232c5347f1db6378e8a",
@@ -923,9 +1106,9 @@
         "amount": "0",
         "decimals": 6
       },
-      "borrowApy": 0.003759,
+      "borrowApy": 0.003748,
       "utilization": 0,
-      "refreshedAt": "2026-10-02T09:34:43.542818Z"
+      "refreshedAt": "2026-10-02T13:01:36.980121Z"
     },
     {
       "marketId": "0x6cbae29b4f0905c393c01cc91f5d439b64928cc7664eb906f1e67e8d6c4cb993",
@@ -954,9 +1137,9 @@
         "amount": "0",
         "decimals": 6
       },
-      "borrowApy": 0.00566,
+      "borrowApy": 0.005627,
       "utilization": 0,
-      "refreshedAt": "2026-10-02T09:34:43.547082Z"
+      "refreshedAt": "2026-10-02T13:01:36.984315Z"
     },
     {
       "marketId": "0xabd1763943714b96b6590238d484a240019b4b842eb67fbcff7d96c081b7b566",
@@ -976,7 +1159,7 @@
       "borrowAssets": {
         "token": "USDC",
         "tokenAddress": "0x3600000000000000000000000000000000000000",
-        "amount": "15033.745338",
+        "amount": "15033.776508",
         "decimals": 6
       },
       "liquidity": {
@@ -985,133 +1168,9 @@
         "amount": "0",
         "decimals": 6
       },
-      "borrowApy": 0.005774,
+      "borrowApy": 0.005825,
       "utilization": 1,
-      "refreshedAt": "2026-10-02T09:34:43.566984Z"
+      "refreshedAt": "2026-10-02T13:01:37.004219Z"
     }
-  ],
-  "mofu": {
-    "chainId": 5042,
-    "deployedAt": "2026-10-02T11:55:07.312Z",
-    "deployer": "0x9dF0F47ce262930a0370945A78596d3F6957f822",
-    "owner": "0x9dF0F47ce262930a0370945A78596d3F6957f822",
-    "feeRecipient": "0x9dF0F47ce262930a0370945A78596d3F6957f822",
-    "mode": "hackathon",
-    "auditStatus": "unaudited",
-    "phase": "active",
-    "sourceHash": "0x4bc104c7db4535408bbacaa6d0706e5e6e0be725ef7442b91ee573625482000d",
-    "release": {
-      "chainId": 5042,
-      "deployer": "0x9dF0F47ce262930a0370945A78596d3F6957f822",
-      "virtualQuote": "5000000000",
-      "feeBps": "100",
-      "budget": "750000000000000000",
-      "sourceHash": "0x4bc104c7db4535408bbacaa6d0706e5e6e0be725ef7442b91ee573625482000d",
-      "compiler": "0.8.30+commit.73712a01.Emscripten.clang",
-      "optimizerRuns": 200,
-      "evmVersion": "paris",
-      "lockfileSha256": "391fc78f91186c7e935d172d24585240b0216a632c1edf42121359739d56054a",
-      "initCodeHashes": [
-        "0x6fcf2fff89676353f1f40336d0b92ffb3809e5dc26e3b253b9edf607e296560a",
-        "0x42b4e907f5977345b65dc89759d3dbd5548c6eb64e84b69bf95c9fabdbc4cf7c",
-        "0x8010735e38abeaeb1f3fbffe119ae4f8e196765724e056b261e308556be61a14"
-      ]
-    },
-    "contracts": {
-      "UniswapV2Factory": {
-        "address": "0x58498B4267D7479d6A5E14a8342ce18e08997378",
-        "transaction": "0xfea50294de8ff83fb4ec118757f4b6a77ea4f97c362b5755f01ca40f8dbc0118",
-        "block": "23875539",
-        "runtimeCodeHash": "0xbab145d02e7005f0d84c6c1639d39b799b0ea16df99ebbdaf5a14d9da820b4e0",
-        "constructorArgs": [
-          "0x9dF0F47ce262930a0370945A78596d3F6957f822"
-        ]
-      },
-      "UniswapV2Router02": {
-        "address": "0xe7a42B28f488543a11A75194D44ddC54859D1779",
-        "transaction": "0xe40fba6b4305300784768155ad62f6216da8b3a5fe6b6e9f6301c517ba48ba14",
-        "block": "23875554",
-        "runtimeCodeHash": "0xd385e107f71a8451061cb1c5bd96d8992bc5407a29f668cb5df3e258695a7c45",
-        "constructorArgs": [
-          "0x58498B4267D7479d6A5E14a8342ce18e08997378",
-          "0x3600000000000000000000000000000000000000"
-        ]
-      },
-      "MofuLaunch": {
-        "address": "0xB583aD345d9261F267D6966f2D965C40E25e5cb4",
-        "transaction": "0xad6604e455fa9668ae93a14634b2546f447318a2ff01fd2c4c62c2cd4bacc3c7",
-        "block": "23875566",
-        "runtimeCodeHash": "0x90770451dba3621d296a59848bc1cbf35002b3b1be57b43865cc5f9c01586eaa",
-        "constructorArgs": [
-          "0x3600000000000000000000000000000000000000",
-          "0xe7a42B28f488543a11A75194D44ddC54859D1779",
-          "5000000000",
-          "100",
-          "0x9dF0F47ce262930a0370945A78596d3F6957f822"
-        ]
-      }
-    },
-    "transactions": [
-      {
-        "label": "Deploy UniswapV2Factory",
-        "nonce": 0,
-        "hash": "0xfea50294de8ff83fb4ec118757f4b6a77ea4f97c362b5755f01ca40f8dbc0118",
-        "status": "success",
-        "gas": "3999967",
-        "gasPrice": "40000000000",
-        "block": "23875539",
-        "gasCost": "122060440000000000",
-        "gasUsed": "3051511",
-        "contractAddress": "0x58498b4267d7479d6a5e14a8342ce18e08997378"
-      },
-      {
-        "label": "Deploy UniswapV2Router02",
-        "nonce": 1,
-        "hash": "0xe40fba6b4305300784768155ad62f6216da8b3a5fe6b6e9f6301c517ba48ba14",
-        "status": "success",
-        "gas": "6235354",
-        "gasPrice": "40000000000",
-        "block": "23875554",
-        "gasCost": "190300040000000000",
-        "gasUsed": "4757501",
-        "contractAddress": "0xe7a42b28f488543a11a75194d44ddc54859d1779"
-      },
-      {
-        "label": "Deploy MofuLaunch",
-        "nonce": 2,
-        "hash": "0xad6604e455fa9668ae93a14634b2546f447318a2ff01fd2c4c62c2cd4bacc3c7",
-        "status": "success",
-        "gas": "5198483",
-        "gasPrice": "40000000000",
-        "block": "23875566",
-        "gasCost": "158647520000000000",
-        "gasUsed": "3966188",
-        "contractAddress": "0xb583ad345d9261f267d6966f2d965c40e25e5cb4"
-      },
-      {
-        "label": "Enable launches",
-        "nonce": 3,
-        "hash": "0x6ea1d3bd6fc488d39ab838d38147d3725f1453a8142af16b8ee767521ac119fe",
-        "status": "success",
-        "gas": "38981",
-        "gasPrice": "40000000000",
-        "block": "23875636",
-        "gasCost": "999720000000000",
-        "gasUsed": "24993",
-        "contractAddress": null
-      }
-    ],
-    "gasSpent": "472007720000000000",
-    "verifiedAt": "2026-10-02T11:56:02.484Z"
-  },
-  "launch": {
-    "contract": "0xB583aD345d9261F267D6966f2D965C40E25e5cb4",
-    "quote": "0x3600000000000000000000000000000000000000",
-    "quoteSymbol": "USDC",
-    "virtualQuote": "5000000000",
-    "feeBps": 100,
-    "paused": false,
-    "auditStatus": "unaudited",
-    "totalSupply": "999986011183597390493942218"
-  }
+  ]
 }

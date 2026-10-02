@@ -21,6 +21,8 @@ agent/server.mjs ── policy.mjs (caps, allowlists, dry-run, audit log)
 | `get_portfolio` | no | Gas, USDC, EURC and vault positions for the agent wallet or any address |
 | `quote_swap` | no | App Kit quote with fees and minimum received |
 | `swap` | yes | USDC/EURC/cirBTC swap via App Kit |
+| `quote_best_swap` | no | Ranked quotes from the app's smart router (Mofu curve, Mofu V2 pools, Uniswap v4); same adapters as the UI |
+| `swap_best` | yes | Executes the best (or named) router venue: prep steps, exact approval, swap, each simulated first; policy-capped |
 | `earn_deposit` / `earn_withdraw` | yes | Move USDC in or out of an Earn vault |
 | `plan_rebalance` | no | Baseline strategy: keep a gas reserve, put idle USDC in the best eligible vault, move between vaults only for ≥ `minApyImprovementBps` |
 | `execute_rebalance` | yes | Runs that plan through the policy engine |
@@ -46,7 +48,7 @@ Every write tool takes `confirm` (default `false`, which means simulate and log 
 ```toml
 [mcp_servers.orbit-fund-manager]
 command = "node"
-args = ["--env-file-if-exists=agent/.env", "agent/server.mjs"]
+args = ["--import", "tsx", "--env-file-if-exists=agent/.env", "agent/server.mjs"]
 cwd = "/path/to/archam"
 ```
 

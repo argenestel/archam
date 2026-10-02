@@ -141,3 +141,11 @@ test('add funds lists Circle bridge source chains for Arc mainnet', async ({ pag
   await expect(from).toHaveValue('Base');
   await expect(page.locator('main .btn-block')).toHaveText('Connect wallet');
 });
+
+test('earn lists Aave V4 vaults with a realized APY read from chain', async ({ page }) => {
+  await page.goto('/#/lend');
+  const aave = page.getByRole('region', { name: 'Aave V4 vaults' });
+  await expect(aave.getByRole('link', { name: 'waCoreUSDC' })).toBeVisible({ timeout: 30_000 });
+  await expect(aave.locator('tbody tr')).toHaveCount(4);
+  await expect(aave.locator('tbody tr').first().locator('td').nth(1)).toHaveText(/%$/);
+});

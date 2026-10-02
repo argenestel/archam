@@ -158,7 +158,7 @@ async function usdValue(ctx, token, amount) {
   return Number(amount) * price;
 }
 
-async function guarded(ctx, intent, run, { confirm, reason }) {
+export async function guarded(ctx, intent, run, { confirm, reason }) {
   requireSigner(ctx);
   const { dryRun } = authorize(ctx.policy, intent, await gasUsdc(ctx));
   if (dryRun || !confirm) {
